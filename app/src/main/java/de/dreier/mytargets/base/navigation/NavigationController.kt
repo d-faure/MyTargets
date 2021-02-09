@@ -83,7 +83,12 @@ class NavigationController(
 
     fun navigateToAbout() {
         IntentWrapper(activity, fragment, AboutActivity::class.java)
-            .start()
+                .start()
+    }
+
+    fun navigateToMantisX8() {
+        IntentWrapper(activity, fragment, AboutActivity::class.java)
+                .start()
     }
 
     fun navigateToGallery(images: ImageList, title: String, requestCode: Int) {

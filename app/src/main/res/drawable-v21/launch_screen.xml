@@ -26,7 +26,15 @@
     </item>
     <!-- Brand name - 48dp height -->
     <item
-        android:bottom="@dimen/launchscreen_brand_logo_bottom"
+        android:bottom="200dp"
         android:drawable="@drawable/brand_name"
         android:gravity="bottom|center"/>
+    <item android:bottom="120dp">
+        <bitmap
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="bottom|center"
+            android:src="@drawable/mantis_logo" />
+    </item>
+
 </layer-list>
