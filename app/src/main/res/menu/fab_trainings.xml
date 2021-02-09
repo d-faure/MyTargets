@@ -17,10 +17,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/fab2"
+        android:id="@+id/fab3"
         android:icon="@drawable/fab_album_24dp"
         android:orderInCategory="0"
-        android:title="@string/training_with_standard_round"/>
+        android:title="@string/training_with_standard_round" />
+    <item
+        android:id="@+id/fab2"
+        android:icon="@drawable/mantis_logo_white"
+        android:orderInCategory="0"
+        android:title="@string/train_with_the_x8"/>
     <item
         android:id="@+id/fab1"
         android:icon="@drawable/fab_trending_up_white_24dp"

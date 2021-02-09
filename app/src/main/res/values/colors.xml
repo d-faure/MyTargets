@@ -33,6 +33,7 @@
     <color name="secondaryTextDefaultMaterialLight">#8a000000</color>
 
     <color name="fabFreeTraining">@color/md_green_500</color>
+    <color name="mantisRed">@color/mantis_red</color>
     <color name="fabTrainingWithStandardRound">@color/md_blue_500</color>
     <color name="fabBow">@color/colorPrimary</color>
     <color name="introBackground">#037205</color>

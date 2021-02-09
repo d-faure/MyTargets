@@ -77,18 +77,20 @@ class TrainingsFragment : ExpandableListFragment<Header, Training>() {
         binding.fabSpeedDial.setMenuListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.fab1 -> navigationController
-                    .navigateToCreateTraining(CREATE_FREE_TRAINING_ACTION)
-                    .fromFab(
-                        binding.fabSpeedDial
-                            .getFabFromMenuId(R.id.fab1), R.color.fabFreeTraining,
-                        R.drawable.fab_trending_up_white_24dp
-                    )
-                    .start()
+                        .navigateToCreateTraining(CREATE_FREE_TRAINING_ACTION)
+                        .fromFab(
+                                binding.fabSpeedDial
+                                        .getFabFromMenuId(R.id.fab1), R.color.fabFreeTraining,
+                                R.drawable.fab_trending_up_white_24dp
+                        )
+                        .start()
                 R.id.fab2 -> navigationController
+                        .navigateToMantisX8()
+                R.id.fab3 -> navigationController
                     .navigateToCreateTraining(CREATE_TRAINING_WITH_STANDARD_ROUND_ACTION)
                     .fromFab(
-                        binding.fabSpeedDial
-                            .getFabFromMenuId(R.id.fab2), R.color.fabTrainingWithStandardRound,
+                                binding.fabSpeedDial
+                                .getFabFromMenuId(R.id.fab3), R.color.fabTrainingWithStandardRound,
                         R.drawable.fab_album_24dp
                     )
                     .start()
