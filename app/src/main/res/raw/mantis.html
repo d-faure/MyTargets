@@ -19,32 +19,76 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
         <link rel="stylesheet" type="text/css" href="style.css" />
     </head>
-    <body>
+    <body style="margin: 0; padding: 0">
         <main>
-            <h1>ARCHERY TRAINING ELEVATED.</h1>
-            <h2>MAKE EVERY SHOT COUNT</h2>
+            <div class="header-container">
+                <div id="wrapper">
+                    <img src="images/background.jpg" />
+                </div>
 
-            <img src="images/background.jpg" />
+                <h1 class="header-main-text">ARCHERY TRAINING ELEVATED.</h1>
+                <h2 class="header-sub-text">MAKE EVERY SHOT COUNT</h2>
+            </div>
 
-            <section>
-                <p>Where the arrow lands is the final page. The Mantis X8 tells you the whole story. It's time to take your archery training to the next level.  For compound, recurve, and longbow.</p>
-            </section>
-            <img src="images/mantis_x8-1.jpg" />
+            <div class="product-screenshot">
+                <img src="images/mantis_x8-1.jpg" />
+            </div>
 
-            <h1>INTRODUCING THE ALL-NEW X8!</h1>
-            <section>
+            <div class="middle-container">
+                <h1>INTRODUCING THE ALL-NEW X8!</h1>
+
+                <div>
+                    <p>Where the arrow lands is the final page.</p>
+                    <p>The Mantis X8 tells you the whole story.</p>
+                    <p>It's time to take your archery training to the next level.  For compound, recurve, and longbow.</p>
+                </div>
+            </div>
+
+            <div class="header-container">
+                <div id="wrapper">
+                    <img src="images/mantis_x8-3.png" />
+                </div>
+
+                <button onclick="location.href='https://www.youtube.com/watch?list=TLGGSUFnBeC4fggxNjAyMjAyMQ&v=hlmXYDwSBow&ab_channel=MantisArchery'" type="button" class="video-button button-style">PLAY VIDEO</button>
+            </div>
+
+            <div class="detailed-description">
                 <h2>NEVER MISS AGAIN</h2>
-                <p>The formula? Stability + Consistency. When performance is measured, performance improves. The Mantis X8 is a data-driven approach to mastery. At its core, the X8 is a precision IMU (accelerometer + gyroscope + magnetometer) that analyzes movement patterns.  The X8 analyzes thousands of data points per second, sending the data to an app that provides real-time feedback on your shooting performance. The Mantis X8 is designed to answer questions that were previously unanswerable: what about that shot was different?  How consistent am I?  My body and mind say one thing, but what actually happened? The data does not lie.  And now we finally have access to unprecedented data. The X8 may change the way you shoot.  It certainly will change the way you understand your shooting.</p>
-            </section>
-            <img src="images/mantis_x8-2.jpg" />
-            <section>
+                <p>The formula? Stability + Consistency.</p>
+                <p>When performance is measured, performance improves. The Mantis X8 is a data-driven approach to mastery.</p>
+                <p>At its core, the X8 is a precision IMU (accelerometer + gyroscope + magnetometer) that analyzes movement patterns. The X8 analyzes thousands of data points per second, sending the data to an app that provides real-time feedback on your shooting performance.</p>
+                <p>The Mantis X8 is designed to answer questions that were previously unanswerable: what about that shot was different?  How consistent am I?  My body and mind say one thing, but what actually happened?</p>
+                <p>The data does not lie. And now we finally have access to unprecedented data.</p>
+                <p>The X8 may change the way you shoot. It certainly will change the way you understand your shooting.</p>
+            </div>
+
+            <div class="product-screenshot">
+                <img src="images/mantis_x8-2.jpg" />
+            </div>
+
+            <div>
                 <h2>TESTIMONIALS</h2>
-                <p>"The Mantis X8 is a game changer.  It helps any shooter, at any level improve.  This is a must-have for anyone serious about maximizing their performance." — Brady Ellison</p>
-                <p>"If you aren't training with the X8, you're missing insights that will fine-tune every aspect of your shot." — Toja Ellison</p>
-            </section>
-            <form action="https://mantisarchery.com/products/mantis-x8">
-                <input type="submit" value="Buy the Mantis X8" />
-            </form>
+                <div class="testimonial-card">
+                    <div class="testimonial-container">
+                        <h4><b>Brady</b></h4>
+                        <p>"The Mantis X8 is a game changer.  It helps any shooter, at any level improve.  This is a must-have for anyone serious about maximizing their performance."</p>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <div class="testimonial-card">
+                    <div class="testimonial-container">
+                        <h4><b>Toja</b></h4>
+                        <p>"If you aren't training with the X8, you're missing insights that will fine-tune every aspect of your shot."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="buy-button">
+                <form action="https://mantisarchery.com/products/mantis-x8">
+                    <input type="submit" value="BUY THE MANTIS X8" class="button-style" />
+                </form>
+            </div>
         </main>
     </body>
 </html>

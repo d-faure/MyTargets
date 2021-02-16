@@ -30,7 +30,7 @@ import uk.co.hassie.library.versioninfomdialog.VersionInfoMDialog
 import java.io.IOException
 
 /**
- * Shows all rounds of one training.
+Shows info regarding the Mantis X8
  */
 class MantisX8Fragment : Fragment() {
 
