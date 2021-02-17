@@ -175,10 +175,13 @@ a.button {
   transform: translate(-50%, -50%);
 }
 
-.video-button {
+.video-button-parent {
   position: absolute;
   top: 50%;
   left: 50%;
+}
+
+.video-button {
   transform: translate(-50%, -50%);
   font-family: Helvetica;
 }
@@ -207,7 +210,7 @@ a.button {
 }
 
 .detailed-description {
- padding: 40px
+ padding: 20px
 }
 
 .product-screenshot img {

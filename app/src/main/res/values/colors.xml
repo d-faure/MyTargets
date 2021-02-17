@@ -34,6 +34,7 @@
 
     <color name="fabFreeTraining">@color/md_green_500</color>
     <color name="mantisRed">@color/mantis_red</color>
+    <color name="mantisBlack">@color/mantis_grey</color>
     <color name="fabTrainingWithStandardRound">@color/md_blue_500</color>
     <color name="fabBow">@color/colorPrimary</color>
     <color name="introBackground">#037205</color>
