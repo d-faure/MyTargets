@@ -217,11 +217,16 @@ a.button {
   width: 90%;
   height: 90%;
   padding-top: 15px;
+  padding-bottom: 15px;
 }
 
 .buy-button {
   padding: 40px;
   padding-bottom: 50px;
+}
+
+.upgrade-button {
+  padding: 20px;
 }
 
 .testimonial-card:hover {
@@ -230,4 +235,10 @@ a.button {
 
 .testimonial-container {
   padding: 2px 10px;
+}
+
+.header-container iframe {
+  width: 90%;
+  height: 90%;
+  padding-top: 15px;
 }

@@ -28,7 +28,9 @@
     <item
         android:bottom="400dp"
         android:drawable="@drawable/brand_name"
-        android:gravity="bottom|center"/>
+        android:gravity="bottom|center"
+        android:scaleType="fitCenter"
+        />
     <item android:bottom="120dp">
         <bitmap
             android:layout_width="wrap_content"
