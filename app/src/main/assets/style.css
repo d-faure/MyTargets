@@ -213,6 +213,13 @@ a.button {
  padding: 20px
 }
 
+.product-logo img {
+  width: 70%;
+  height: 70%;
+  padding-top: 15px;
+  padding-bottom: 30px;
+}
+
 .product-screenshot img {
   width: 90%;
   height: 90%;
