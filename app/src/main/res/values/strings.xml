@@ -14,7 +14,7 @@
   ~ GNU General Public License for more details.
   -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- General -->
     <string name="preferences">Options</string>
@@ -407,4 +407,6 @@
     <string name="user_two_name" translatable="false"><b>Toja</b></string>
     <string name="user_two_response" translatable="false">If you aren\'t training with the X8, you\'re missing insights that will fine-tune every aspect of your shot.</string>
     <string name="learn_more_button" translatable="false">Learn More</string>
+    <string name="migrate" tools:ignore="MissingTranslation">Migrate</string>
+    <string name="migrate_desc" tools:ignore="MissingTranslation">Migrate MyTargets data to Mantis Archery</string>
 </resources>

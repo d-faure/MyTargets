@@ -30,6 +30,7 @@ enum class ESettingsScreens {
     TIMER,
     STATISTICS,
     SCOREBOARD,
+    MIGRATE,
     BACKUP;
 
     val key: String
@@ -44,6 +45,7 @@ enum class ESettingsScreens {
             TIMER -> TimerSettingsFragment()
             STATISTICS -> StatisticsSettingsFragment()
             SCOREBOARD -> ScoreboardSettingsFragment()
+            MIGRATE -> MigrateSettingsFragment()
             BACKUP -> BackupSettingsFragment()
         }
     }

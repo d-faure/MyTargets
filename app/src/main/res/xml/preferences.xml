@@ -289,6 +289,23 @@
         <Preference
             android:key="dummy"/>
     </PreferenceScreen>
+    <PreferenceScreen
+        android:icon="@drawable/ic_migrate_grey600_24dp"
+        android:key="migrate"
+        android:summary="@string/migrate_desc"
+        android:title="@string/migrate">
+        <PreferenceCategory
+            android:key="statistics_dispersion_pattern"
+            android:title="@string/dispersion_pattern">
+        </PreferenceCategory>
+
+        <Preference
+            android:title="Acts like a button"
+            android:key="myCoolButton"
+            android:summary="This is a cool button"
+            />
+
+    </PreferenceScreen>
     <!--suppress AndroidElementNotAllowed -->
     <de.dreier.mytargets.features.settings.LanguagePreference
         android:icon="@drawable/ic_language_grey600_24dp"
