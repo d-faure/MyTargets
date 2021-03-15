@@ -18,11 +18,17 @@ package de.dreier.mytargets.features.settings
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import android.view.View
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import de.dreier.mytargets.R
+import de.dreier.mytargets.features.settings.migrate.MainViewModel
+import de.dreier.mytargets.features.settings.migrate.MainViewModelFactory
+import de.dreier.mytargets.features.settings.migrate.repository.Repository
 import de.dreier.mytargets.shared.SharedApplicationInstance
 import de.dreier.mytargets.utils.ToolbarUtils
 
