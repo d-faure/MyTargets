@@ -25,12 +25,15 @@
             android:src="@drawable/product_logo_144dp"/>
     </item>
     <!-- Brand name - 48dp height -->
-    <item
-        android:bottom="400dp"
-        android:drawable="@drawable/brand_name"
-        android:gravity="bottom|center"
-        android:scaleType="fitCenter"
-        />
+
+    <item android:bottom="400dp">
+        <bitmap
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom|center"
+            android:src="@drawable/mytargets"/>
+    </item>
+
     <item android:bottom="120dp">
         <bitmap
             android:layout_width="wrap_content"

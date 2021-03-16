@@ -194,7 +194,7 @@ a.button {
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 16px;
+  font-size: 4vw;
   margin: 4px 2px;
   cursor: pointer;
 }
@@ -213,9 +213,12 @@ a.button {
  padding: 20px
 }
 
+.detailed-description p {
+}
+
 .product-logo img {
-  width: 70%;
-  height: 70%;
+  width: 40%;
+  height: 40%;
   padding-top: 15px;
   padding-bottom: 30px;
 }
