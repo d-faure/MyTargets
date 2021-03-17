@@ -19,11 +19,10 @@ import android.util.Log
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.Preference
-import de.dreier.mytargets.R
 import de.dreier.mytargets.features.settings.migrate.MainViewModel
 import de.dreier.mytargets.features.settings.migrate.MainViewModelFactory
+import de.dreier.mytargets.features.settings.migrate.model.User
 import de.dreier.mytargets.utils.Utils
-import de.dreier.mytargets.features.settings.migrate.MigrateUtils
 import de.dreier.mytargets.features.settings.migrate.repository.Repository
 
 class MigrateSettingsFragment : SettingsFragmentBase() {
@@ -33,8 +32,8 @@ class MigrateSettingsFragment : SettingsFragmentBase() {
         val shareCategory = preferenceManager.findPreference(KEY_STATISTICS)
         shareCategory.isVisible = Utils.isKitKat
 
-        val button: Preference = findPreference("myCoolButton")
-        button.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        val connectButton: Preference = findPreference("connect_button")
+        connectButton.onPreferenceClickListener = Preference.OnPreferenceClickListener {
 
             var viewModel: MainViewModel
             val repository = Repository()
@@ -51,9 +50,30 @@ class MigrateSettingsFragment : SettingsFragmentBase() {
                     Log.d("response", response.errorBody().toString())
                 }
             })
+            //code for what you want it to do
+            true
+        }
 
-            MigrateUtils.sendPost()
-            Log.d("Danger", "djsafjdslajf safdasf asdfasfd laksdjflajskj")
+
+        val signupButton: Preference = findPreference("signup_button")
+        signupButton.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+
+            var viewModel: MainViewModel
+            val repository = Repository()
+            val viewModelFactory = MainViewModelFactory(repository)
+            viewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
+
+            val myPost = User(2, 2, "abc", "abcd")
+            viewModel.pushPost(myPost)
+            viewModel.myResponse.observe(this, Observer { response ->
+                if(response.isSuccessful){
+                    Log.d("response", response.body().toString())
+                    Log.d("response", response.code().toString())
+                    Log.d("response", response.message())
+                } else {
+                    Log.d("response", response.errorBody().toString())
+                }
+            })
             //code for what you want it to do
             true
         }

@@ -1,10 +1,17 @@
 package de.dreier.mytargets.features.settings.migrate.api
 
-import de.dreier.mytargets.features.settings.migrate.model.Post
+import de.dreier.mytargets.features.settings.migrate.model.User
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 
 interface SimpleApi {
     @GET("posts/1")
-    suspend fun getPost(): Response<Post>
+    suspend fun getPost(): Response<User>
+
+    @POST("posts")
+    suspend fun pushPost(
+            @Body post: User
+    ): Response<User>
 }

@@ -296,13 +296,17 @@
         android:title="@string/migrate">
         <PreferenceCategory
             android:key="statistics_dispersion_pattern"
-            android:title="@string/dispersion_pattern">
+            android:title="@string/sign_up_with_mantis">
         </PreferenceCategory>
 
         <Preference
-            android:title="Acts like a button"
-            android:key="myCoolButton"
-            android:summary="This is a cool button"
+            android:title="Connect"
+            android:key="connect_button"
+            />
+
+        <Preference
+            android:title="Sign-up"
+            android:key="signup_button"
             />
 
     </PreferenceScreen>
