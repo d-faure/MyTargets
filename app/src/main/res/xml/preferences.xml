@@ -294,21 +294,8 @@
         android:key="migrate"
         android:summary="@string/migrate_desc"
         android:title="@string/migrate">
-        <PreferenceCategory
-            android:key="statistics_dispersion_pattern"
-            android:title="@string/sign_up_with_mantis">
-        </PreferenceCategory>
-
         <Preference
-            android:title="Connect"
-            android:key="connect_button"
-            />
-
-        <Preference
-            android:title="Sign-up"
-            android:key="signup_button"
-            />
-
+            android:key="dummy2"/>
     </PreferenceScreen>
     <!--suppress AndroidElementNotAllowed -->
     <de.dreier.mytargets.features.settings.LanguagePreference

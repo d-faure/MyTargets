@@ -16,6 +16,7 @@
 package de.dreier.mytargets.features.settings
 
 import de.dreier.mytargets.features.settings.backup.BackupSettingsFragment
+import de.dreier.mytargets.features.settings.migrate.MigrateFragment
 import java.util.*
 
 /**
@@ -45,7 +46,7 @@ enum class ESettingsScreens {
             TIMER -> TimerSettingsFragment()
             STATISTICS -> StatisticsSettingsFragment()
             SCOREBOARD -> ScoreboardSettingsFragment()
-            MIGRATE -> MigrateSettingsFragment()
+            MIGRATE -> MigrateFragment()
             BACKUP -> BackupSettingsFragment()
         }
     }
