@@ -22,13 +22,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import de.dreier.mytargets.R
-import de.dreier.mytargets.databinding.FragmentBackupBinding
+import de.dreier.mytargets.databinding.FragmentMigrateBinding
 import de.dreier.mytargets.features.settings.SettingsFragmentBase
 
 
 class MigrateFragment : SettingsFragmentBase() {
 
-    private lateinit var binding: FragmentBackupBinding
+    private lateinit var binding: FragmentMigrateBinding
 
     public override fun onCreatePreferences() {
         /* Overridden to no do anything. Normally this would try to inflate the preferences,
@@ -40,8 +40,9 @@ class MigrateFragment : SettingsFragmentBase() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_backup, container, false)
         Log.d("inside", "onCreateView")
+
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_migrate, container, false)
         return binding.root
     }
 
