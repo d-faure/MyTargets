@@ -293,7 +293,10 @@
     <string name="right_handed">Right-handed</string>
     <string name="keyboard">Keyboard</string>
     <string name="backup_drive_desc">Backing up your data allows you to restore all your trainings in case you lost or change your phone.</string>
+    <string name="migrate_data_desc" translatable="false">This option allows you to migrate your data to the cloud and sync it across our Mantis Archery android app and the web dashboard to view your personal data.</string>
     <string name="backup_now">Backup now</string>
+    <string name="signup_mantis" translatable="false">Sign-Up</string>
+    <string name="login_mantis" translatable="false">Already have an account? Log-in.</string>
     <string name="last_backup">Last backup: %s</string>
     <string name="recent_backups">Recent backups</string>
     <string name="dialog_restore_title">Revert to previous version</string>
