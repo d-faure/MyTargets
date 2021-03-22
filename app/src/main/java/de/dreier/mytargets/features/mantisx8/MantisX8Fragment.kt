@@ -16,16 +16,20 @@
 package de.dreier.mytargets.features.mantisx8
 
 import android.content.Intent
-import androidx.databinding.DataBindingUtil
+import android.net.Uri
 import android.os.Bundle
-import androidx.annotation.CallSuper
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.*
+import android.widget.Toast
+import androidx.annotation.CallSuper
+import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import de.dreier.mytargets.R
 import de.dreier.mytargets.base.navigation.NavigationController
-import de.dreier.mytargets.databinding.FragmentWebBinding
+import de.dreier.mytargets.databinding.FragmentLandingPageBinding
 import de.dreier.mytargets.features.help.licences.LicencesActivity
 import de.dreier.mytargets.utils.ToolbarUtils
+import kotlinx.android.synthetic.main.fragment_landing_page.*
 import uk.co.hassie.library.versioninfomdialog.VersionInfoMDialog
 import java.io.IOException
 
@@ -35,23 +39,7 @@ Shows info regarding the Mantis X8
 class MantisX8Fragment : Fragment() {
 
     private lateinit var navigationController: NavigationController
-    private lateinit var binding: FragmentWebBinding
-
-    private val helpHtmlPage: String
-        get() {
-            var prompt = ""
-            try {
-                val inputStream = resources.openRawResource(R.raw.mantis)
-                val buffer = ByteArray(inputStream.available())
-                inputStream.read(buffer)
-                prompt = String(buffer)
-                inputStream.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-
-            return prompt
-        }
+    private lateinit var binding: FragmentLandingPageBinding
 
     @CallSuper
     override fun onCreateView(
@@ -59,11 +47,7 @@ class MantisX8Fragment : Fragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_web, container, false)
-        val prompt = helpHtmlPage
-        binding.webView
-                .loadDataWithBaseURL("file:///android_asset/", prompt, "text/html", "utf-8", "")
-        binding.webView.isHorizontalScrollBarEnabled = false
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_landing_page, container, false)
         return binding.root
     }
 
