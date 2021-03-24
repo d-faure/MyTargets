@@ -28,6 +28,7 @@ import android.os.Parcelable
 import android.text.TextUtils
 import android.util.AndroidRuntimeException
 import android.util.AttributeSet
+import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.LinearLayout
@@ -415,6 +416,7 @@ class FabSpeedDial : LinearLayout, View.OnClickListener, CoordinatorLayout.Attac
         animateFabMenuItemsIn()
     }
 
+    @SuppressLint("ResourceType")
     private fun createFabMenuItem(menuItem: MenuItem): View {
         val fabMenuItem = LayoutInflater.from(context)
             .inflate(R.layout.fab_menu_item_end, this, false) as ViewGroup
@@ -458,6 +460,13 @@ class FabSpeedDial : LinearLayout, View.OnClickListener, CoordinatorLayout.Attac
             miniFab.backgroundTintList = ContextCompat.getColorStateList(
                 context,
                 miniFabBackgroundTintArray!![menuItem.order]
+            )
+        }
+
+        if (titleView.text.toString() == "Train with the X8") {
+            miniFab.backgroundTintList = ContextCompat.getColorStateList(
+                    context,
+                    2131099773
             )
         }
 
