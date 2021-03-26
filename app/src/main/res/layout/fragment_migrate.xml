@@ -21,7 +21,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#ffffff"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:clickable="true">
 
         <TextView
             android:id="@+id/migrateDesc"
@@ -51,8 +52,8 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_marginStart="101dp"
-            android:layout_marginLeft="101dp"
+            android:layout_marginStart="103dp"
+            android:layout_marginLeft="10dp"
             android:layout_marginTop="25dp"
             android:layout_marginEnd="97dp"
             android:layout_marginRight="97dp"
@@ -118,9 +119,8 @@
 
         <Button
             android:id="@+id/signupButton"
-            android:layout_width="wrap_content"
-            android:layout_height="54dp"
-            android:layout_above="@+id/loginButton"
+            android:layout_width="207dp"
+            android:layout_height="wrap_content"
             android:layout_below="@+id/editPass"
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
@@ -128,34 +128,53 @@
             android:layout_alignParentRight="true"
             android:layout_marginStart="103dp"
             android:layout_marginLeft="103dp"
-            android:layout_marginTop="35dp"
-            android:layout_marginEnd="100dp"
-            android:layout_marginRight="100dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="97dp"
+            android:layout_marginRight="97dp"
             android:background="@color/colorAccent"
             android:padding="16dp"
             android:text="@string/signup_mantis"
             android:textColor="#80000000" />
 
         <TextView
+            android:id="@+id/loginText"
+            android:layout_width="wrap_content"
+            android:layout_height="16dp"
+            android:layout_above="@+id/loginButton"
+            android:layout_below="@+id/signupButton"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginStart="103dp"
+            android:layout_marginLeft="103dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="97dp"
+            android:layout_marginRight="97dp"
+            android:layout_marginBottom="2dp"
+            android:paddingLeft="10dp"
+            android:text="@string/login_mantis"
+            android:textColor="#80000000"
+            android:textSize="14sp" />
+
+        <TextView
             android:id="@+id/loginButton"
-            android:layout_width="209dp"
+            android:layout_width="113dp"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginStart="102dp"
-            android:layout_marginLeft="102dp"
-            android:layout_marginEnd="100dp"
-            android:layout_marginRight="100dp"
-            android:layout_marginBottom="50dp"
-            android:clickable="true"
+            android:layout_marginStart="103dp"
+            android:layout_marginLeft="103dp"
+            android:layout_marginEnd="178dp"
+            android:layout_marginRight="178dp"
+            android:layout_marginBottom="112dp"
+            android:text="@string/login_text"
+            android:textColor="#4169E1"
             android:textSize="14sp"
-            android:padding="16dp"
-            android:text="@string/login_mantis"
-            android:textColor="#80000000" />
+            android:textStyle="bold" />
     </RelativeLayout>
 
 </layout>

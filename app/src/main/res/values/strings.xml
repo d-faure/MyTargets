@@ -296,7 +296,7 @@
     <string name="migrate_data_desc" translatable="false">This option allows you to migrate your data to the cloud and sync it across our Mantis Archery android app and the web dashboard to view your personal data.</string>
     <string name="backup_now">Backup now</string>
     <string name="signup_mantis" translatable="false">Sign-Up</string>
-    <string name="login_mantis" translatable="false">Already have an account? Log-in.</string>
+    <string name="login_mantis" translatable="false">Already have an account?</string>
     <string name="last_backup">Last backup: %s</string>
     <string name="recent_backups">Recent backups</string>
     <string name="dialog_restore_title">Revert to previous version</string>
@@ -413,4 +413,5 @@
     <string name="learn_more_button" translatable="false">Learn More</string>
     <string name="migrate" tools:ignore="MissingTranslation">Migrate</string>
     <string name="migrate_desc" tools:ignore="MissingTranslation">Migrate MyTargets data to Mantis Archery</string>
+    <string name="login_text" tools:ignore="MissingTranslation">Log in.</string>
 </resources>
