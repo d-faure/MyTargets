@@ -10,8 +10,13 @@ interface SimpleApi {
     @GET("posts/1")
     suspend fun getPost(): Response<User>
 
-    @POST("posts")
-    suspend fun pushPost(
+    @POST("create-user")
+    suspend fun createUser(
+            @Body post: User
+    ): Response<User>
+
+    @POST("verify")
+    suspend fun loginUser(
             @Body post: User
     ): Response<User>
 }

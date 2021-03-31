@@ -1,19 +1,4 @@
-/*
- * Copyright (C) 2018 Florian Dreier
- *
- * This file is part of MyTargets.
- *
- * MyTargets is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * MyTargets is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
-
-package de.dreier.mytargets.features.settings.migrate
+    package de.dreier.mytargets.features.settings.migrate
 
 import android.os.Bundle
 import android.util.Log
@@ -27,16 +12,17 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import de.dreier.mytargets.R
+import de.dreier.mytargets.databinding.FragmentLoginBinding
 import de.dreier.mytargets.databinding.FragmentMigrateBinding
 import de.dreier.mytargets.features.settings.SettingsFragmentBase
 import de.dreier.mytargets.features.settings.migrate.model.User
 import de.dreier.mytargets.features.settings.migrate.repository.Repository
+import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_migrate.*
 
+    class LoginFragment : SettingsFragmentBase() {
 
-class MigrateFragment : SettingsFragmentBase() {
-
-    private lateinit var binding: FragmentMigrateBinding
+    private lateinit var binding: FragmentLoginBinding
 
     public override fun onCreatePreferences() {
         /* Overridden to no do anything. Normally this would try to inflate the preferences,
@@ -48,41 +34,24 @@ class MigrateFragment : SettingsFragmentBase() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_migrate, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
 
-        binding.signupButton.setOnClickListener {
+        binding.loginButton.setOnClickListener {
+            var loginUsername = loginUsername.text.toString()
+            var loginPass = loginPass.text.toString()
 
-            // if token is in shared preferences
-            val sharedIdValue = sharedPreferences.getInt("id_key",0)
-            val sharedNameValue = sharedPreferences.getString("name_key","defaultname")
-            if(sharedIdValue.equals(0) && sharedNameValue.equals("defaultname")){
-                outputName.setText("default name: ${sharedNameValue}").toString()
-                outputId.setText("default id: ${sharedIdValue.toString()}")
-            }else{
-                outputName.setText(sharedNameValue).toString()
-                outputId.setText(sharedIdValue.toString())
-            }
-            // load migrate fragment
-            // else
-
-            var emailText = editEmail.text.toString()
-            var usernameText = editUsername.text.toString()
-            var passwordText = editPass.text.toString()
-
-            if ((usernameText.trim().isNotEmpty() ||
-                usernameText.trim().isNotBlank()) &&
-                (emailText.trim().isNotEmpty() ||
-                emailText.trim().isNotBlank()) &&
-                (passwordText.trim().isNotEmpty() ||
-                passwordText.trim().isNotBlank())
+            if ((loginUsername.trim().isNotEmpty() ||
+                            loginUsername.trim().isNotBlank()) &&
+                (loginPass.trim().isNotEmpty() ||
+                        loginPass.trim().isNotBlank())
             ) {
                 var viewModel: MainViewModel
                 val repository = Repository()
                 val viewModelFactory = MainViewModelFactory(repository)
                 viewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
 
-                val myPost = User(emailText, usernameText, passwordText, "", "0")
-                viewModel.createUser(myPost)
+                val myPost = User("", loginUsername, loginPass, "", "0")
+                viewModel.loginUser(myPost)
                 viewModel.myResponse.observe(this, Observer { response ->
                     if(response.isSuccessful){
                         Log.d("response", response.body().toString())
@@ -91,6 +60,7 @@ class MigrateFragment : SettingsFragmentBase() {
                         Log.d("response", response.body()?.user_secret_key!!)
                         Log.d("response", response.body()?.user_pk!!)
 
+                        // store token in sharedpreferences
                         val editor:SharedPreferences.Editor =  sharedPreferences.edit()
                         editor.putInt("id_key",id)
                         editor.putString("name_key",name)
@@ -105,17 +75,10 @@ class MigrateFragment : SettingsFragmentBase() {
             }
         }
 
-        binding.loginFragmentButton.setOnClickListener {
-            val fragment: Fragment = LoginFragment()
-            val fragmentTransaction: FragmentTransaction = fragmentManager!!.beginTransaction()
-            fragmentTransaction.replace(R.id.login_frame, fragment)
-            fragmentTransaction.commit()
-        }
-
         return binding.root
     }
 
     override fun setActivityTitle() {
-        activity!!.setTitle(R.string.migrate_action)
+        activity!!.setTitle("Login")
     }
 }

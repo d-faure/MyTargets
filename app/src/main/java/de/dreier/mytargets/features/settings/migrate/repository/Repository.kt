@@ -11,8 +11,12 @@ class Repository {
         return RetrofitInstance.api.getPost()
     }
 
-    suspend fun pushPost(user: User): Response<User> {
-        return RetrofitInstance.api.pushPost(user)
+    suspend fun createUser(user: User): Response<User> {
+        return RetrofitInstance.api.createUser(user)
+    }
+
+    suspend fun loginUser(user: User): Response<User> {
+        return RetrofitInstance.api.loginUser(user)
     }
 
 }

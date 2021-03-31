@@ -42,10 +42,9 @@ class MigrateSettingsFragment : SettingsFragmentBase() {
             viewModel.getPost()
             viewModel.myResponse.observe(this, Observer { response ->
                 if(response.isSuccessful){
-                    Log.d("response", response.body()?.userId.toString())
-                    Log.d("response", response.body()?.id.toString())
-                    Log.d("response", response.body()?.title!!)
-                    Log.d("response", response.body()?.body!!)
+                    Log.d("response", response.body()?.email!!)
+                    Log.d("response", response.body()?.username!!)
+                    Log.d("response", response.body()?.password!!)
                 } else {
                     Log.d("response", response.errorBody().toString())
                 }
@@ -63,8 +62,8 @@ class MigrateSettingsFragment : SettingsFragmentBase() {
             val viewModelFactory = MainViewModelFactory(repository)
             viewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
 
-            val myPost = User(2, 2, "abc", "abcd")
-            viewModel.pushPost(myPost)
+            val myPost = User("abc", "abcd", "dasdkfjlsa", "", "0")
+            viewModel.createUser(myPost)
             viewModel.myResponse.observe(this, Observer { response ->
                 if(response.isSuccessful){
                     Log.d("response", response.body().toString())
