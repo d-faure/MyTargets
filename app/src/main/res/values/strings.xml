@@ -415,5 +415,6 @@
     <string name="migrate" tools:ignore="MissingTranslation">Migrate</string>
     <string name="migrate_desc" tools:ignore="MissingTranslation">Migrate MyTargets data to Mantis Archery</string>
     <string name="login_text" tools:ignore="MissingTranslation">Log in</string>
-    <string name="login_mantis_text">Login to Your Mantis Account</string>
+    <string name="login_mantis_text"  tools:ignore="MissingTranslation">Login to Your Mantis Account</string>
+    <string name="migrate_now"  tools:ignore="MissingTranslation">Migrate Now</string>
 </resources>

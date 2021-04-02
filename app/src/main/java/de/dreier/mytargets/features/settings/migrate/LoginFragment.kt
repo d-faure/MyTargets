@@ -1,5 +1,6 @@
     package de.dreier.mytargets.features.settings.migrate
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,6 +18,7 @@ import de.dreier.mytargets.databinding.FragmentMigrateBinding
 import de.dreier.mytargets.features.settings.SettingsFragmentBase
 import de.dreier.mytargets.features.settings.migrate.model.User
 import de.dreier.mytargets.features.settings.migrate.repository.Repository
+import de.dreier.mytargets.shared.SharedApplicationInstance
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_migrate.*
 
@@ -27,6 +29,17 @@ import kotlinx.android.synthetic.main.fragment_migrate.*
     public override fun onCreatePreferences() {
         /* Overridden to no do anything. Normally this would try to inflate the preferences,
         * but in this case we want to show our own UI. */
+    }
+
+    private fun launchMigrate() {
+        /*
+        Opens the fragment where one can have the option to update
+        your data into Mantis backend
+        */
+        val fragment: Fragment = UploadToMantisFragment()
+        val fragmentTransaction: FragmentTransaction = fragmentManager!!.beginTransaction()
+        fragmentTransaction.replace(R.id.login_frame, fragment)
+        fragmentTransaction.commit()
     }
 
     override fun onCreateView(
@@ -54,20 +67,21 @@ import kotlinx.android.synthetic.main.fragment_migrate.*
                 viewModel.loginUser(myPost)
                 viewModel.myResponse.observe(this, Observer { response ->
                     if(response.isSuccessful){
-                        Log.d("response", response.body().toString())
-                        Log.d("response", response.code().toString())
-                        Log.d("response", response.body()?.email!!)
-                        Log.d("response", response.body()?.user_secret_key!!)
-                        Log.d("response", response.body()?.user_pk!!)
+                        var email =  response.body()?.email!!
+                        var user_secret_key = response.body()?.user_secret_key!!
+                        var user_pk = response.body()?.user_pk!!
 
-                        // store token in sharedpreferences
-                        val editor:SharedPreferences.Editor =  sharedPreferences.edit()
-                        editor.putInt("id_key",id)
-                        editor.putString("name_key",name)
+                        val editor: SharedPreferences.Editor = SharedApplicationInstance.sharedPreferences.edit()
+                        editor.putString("email", email)
+                        editor.putString("user_secret_key", user_secret_key)
+                        editor.putString("user_pk", user_pk)
+
                         editor.apply()
                         editor.commit()
+
+                        launchMigrate()
                     } else {
-                        Log.d("response", "response.errorBody().toString()")
+                        Toast.makeText(activity, "Couldn't connect to our server, try again later.", Toast.LENGTH_SHORT).show()
                     }
                 })
             } else {
