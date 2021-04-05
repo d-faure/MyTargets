@@ -6,26 +6,19 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import de.dreier.mytargets.R
-import de.dreier.mytargets.databinding.FragmentLoginBinding
-import de.dreier.mytargets.databinding.FragmentMigrateBinding
+import de.dreier.mytargets.app.ApplicationInstance
 import de.dreier.mytargets.databinding.FragmentUploadMantisBinding
 import de.dreier.mytargets.features.settings.SettingsFragmentBase
-import de.dreier.mytargets.features.settings.migrate.model.User
-import de.dreier.mytargets.features.settings.migrate.repository.Repository
-import de.dreier.mytargets.shared.SharedApplicationInstance
-import kotlinx.android.synthetic.main.fragment_login.*
-import kotlinx.android.synthetic.main.fragment_migrate.*
+import de.dreier.mytargets.shared.models.augmented.AugmentedEnd
 
 class UploadToMantisFragment : SettingsFragmentBase() {
 
     private lateinit var binding: FragmentUploadMantisBinding
+    private val trainingDAO = ApplicationInstance.db.trainingDAO()
+    private val roundDAO = ApplicationInstance.db.roundDAO()
+    private val endDAO = ApplicationInstance.db.endDAO()
 
     public override fun onCreatePreferences() {
         /* Overridden to no do anything. Normally this would try to inflate the preferences,
@@ -39,7 +32,25 @@ class UploadToMantisFragment : SettingsFragmentBase() {
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_upload_mantis, container, false)
         binding.migrateNowButton.setOnClickListener {
-            Log.d("adjsfj", "start the count down")
+
+            val trainings = trainingDAO.loadTrainings()
+
+            Log.d("trainings", trainings.size.toString())
+
+            val rounds = trainingDAO.loadTrainings().flatMap {
+                            training -> roundDAO.loadRounds(training.id)
+                        }
+
+            Log.d("rounds", rounds.size.toString())
+
+            val ends = trainingDAO.loadTrainings().flatMap {
+                            training -> roundDAO.loadRounds(training.id).flatMap {
+                                round -> endDAO.loadEnds(round.id)
+                            }
+                        }
+
+            Log.d("ends", ends.size.toString())
+
         }
         return binding.root
     }
