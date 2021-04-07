@@ -6,6 +6,7 @@ import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 
+
 interface SimpleApi {
     @GET("posts/1")
     suspend fun getPost(): Response<User>
@@ -20,13 +21,11 @@ interface SimpleApi {
             @Body post: User
     ): Response<User>
 
-
     @Multipart
-    @POST("file")
-    fun attachFile(
-            @Part("name") filename: RequestBody,
-            @Part("type") mimeType: RequestBody,
-            @Part("size") fileSize: RequestBody,
-            @Part filePart: MultipartBody.Part
-    ): Single<AttachmentUploadedRemoteDto>
+    @POST("mytargets/upload")
+    suspend fun uploadFile(
+            @Part("user_id") id: RequestBody,
+            @Part("full_name") fullName: RequestBody,
+            @Part image: MultipartBody.Part
+    ): Observable<ResponseBody>
 }

@@ -19,4 +19,7 @@ class Repository {
         return RetrofitInstance.api.loginUser(user)
     }
 
+    suspend fun uploadFile(userID: RequestBody, fullName: RequestBody, image: MultipartBody.Part) {
+        return RetrofitInstance.api.uploadFile(userID, fullName, image)
+    }
 }

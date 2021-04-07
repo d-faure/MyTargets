@@ -6,14 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import com.google.common.net.MediaType
 import de.dreier.mytargets.R
 import de.dreier.mytargets.app.ApplicationInstance
 import de.dreier.mytargets.databinding.FragmentUploadMantisBinding
 import de.dreier.mytargets.features.settings.SettingsFragmentBase
-
+import de.dreier.mytargets.features.settings.migrate.repository.Repository
+import androidx.lifecycle.ViewModelProvider
+import java.io.File
 import java.io.FileWriter
 import java.io.IOException
-import java.util.Arrays
+import okhttp3.RequestBody
+import retrofit2.http.*
+
 
 class UploadToMantisFragment : SettingsFragmentBase() {
 
@@ -36,6 +41,11 @@ class UploadToMantisFragment : SettingsFragmentBase() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
+        var viewModel: MainViewModel
+        val repository = Repository()
+        val viewModelFactory = MainViewModelFactory(repository)
+        viewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
+
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_upload_mantis, container, false)
         binding.migrateNowButton.setOnClickListener {
 
@@ -106,6 +116,16 @@ class UploadToMantisFragment : SettingsFragmentBase() {
 
         }
         return binding.root
+    }
+
+    fun upload() {
+        val file = File("/storage/emulated/0/Download/Corrections 6.jpg")
+        val requestFile: RequestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file)
+        val body: MultipartBody.Part = MultipartBody.Part.createFormData("image", file.getName(), requestFile)
+
+        val fullName: RequestBody = RequestBody.create(MediaType.parse("multipart/form-data"), "Your Name")
+
+        viewModel.updateProfile(fullName, fullName, body)
     }
 
     override fun setActivityTitle() {
