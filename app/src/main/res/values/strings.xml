@@ -238,6 +238,7 @@
     <string name="clicker">Clicker</string>
     <string name="arrow_number_x">Arrow number %s</string>
     <string name="training_with_standard_round">Training with Standard Round</string>
+    <string name="train_with_the_x8" translatable="false">Train with the X8</string>
     <string name="free_training">Free Training</string>
     <string name="competition">Competition</string>
     <string name="about">About</string>
@@ -394,4 +395,16 @@
     <string name="permission_required">Permission required</string>
     <string name="backup_permission_explanation"><![CDATA[To be able to make a backup of your data, the app needs permission to access the internal storage of your phone. To use the backup feature go to system settings > Apps > MyTargets > Permissions and enable the entry \'Storage\'.]]></string>
     <string name="fix_db">Attempt to fix database</string>
+    <string name="initial_desc" translatable="false">So you\'ve been tracking your training with MyTargets for a while now, and you\'re probably feeling like you\'re a pretty descent archer and maybe want to take things to the next level? Suddenly you\'ve noticed this new "Train with mantis X8" button. What the hell is this supposed to be? Imagine if we got a bunch of data geeks and hardware engineers that normally work on UAV stabilization systems to get really into archery...</string>
+    <string name="mantis_desc_1" translatable="false">The Mantis X8 is a hardware sensor, which attaches to your bow, to give you additional data and insights into your shooting performance.</string>
+    <string name="mantis_desc_2" translatable="false">At its core, the X8 is a precision sensor that records all of the movements of the shooter before the arrow flies. The X8 analyzes thousands of data points per second, sending the data to the app, and providing real-time feedback on your shooting performance. So now you\'re able to not only track where the arrows land, but why they landed where they did.</string>
+    <string name="mantis_desc_3" translatable="false">The Mantis X8 is designed to answer questions that were previously unanswerable: what about that shot was different? How consistent am I? My body and mind say one thing, but what actually happened?</string>
+    <string name="mantis_desc_4" translatable="false">The X8 may change the way you shoot. It certainly will change the way you understand your shooting.</string>
+    <string name="upgrade_button" translatable="false">Upgrade to The Mantis X8</string>
+    <string name="testimonial_string" translatable="false"><b>Testimonials</b></string>
+    <string name="user_one_name" translatable="false"><b>Brady</b></string>
+    <string name="user_one_response" translatable="false">The Mantis X8 is a game changer.  It helps any shooter, at any level improve.  This is a must-have for anyone serious about maximizing their performance.</string>
+    <string name="user_two_name" translatable="false"><b>Toja</b></string>
+    <string name="user_two_response" translatable="false">If you aren\'t training with the X8, you\'re missing insights that will fine-tune every aspect of your shot.</string>
+    <string name="learn_more_button" translatable="false">Learn More</string>
 </resources>

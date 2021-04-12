@@ -56,6 +56,7 @@ import de.dreier.mytargets.features.training.standardround.EditStandardRoundActi
 import de.dreier.mytargets.features.training.standardround.StandardRoundActivity
 import de.dreier.mytargets.features.training.target.TargetActivity
 import de.dreier.mytargets.features.training.target.TargetListFragment
+import de.dreier.mytargets.features.mantisx8.MantisActivity
 import de.dreier.mytargets.shared.base.fragment.TimerFragmentBase
 import de.dreier.mytargets.shared.models.*
 import de.dreier.mytargets.shared.models.Target
@@ -83,7 +84,12 @@ class NavigationController(
 
     fun navigateToAbout() {
         IntentWrapper(activity, fragment, AboutActivity::class.java)
-            .start()
+                .start()
+    }
+
+    fun navigateToMantisX8() {
+        IntentWrapper(activity, fragment, MantisActivity::class.java)
+                .start()
     }
 
     fun navigateToGallery(images: ImageList, title: String, requestCode: Int) {

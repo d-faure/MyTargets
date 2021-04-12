@@ -104,7 +104,8 @@
         <item>TRAINING</item>
     </string-array>
     <integer-array name="fab_menu_trainings_colors">
-        <item>@color/fabTrainingWithStandardRound</item>
         <item>@color/fabFreeTraining</item>
+<!--        <item>@color/mantisRed</item>-->
+        <item>@color/fabTrainingWithStandardRound</item>
     </integer-array>
 </resources>

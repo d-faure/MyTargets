@@ -17,16 +17,29 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android"
             android:opacity="opaque">
     <!-- The background color, preferably the same as your normal theme -->
-    <item android:drawable="@color/colorPrimary"/>
+    <item android:drawable="@color/mantisBlack"/>
     <!-- App logo - 144dp color version of the app icon -->
-    <item android:bottom="@dimen/launchscreen_product_logo_bottom">
+    <item android:bottom="300dp">
         <bitmap
             android:gravity="center"
             android:src="@drawable/product_logo_144dp"/>
     </item>
     <!-- Brand name - 48dp height -->
-    <item
-        android:bottom="@dimen/launchscreen_brand_logo_bottom"
-        android:drawable="@drawable/brand_name"
-        android:gravity="bottom|center"/>
+
+    <item android:bottom="400dp">
+        <bitmap
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom|center"
+            android:src="@drawable/mytargets"/>
+    </item>
+
+    <item android:bottom="120dp">
+        <bitmap
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="bottom|center"
+            android:src="@drawable/mantis_logo_lg" />
+    </item>
+
 </layer-list>

@@ -113,7 +113,7 @@ class MainActivityTest : UITestBase() {
         onView(withId(R.id.action_trainings)).perform(click())
 
         // newTraining_withStandardRound
-        clickFabSpeedDialItem(R.id.fab2)
+        clickFabSpeedDialItem(R.id.fab3)
         intended(allOf(hasClass(EditTrainingActivity::class.java),
                 hasAction(EditTrainingFragment
                         .CREATE_TRAINING_WITH_STANDARD_ROUND_ACTION)))

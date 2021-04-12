@@ -298,6 +298,10 @@
             android:name=".features.help.HelpActivity"
             android:label="@string/help"/>
 
+        <activity
+            android:name=".features.mantisx8.MantisActivity"
+            android:label="Mantis"/>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

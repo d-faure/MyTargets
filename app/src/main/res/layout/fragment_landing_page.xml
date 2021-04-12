@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2018 Florian Dreier
+  ~
+  ~ This file is part of MyTargets.
+  ~
+  ~ MyTargets is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License version 2
+  ~ as published by the Free Software Foundation.
+  ~
+  ~ MyTargets is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  -->
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#ffffff"
+            android:orientation="vertical"
+            android:paddingBottom="40dp">
+
+            <ImageView
+                android:id="@+id/x8Image"
+                android:layout_width="wrap_content"
+                android:layout_height="159dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="108dp"
+                android:layout_marginLeft="108dp"
+                android:layout_marginTop="27dp"
+                android:layout_marginEnd="105dp"
+                android:layout_marginRight="105dp"
+                android:src="@drawable/x8_archery" />
+
+            <TextView
+                android:id="@+id/initialDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/x8Image"
+                android:gravity="center"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="24dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginTop="19dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginRight="24dp"
+                android:text="@string/initial_desc"
+                android:textSize="16dp" />
+
+            <ImageView
+                android:id="@+id/archeryImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
+                android:layout_below="@+id/initialDesc"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="24dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginTop="29dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginRight="24dp"
+                android:src="@drawable/mantis_archery" />
+
+            <TextView
+                android:id="@+id/mantisDesc1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/archeryImage"
+                android:gravity="center"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="24dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginTop="26dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginRight="24dp"
+                android:text="@string/mantis_desc_1"
+                android:textSize="16dp"/>
+
+            <TextView
+                android:id="@+id/mantisDesc2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/mantisDesc1"
+                android:gravity="center"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="24dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginRight="24dp"
+                android:text="@string/mantis_desc_2"
+                android:textSize="16dp" />
+
+            <TextView
+                android:id="@+id/mantisDesc3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/mantisDesc2"
+                android:gravity="center"
+                android:layout_marginStart="24dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginRight="24dp"
+                android:text="@string/mantis_desc_3"
+                android:textSize="16dp"/>
+
+            <TextView
+                android:id="@+id/mantisDesc4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/mantisDesc3"
+                android:gravity="center"
+                android:layout_marginStart="24dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginRight="24dp"
+                android:text="@string/mantis_desc_4"
+                android:textSize="16dp"/>
+
+            <Button
+                android:id="@+id/upgradeToMantisButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/mantisDesc4"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="61dp"
+                android:layout_marginLeft="61dp"
+                android:layout_marginTop="47dp"
+                android:layout_marginEnd="61dp"
+                android:layout_marginRight="61dp"
+                android:background="#c8242c"
+                android:maxLines="1"
+                android:onClick="goToShopify"
+                android:padding="16dp"
+                android:text="@string/upgrade_button"
+                android:textColor="#FFFFFF" />
+
+            <TextView
+                android:id="@+id/testimonials"
+                android:layout_width="wrap_content"
+                android:layout_height="47dp"
+                android:layout_below="@+id/upgradeToMantisButton"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="60dp"
+                android:layout_marginLeft="60dp"
+                android:layout_marginTop="25dp"
+                android:layout_marginEnd="60dp"
+                android:layout_marginRight="60dp"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="@string/testimonial_string"
+                android:textSize="20dp" />
+
+            <TextView
+                android:id="@+id/userOneName"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:layout_below="@+id/testimonials"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="60dp"
+                android:layout_marginLeft="60dp"
+                android:layout_marginTop="22dp"
+                android:layout_marginEnd="60dp"
+                android:layout_marginRight="60dp"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="@string/user_one_name"
+                android:textSize="16dp" />
+
+            <TextView
+                android:id="@+id/userOneResponse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/userOneName"
+                android:gravity="center"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="25dp"
+                android:layout_marginLeft="25dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="23dp"
+                android:layout_marginRight="23dp"
+                android:text="@string/user_one_response"
+                android:textSize="16dp"/>
+
+            <TextView
+                android:id="@+id/userTwoName"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_below="@+id/userOneResponse"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="60dp"
+                android:layout_marginLeft="60dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="62dp"
+                android:layout_marginRight="62dp"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="@string/user_two_name"
+                android:textSize="16dp" />
+
+            <TextView
+                android:id="@+id/userTwoResponse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/userTwoName"
+                android:gravity="center"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="25dp"
+                android:layout_marginLeft="25dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="23dp"
+                android:layout_marginRight="23dp"
+                android:text="@string/user_two_response"
+                android:textSize="16dp"/>
+
+            <Button
+                android:id="@+id/learnMoreButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:layout_below="@+id/userTwoResponse"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="61dp"
+                android:layout_marginLeft="61dp"
+                android:layout_marginTop="47dp"
+                android:layout_marginEnd="61dp"
+                android:layout_marginRight="61dp"
+                android:layout_marginBottom="0dp"
+                android:background="#c8242c"
+                android:padding="16dp"
+                android:paddingBottom="40dp"
+                android:text="@string/learn_more_button"
+                android:textColor="#FFFFFF"
+                android:onClick="goToShopify"/>
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+</layout>
