@@ -3,6 +3,8 @@ package de.dreier.mytargets.features.settings.migrate.repository
 import de.dreier.mytargets.features.settings.migrate.api.RetrofitInstance
 import de.dreier.mytargets.features.settings.migrate.model.User
 import retrofit2.Response
+import okhttp3.RequestBody
+import okhttp3.MultipartBody
 
 
 class Repository {
@@ -19,7 +21,7 @@ class Repository {
         return RetrofitInstance.api.loginUser(user)
     }
 
-    suspend fun uploadFile(userID: RequestBody, fullName: RequestBody, image: MultipartBody.Part) {
+    suspend fun uploadFile(userID: RequestBody, fullName: RequestBody, image: MultipartBody.Part): Response<User>  {
         return RetrofitInstance.api.uploadFile(userID, fullName, image)
     }
 }

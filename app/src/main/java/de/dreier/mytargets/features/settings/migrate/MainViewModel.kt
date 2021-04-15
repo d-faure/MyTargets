@@ -7,6 +7,9 @@ import de.dreier.mytargets.features.settings.migrate.model.User
 import de.dreier.mytargets.features.settings.migrate.repository.Repository
 import kotlinx.coroutines.launch
 import retrofit2.Response
+import okhttp3.RequestBody
+import okhttp3.MultipartBody
+
 
 class MainViewModel(private val repository: Repository): ViewModel() {
 
@@ -33,9 +36,10 @@ class MainViewModel(private val repository: Repository): ViewModel() {
         }
     }
 
-    fun uploadFile() {
+    fun uploadFile(userID: RequestBody, fullName: RequestBody, image: MultipartBody.Part) {
         viewModelScope.launch {
-            repository.uploadFile()
+            val response = repository.uploadFile(userID, fullName, image)
+            myResponse.value = response
         }
     }
 }

@@ -5,6 +5,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
+import java.util.*
 
 
 interface SimpleApi {
@@ -27,5 +28,5 @@ interface SimpleApi {
             @Part("user_id") id: RequestBody,
             @Part("full_name") fullName: RequestBody,
             @Part image: MultipartBody.Part
-    ): Observable<ResponseBody>
+    ):  Response<User>
 }
