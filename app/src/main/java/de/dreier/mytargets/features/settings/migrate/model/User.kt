@@ -14,3 +14,7 @@ data class AuthenticatedUser (
     val password: String,
     val user_secret_key: String
 )
+
+data class FileResponse (
+    val response: Boolean
+)

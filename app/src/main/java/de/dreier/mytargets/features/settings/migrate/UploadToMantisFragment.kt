@@ -23,10 +23,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import retrofit2.http.*
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import java.io.File
-import java.io.FileOutputStream
+import java.io.*
 import java.net.URL
 import java.net.URLConnection
 
@@ -125,7 +122,14 @@ class UploadToMantisFragment : SettingsFragmentBase() {
     }
 
     fun upload() {
-        var file = File(context!!.filesDir,"file.csv")
+        var fileWriter: FileWriter? = null
+        fileWriter = FileWriter(File(context!!.filesDir, "customer.csv"))
+        fileWriter.append(TRAINING_CSV_HEADER)
+        fileWriter.append('\n')
+        fileWriter!!.flush()
+        fileWriter.close()
+
+        var file = File(context!!.filesDir, "customer.csv")
 
         // create a new file
         val isNewFileCreated :Boolean = file.createNewFile()
@@ -137,7 +141,7 @@ class UploadToMantisFragment : SettingsFragmentBase() {
         }
 
         val requestFile = file.asRequestBody("text/csv".toMediaTypeOrNull())
-        val imageFile: MultipartBody.Part = MultipartBody.Part.createFormData("image", file.getName(), requestFile)
+        val imageFile: MultipartBody.Part = MultipartBody.Part.createFormData("migration", file.getName(), requestFile)
 
         val jsonObject = JSONObject()
         jsonObject.put("name", "Ancd test")
@@ -150,8 +154,9 @@ class UploadToMantisFragment : SettingsFragmentBase() {
         val viewModelFactory = MainViewModelFactory(repository)
         viewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
         viewModel.uploadFile(body, body, imageFile)
-        viewModel.myResponse.observe(this, Observer { response ->
+        viewModel.fileResponse.observe(this, Observer { response ->
             if(response.isSuccessful){
+                Log.d("hello kitty", response.body()?.response!!.toString())
                 Toast.makeText(activity, "Could connect to our server, try again later.", Toast.LENGTH_SHORT).show()
             }
             Log.d("the tag", response.toString())

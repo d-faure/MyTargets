@@ -22,7 +22,7 @@ import de.dreier.mytargets.shared.SharedApplicationInstance
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_migrate.*
 
-    class LoginFragment : SettingsFragmentBase() {
+class LoginFragment : SettingsFragmentBase() {
 
     private lateinit var binding: FragmentLoginBinding
 

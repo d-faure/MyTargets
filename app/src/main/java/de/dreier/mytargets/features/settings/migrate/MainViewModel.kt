@@ -3,6 +3,7 @@ package de.dreier.mytargets.features.settings.migrate
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import de.dreier.mytargets.features.settings.migrate.model.FileResponse
 import de.dreier.mytargets.features.settings.migrate.model.User
 import de.dreier.mytargets.features.settings.migrate.repository.Repository
 import kotlinx.coroutines.launch
@@ -14,6 +15,7 @@ import okhttp3.MultipartBody
 class MainViewModel(private val repository: Repository): ViewModel() {
 
     val myResponse: MutableLiveData<Response<User>> = MutableLiveData()
+    val fileResponse: MutableLiveData<Response<FileResponse>> = MutableLiveData()
 
     fun createUser(user: User) {
         viewModelScope.launch {
@@ -39,7 +41,7 @@ class MainViewModel(private val repository: Repository): ViewModel() {
     fun uploadFile(userID: RequestBody, fullName: RequestBody, image: MultipartBody.Part) {
         viewModelScope.launch {
             val response = repository.uploadFile(userID, fullName, image)
-            myResponse.value = response
+            fileResponse.value = response
         }
     }
 }

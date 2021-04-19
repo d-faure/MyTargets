@@ -1,5 +1,6 @@
 package de.dreier.mytargets.features.settings.migrate.api
 
+import de.dreier.mytargets.features.settings.migrate.model.FileResponse
 import de.dreier.mytargets.features.settings.migrate.model.User
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -23,10 +24,10 @@ interface SimpleApi {
     ): Response<User>
 
     @Multipart
-    @POST("mytargets/upload")
+    @POST("mytargets/upload/")
     suspend fun uploadFile(
             @Part("user_id") id: RequestBody,
             @Part("full_name") fullName: RequestBody,
             @Part image: MultipartBody.Part
-    ):  Response<User>
+    ):  Response<FileResponse>
 }
