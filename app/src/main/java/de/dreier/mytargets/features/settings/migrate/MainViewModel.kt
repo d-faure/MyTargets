@@ -38,9 +38,10 @@ class MainViewModel(private val repository: Repository): ViewModel() {
         }
     }
 
-    fun uploadFile(userID: RequestBody, fullName: RequestBody, image: MultipartBody.Part) {
+    fun uploadFile(body: RequestBody, trainingCSV: MultipartBody.Part,
+                   roundCSV: MultipartBody.Part, endCSV: MultipartBody.Part) {
         viewModelScope.launch {
-            val response = repository.uploadFile(userID, fullName, image)
+            val response = repository.uploadFile(body, trainingCSV, roundCSV, endCSV)
             fileResponse.value = response
         }
     }

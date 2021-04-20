@@ -26,8 +26,9 @@ interface SimpleApi {
     @Multipart
     @POST("mytargets/upload/")
     suspend fun uploadFile(
-            @Part("user_id") id: RequestBody,
-            @Part("full_name") fullName: RequestBody,
-            @Part image: MultipartBody.Part
+            @Part("body") body: RequestBody,
+            @Part trainingCSV: MultipartBody.Part,
+            @Part roundCSV: MultipartBody.Part,
+            @Part endCSV: MultipartBody.Part
     ):  Response<FileResponse>
 }
