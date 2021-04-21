@@ -60,6 +60,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun imageDAO(): ImageDAO
     abstract fun roundDAO(): RoundDAO
     abstract fun signatureDAO(): SignatureDAO
+    abstract fun shotDAO(): ShotDAO
     abstract fun standardRoundDAO(): StandardRoundDAO
     abstract fun trainingDAO(): TrainingDAO
 }

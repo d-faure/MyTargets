@@ -32,6 +32,9 @@ abstract class EndDAO {
     @Query("SELECT * FROM `Shot` WHERE `endId` = :id ORDER BY `index`")
     abstract fun loadShots(id: Long): List<Shot>
 
+    @Query("SELECT roundId FROM `End` WHERE `id` = :endId ")
+    abstract fun loadRoundId(endId: Long): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun insertEnd(end: End): Long
 

@@ -34,6 +34,7 @@ class UploadToMantisFragment : SettingsFragmentBase() {
     private val trainingDAO = ApplicationInstance.db.trainingDAO()
     private val roundDAO = ApplicationInstance.db.roundDAO()
     private val endDAO = ApplicationInstance.db.endDAO()
+    private val shotDAO = ApplicationInstance.db.shotDAO()
 
     public override fun onCreatePreferences() {
         /* Overridden to no do anything. Normally this would try to inflate the preferences,
@@ -55,9 +56,14 @@ class UploadToMantisFragment : SettingsFragmentBase() {
     }
 
     fun loadTrainings() {
+        var file = File(context!!.filesDir, "trainings.csv")
+        if (file.exists()) {
+            file.delete()
+        }
+
         val TRAINING_CSV_HEADER = "id, title, date, standardRoundId," +
                 "bowId, arrowId, arrowNumbering," +
-                "environment, comment, archerSignatureId" +
+                "environment, comment, archerSignatureId," +
                 "witnessSignatureId, score"
 
         val trainings = trainingDAO.loadTrainings()
@@ -83,13 +89,10 @@ class UploadToMantisFragment : SettingsFragmentBase() {
                 fileWriter.append(',')
                 fileWriter.append(training.arrowNumbering.toString())
                 fileWriter.append(',')
-                fileWriter.append(training.environment.toString())
+                val env = training.environment.toString().replace(",", " ")
+                fileWriter.append(env)
                 fileWriter.append(',')
                 fileWriter.append(training.comment)
-                fileWriter.append(',')
-                fileWriter.append(training.archerSignatureId.toString())
-                fileWriter.append(',')
-                fileWriter.append(training.witnessSignatureId.toString())
                 fileWriter.append(',')
                 fileWriter.append(training.score.toString())
                 fileWriter.append('\n')
@@ -111,6 +114,11 @@ class UploadToMantisFragment : SettingsFragmentBase() {
     }
 
     fun loadRounds() {
+        var file = File(context!!.filesDir, "rounds.csv")
+        if (file.exists()) {
+            file.delete()
+        }
+
         val ROUNDS_CSV_HEADER = "id, trainingId, index, shotsPerEnd," +
                 "maxEndCount, distance, comment, target, score"
 
@@ -138,7 +146,7 @@ class UploadToMantisFragment : SettingsFragmentBase() {
                 fileWriter.append(',')
                 fileWriter.append(round.distance.toString())
                 fileWriter.append(',')
-                fileWriter.append(round.comment.toString())
+                fileWriter.append(round.comment)
                 fileWriter.append(',')
                 fileWriter.append(round.target.toString())
                 fileWriter.append(',')
@@ -162,37 +170,46 @@ class UploadToMantisFragment : SettingsFragmentBase() {
     }
 
 
-    fun loadEnds() {
-        val ENDS_CSV_HEADER = "id, index, roundId, standardRoundId," +
-                "exact, saveTime, comment, score"
+    fun loadShots() {
+        var file = File(context!!.filesDir, "shots.csv")
+        if (file.exists()) {
+            file.delete()
+        }
 
-        val ends = trainingDAO.loadTrainings().flatMap {
+        val SHOTS_CSV_HEADER = "id, index, roundId, endId, x," +
+                "y, scoringRing, arrowNumber"
+
+        val shots = trainingDAO.loadTrainings().flatMap {
                         training -> roundDAO.loadRounds(training.id).flatMap {
-                            round -> endDAO.loadEnds(round.id)
+                            round -> endDAO.loadEnds(round.id).flatMap {
+                                end -> shotDAO.loadShots((end.id))
+                            }
                         }
                     }
 
         var fileWriter: FileWriter? = null
         try {
-            fileWriter = FileWriter(File(context!!.filesDir, "ends.csv"))
+            fileWriter = FileWriter(File(context!!.filesDir, "shots.csv"))
 
-            fileWriter.append(ENDS_CSV_HEADER)
+            fileWriter.append(SHOTS_CSV_HEADER)
             fileWriter.append('\n')
 
-            for (end in ends) {
-                fileWriter.append(end.id.toString())
+            for (shot in shots) {
+                fileWriter.append(shot.id.toString())
                 fileWriter.append(',')
-                fileWriter.append(end.index.toString())
+                fileWriter.append(shot.index.toString())
                 fileWriter.append(',')
-                fileWriter.append(end.roundId.toString())
+                fileWriter.append(endDAO.loadRoundId(shot.endId!!.toLong()).toString())
                 fileWriter.append(',')
-                fileWriter.append(end.exact.toString())
+                fileWriter.append(shot.endId.toString())
                 fileWriter.append(',')
-                fileWriter.append(end.saveTime.toString())
+                fileWriter.append(shot.x.toString())
                 fileWriter.append(',')
-                fileWriter.append(end.comment)
+                fileWriter.append(shot.y.toString())
                 fileWriter.append(',')
-                fileWriter.append(end.score.toString())
+                fileWriter.append(shot.scoringRing.toString())
+                fileWriter.append(',')
+                fileWriter.append(shot.arrowNumber.toString())
                 fileWriter.append('\n')
             }
 
@@ -212,12 +229,12 @@ class UploadToMantisFragment : SettingsFragmentBase() {
     }
 
     fun upload() {
+        val fileList: List<String> = listOf("trainings.csv", "rounds.csv", "shots.csv")
 
         loadTrainings()
         loadRounds()
-        loadEnds()
+        loadShots()
 
-        val fileList: List<String> = listOf("trainings.csv", "rounds.csv", "ends.csv")
         val itr = fileList.listIterator()
         val csvFiles: MutableList<MultipartBody.Part> = mutableListOf()
 
