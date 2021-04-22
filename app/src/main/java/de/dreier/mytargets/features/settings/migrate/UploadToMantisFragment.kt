@@ -1,6 +1,5 @@
 package de.dreier.mytargets.features.settings.migrate
 
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,29 +9,28 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.google.common.net.MediaType
 import de.dreier.mytargets.R
 import de.dreier.mytargets.app.ApplicationInstance
 import de.dreier.mytargets.databinding.FragmentUploadMantisBinding
 import de.dreier.mytargets.features.settings.SettingsFragmentBase
 import de.dreier.mytargets.features.settings.migrate.repository.Repository
-import de.dreier.mytargets.shared.SharedApplicationInstance
 import okhttp3.MultipartBody
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import de.dreier.mytargets.shared.SharedApplicationInstance.Companion.sharedPreferences
+import de.dreier.mytargets.shared.models.Target
 import org.json.JSONObject
-import retrofit2.http.*
 import java.io.*
-import java.net.URL
-import java.net.URLConnection
+
 
 class UploadToMantisFragment : SettingsFragmentBase() {
 
     private lateinit var binding: FragmentUploadMantisBinding
     private val trainingDAO = ApplicationInstance.db.trainingDAO()
     private val roundDAO = ApplicationInstance.db.roundDAO()
+    private val arrowDAO = ApplicationInstance.db.arrowDAO()
+    private val bowDAO = ApplicationInstance.db.bowDAO()
     private val endDAO = ApplicationInstance.db.endDAO()
     private val shotDAO = ApplicationInstance.db.shotDAO()
 
@@ -62,7 +60,7 @@ class UploadToMantisFragment : SettingsFragmentBase() {
         }
 
         val TRAINING_CSV_HEADER = "id, title, date, standardRoundId," +
-                "bowId, arrowId, arrowNumbering," +
+                "bow, arrow, arrowNumbering," +
                 "environment, comment, archerSignatureId," +
                 "witnessSignatureId, score"
 
@@ -83,9 +81,11 @@ class UploadToMantisFragment : SettingsFragmentBase() {
                 fileWriter.append(',')
                 fileWriter.append(training.standardRoundId.toString())
                 fileWriter.append(',')
-                fileWriter.append(training.bowId.toString())
+                val bow = bowDAO.loadBow(training.bowId!!.toLong()).toString().replace(",", " ")
+                fileWriter.append(bow)
                 fileWriter.append(',')
-                fileWriter.append(training.arrowId.toString())
+                val arrow = arrowDAO.loadArrow(training.arrowId!!.toLong()).toString().replace(",", " ")
+                fileWriter.append(arrow)
                 fileWriter.append(',')
                 fileWriter.append(training.arrowNumbering.toString())
                 fileWriter.append(',')
@@ -177,7 +177,7 @@ class UploadToMantisFragment : SettingsFragmentBase() {
         }
 
         val SHOTS_CSV_HEADER = "id, index, roundId, endId, x," +
-                "y, scoringRing, arrowNumber"
+                "y, score, maxScore, arrowNumber"
 
         val shots = trainingDAO.loadTrainings().flatMap {
                         training -> roundDAO.loadRounds(training.id).flatMap {
@@ -194,6 +194,8 @@ class UploadToMantisFragment : SettingsFragmentBase() {
             fileWriter.append(SHOTS_CSV_HEADER)
             fileWriter.append('\n')
 
+            var target = Target()
+
             for (shot in shots) {
                 fileWriter.append(shot.id.toString())
                 fileWriter.append(',')
@@ -207,7 +209,10 @@ class UploadToMantisFragment : SettingsFragmentBase() {
                 fileWriter.append(',')
                 fileWriter.append(shot.y.toString())
                 fileWriter.append(',')
-                fileWriter.append(shot.scoringRing.toString())
+                var score = target.getSingleReachedScore(shot)
+                fileWriter.append(score.reachedPoints.toString())
+                fileWriter.append(',')
+                fileWriter.append(score.totalPoints.toString())
                 fileWriter.append(',')
                 fileWriter.append(shot.arrowNumber.toString())
                 fileWriter.append('\n')

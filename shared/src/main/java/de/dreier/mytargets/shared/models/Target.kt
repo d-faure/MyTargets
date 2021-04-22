@@ -75,6 +75,10 @@ data class Target(
         return model.getScoringStyle(scoringStyleIndex)
     }
 
+    fun getSingleReachedScore(shot: Shot): Score {
+        return getScoringStyle().getReachedScore(shot)
+    }
+
     fun getReachedScore(shots: List<Shot>): Score {
         return getScoringStyle().getReachedScore(shots)
     }
