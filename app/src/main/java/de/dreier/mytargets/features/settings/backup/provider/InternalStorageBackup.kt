@@ -22,6 +22,7 @@ import de.dreier.mytargets.R
 import de.dreier.mytargets.app.ApplicationInstance
 import de.dreier.mytargets.features.settings.backup.BackupEntry
 import de.dreier.mytargets.features.settings.backup.BackupException
+import de.dreier.mytargets.shared.SharedApplicationInstance.Companion.context
 import de.dreier.mytargets.shared.SharedApplicationInstance.Companion.getStr
 import java.io.File
 import java.io.FileInputStream
@@ -31,6 +32,7 @@ import java.lang.ref.WeakReference
 
 object InternalStorageBackup {
     private const val FOLDER_NAME = "MyTargets"
+    private val ROOT_FOLDER = context!!.filesDir
 
     @Throws(IOException::class)
     private fun createDirectory(directory: File) {
@@ -51,7 +53,7 @@ object InternalStorageBackup {
         }
 
         override fun getBackups(listener: IAsyncBackupRestore.OnLoadFinishedListener) {
-            val backupDir = File(Environment.getExternalStorageDirectory(), FOLDER_NAME)
+            val backupDir = File(ROOT_FOLDER, FOLDER_NAME)
             if (backupDir.isDirectory) {
                 val backups = backupDir.listFiles()
                     ?.filter { isBackup(it) }
@@ -109,7 +111,7 @@ object InternalStorageBackup {
         override fun performBackup(context: Context) {
             try {
                 val backupDir = File(
-                    Environment.getExternalStorageDirectory(),
+                    ROOT_FOLDER,
                     FOLDER_NAME
                 )
                 createDirectory(backupDir)

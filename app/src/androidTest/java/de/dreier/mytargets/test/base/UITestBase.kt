@@ -33,6 +33,7 @@ import androidx.test.uiautomator.UiDevice
 import android.widget.DatePicker
 import de.dreier.mytargets.R
 import de.dreier.mytargets.features.settings.SettingsManager
+import de.dreier.mytargets.shared.SharedApplicationInstance.Companion.context
 import de.dreier.mytargets.test.utils.actions.NestedScrollToAction
 import de.dreier.mytargets.test.utils.matchers.ParentViewMatcher.isNestedChildOfView
 import de.dreier.mytargets.test.utils.matchers.ViewMatcher
@@ -54,7 +55,7 @@ abstract class UITestBase : InstrumentedTestBase() {
     var watcher: TestRule = object : TestWatcher() {
         override fun failed(e: Throwable?, description: Description?) {
             // Save to external storage (usually /sdcard/screenshots)
-            val path = File(Environment.getExternalStorageDirectory(), "screenshots")
+            val path = File(context!!.filesDir, "screenshots")
             if (!path.exists()) {
                 path.mkdirs()
             }
