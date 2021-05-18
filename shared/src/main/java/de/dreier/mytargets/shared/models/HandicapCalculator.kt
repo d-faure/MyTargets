@@ -124,23 +124,6 @@ class HandicapCalculator {
         val bestArrowScore = BigDecimal(zoneMap.keys.max().toString())
 
         var zoneScoreStep = (zoneMap.keys.elementAt(0) - zoneMap.keys.elementAt(1))
-        if (zoneScoreStep == 2) {
-            return imperialCalc(zoneMap, groupRadiusSquared, bestArrowScore, zoneScoreStep)
-        } else {
-            return metricCalc(zoneMap, groupRadiusSquared, bestArrowScore)
-        }
-    }
-
-    private fun metricCalc(zoneMap: Map<Int, BigDecimal>, groupRadiusSquared: BigDecimal, bestArrowScore: BigDecimal): BigDecimal {
-        var exponentTotals = BigDecimal(0)
-        for ((index, radius) in zoneMap.iterator()) {
-            var zoneRadiusSquared = (radius + arrowRadius).pow(2)
-            exponentTotals += BigDecimal.valueOf(exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
-        }
-        return (bestArrowScore - exponentTotals)
-    }
-
-    private fun imperialCalc(zoneMap: Map<Int, BigDecimal>, groupRadiusSquared: BigDecimal, bestArrowScore: BigDecimal, zoneScoreStep: Int): BigDecimal {
         var exponentTotals = BigDecimal(0)
         var lastEntry = zoneMap.entries.last()
         for ((index, radius) in zoneMap.iterator()) {
