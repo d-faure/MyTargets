@@ -247,6 +247,7 @@ class HandicapCalculatorTest {
         unit.setTargetSize(Dimension(122f, Dimension.Unit.CENTIMETER))
         unit.setTargetDistance(Dimension(70.0f, Dimension.Unit.METER))
         assertBigDecimalEquals(BigDecimal("6.8828612028"), unit.averageArrowScoreForHandicap(36))
+        assertBigDecimalEquals(BigDecimal("1.21412401363123"), unit.averageArrowScoreForHandicap(65))
 
         // 122cm, 80y (73.152m)
         unit.setTargetSize(Dimension(122f, Dimension.Unit.CENTIMETER))

@@ -203,15 +203,39 @@ class MultiRoundHandicapCalculatorTest {
         assertThat(unit.getHandicapForScore(996), equalTo(32))
     }
 
+
     @Test
-    fun dimensionToString() {
-        var unit = Dimension(22.5487f, Dimension.Unit.CENTIMETER)
-        assertThat(unit.formatString(), equalTo("22.5487 cm"))
+    fun handicap_for_national_round_fatter_arrow() {
+        //        WA, R.string.wa_combined,
+        //        Dimension.Unit.YARD, CENTIMETER,
+        // first params here are targetface, scoringstyle and shotsperend, the tuples are distance, diameter and ends
+        //        WAFull.ID, 0, 3, 25, 60, 20, 18, 40, 20
+        var longDistance = Dimension(60f, Dimension.Unit.YARDS)
+        var longDiameter = Dimension(122f, Dimension.Unit.CENTIMETER)
+        var longTarget = Target(WAFull.ID, 5, longDiameter)
+        var longScore = Score(219, 432, 48)
+        var longRound = Round(0, 0, 0, 6, 8, longDistance, "60y", longTarget, longScore)
 
-        unit = Dimension(22.54f, Dimension.Unit.INCH)
-        assertThat(unit.formatString(), equalTo("22.54 in"))
+        var shortDistance = Dimension(50f, Dimension.Unit.YARDS)
+        var shortDiameter = Dimension(122f, Dimension.Unit.CENTIMETER)
+        var shortTarget = Target(WAFull.ID, 5, shortDiameter)
+        var shortScore = Score(140, 216, 24)
+        var shortRound = Round(0, 0, 0, 6, 4, shortDistance, "50y", shortTarget, shortScore)
+
+        var arrowDiameter = Dimension(0.34375f, Dimension.Unit.INCH)
+        var rounds = ArrayList<Round>()
+        rounds.add(longRound)
+        rounds.add(shortRound)
+        var unit = MultiRoundHandicapCalculator(rounds, arrowDiameter)
+
+        assertThat(unit.getHandicap(), equalTo(56))
+
+        assertThat(unit.getHandicapForScore(648), equalTo(0))
+        assertThat(unit.getHandicapForScore(647), equalTo(7))
+        assertThat(unit.getHandicapForScore(382), equalTo(54))
+        assertThat(unit.getHandicapForScore(62), equalTo(77))
+
     }
-
 
 }
 

@@ -37,7 +37,7 @@ class MultiRoundHandicapCalculator{
             for (roundHandicapScoreList: List<BigDecimal> in roundHandicapScoreLists) {
                 totalForHandicap += roundHandicapScoreList.get(handicap)
             }
-            handicapList.add(totalForHandicap.setScale(0, RoundingMode.DOWN))
+            handicapList.add(totalForHandicap.setScale(0, RoundingMode.HALF_UP))
         }
         return  handicapList
     }
