@@ -70,7 +70,15 @@ class HandicapCalculator {
 
     fun setTargetDistance(distanceDimension: Dimension) {
         targetDistance = distanceDimension
-        this.metricDistance = BigDecimal.valueOf(distanceDimension.convertTo(Dimension.Unit.METER).value.toDouble())
+        if(distanceDimension.unit == Dimension.Unit.YARDS) {
+            this.metricDistance = BigDecimal("0.9144").times(BigDecimal(distanceDimension.value.toString()))
+        } else {
+            this.metricDistance = BigDecimal(distanceDimension.value.toString())
+        }
+    }
+    fun roundToSigFigures(numberToRound: BigDecimal, precision: Int=10): BigDecimal {
+        val newScale = numberToRound.scale() + precision - numberToRound.precision()
+        return numberToRound.setScale(newScale, RoundingMode.HALF_UP)
     }
 
     fun setScoringStyle(scoringStyle: ScoringStyle) {
@@ -96,12 +104,12 @@ class HandicapCalculator {
     }
 
     fun angularDeviation(handicap: Int): BigDecimal {
-        return  BigDecimal.valueOf((1.036.pow(handicap+12.9))*5*(10.0.pow(-4))*180/Math.PI)
+        return roundToSigFigures(BigDecimal.valueOf((1.036.pow(handicap+12.9))*5*(10.0.pow(-4))*180/Math.PI))
     }
 
     fun dispersionFactor(handicap: Int): BigDecimal {
         //F=1 + 1.429*10^-6 * 1.07^(handicap+4.3) * distance_in_metres^2
-        return BigDecimal.valueOf(1 + 1.429 * (10.0.pow(-6)) * 1.07.pow(handicap+4.3) * metricDistance.toDouble().pow(2))
+        return roundToSigFigures(BigDecimal.valueOf(1 + 1.429 * (10.0.pow(-6)) * 1.07.pow(handicap+4.3) * metricDistance.toDouble().pow(2)))
     }
 
     fun groupRadius(handicap: Int): BigDecimal {
@@ -116,29 +124,12 @@ class HandicapCalculator {
         val bestArrowScore = BigDecimal(zoneMap.keys.max().toString())
 
         var zoneScoreStep = (zoneMap.keys.elementAt(0) - zoneMap.keys.elementAt(1))
-        if (zoneScoreStep == 2) {
-            return imperialCalc(zoneMap, groupRadiusSquared, bestArrowScore, zoneScoreStep)
-        } else {
-            return metricCalc(zoneMap, groupRadiusSquared, bestArrowScore)
-        }
-    }
-
-    private fun metricCalc(zoneMap: Map<Int, BigDecimal>, groupRadiusSquared: BigDecimal, bestArrowScore: BigDecimal): BigDecimal {
-        var exponentTotals = BigDecimal(0)
-        for ((index, radius) in zoneMap.iterator()) {
-            var zoneRadiusSquared = (radius + arrowRadius).pow(2)
-            exponentTotals += BigDecimal.valueOf(exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
-        }
-        return (bestArrowScore - exponentTotals)
-    }
-
-    private fun imperialCalc(zoneMap: Map<Int, BigDecimal>, groupRadiusSquared: BigDecimal, bestArrowScore: BigDecimal, zoneScoreStep: Int): BigDecimal {
         var exponentTotals = BigDecimal(0)
         var lastEntry = zoneMap.entries.last()
         for ((index, radius) in zoneMap.iterator()) {
             var zoneRadiusSquared = (radius + arrowRadius).pow(2)
             if (radius == lastEntry.value) {
-                exponentTotals -= BigDecimal.valueOf(exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
+                exponentTotals += BigDecimal.valueOf(exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
             } else {
                 exponentTotals += BigDecimal.valueOf(zoneScoreStep * exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
             }
@@ -150,7 +141,6 @@ class HandicapCalculator {
         val decimalPlaces: Int = if (rounded) 0 else 2
         var handicapList = ArrayList<BigDecimal>()
         for (handicap: Int in  handicapLowerBound()..handicapUpperBound()) {
-//            handicapList.add((BigDecimal(arrowCount) * averageArrowScoreForHandicap(handicap).setScale(2, RoundingMode.HALF_UP)).setScale(0, RoundingMode.UP).toInt())
             var average = averageArrowScoreForHandicap(handicap)
             var roundScore = (BigDecimal(arrowCount) * average)
             handicapList.add(roundScore.setScale(decimalPlaces, RoundingMode.HALF_UP))
@@ -172,6 +162,13 @@ class HandicapCalculator {
     fun getHandicap(): Int {
         return getHandicapForScore(this.reachedScore)
     }
+
+//    =8 - 2*(
+//    EXP(-(((0*$D$8/10)+$D$7)^2)/$F81^2) +  0.9833536318
+//    EXP(-(((1*$D$8/10)+$D$7)^2)/$F81^2) +  0.9368336662
+//    EXP(-(((2*$D$8/10)+$D$7)^2)/$F81^2) +  0.8646739809
+//    EXP(-(((3*$D$8/10)+$D$7)^2)/$F81^2)) -  0.7731778975
+//    EXP(-(((4*$D$8/10)+$D$7)^2)/$F81^2)  0.6697976335
 
 //arrowDiameterCm=arrow_diameter_cm  (0.357cm) 18/64
 //targetSizeCm=target_size_cm (122)

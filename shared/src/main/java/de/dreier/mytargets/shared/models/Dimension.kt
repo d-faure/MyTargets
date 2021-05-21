@@ -50,7 +50,8 @@ data class Dimension(val value: Float, val unit: Unit?) : IIdProvider, Comparabl
         if (this.unit == null) {
             return Dimension((8f - this.value) * 4f, Unit.CENTIMETER).convertTo(unit)
         }
-        val newValue = value * unit.factor / this.unit.factor
+        val multiplier = unit.factor / this.unit.factor
+        val newValue = value * multiplier
         return Dimension(newValue, unit)
     }
 
