@@ -20,6 +20,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import de.dreier.mytargets.shared.SharedApplicationInstance.Companion.sharedPreferences
 import de.dreier.mytargets.shared.models.Target
+import de.dreier.mytargets.shared.models.db.Bow
 import org.json.JSONObject
 import java.io.*
 
@@ -81,16 +82,19 @@ class UploadToMantisFragment : SettingsFragmentBase() {
                 fileWriter.append(',')
                 fileWriter.append(training.standardRoundId.toString())
                 fileWriter.append(',')
-                val bow = bowDAO.loadBow(training.bowId!!.toLong()).toString().replace(",", " ")
-                fileWriter.append(bow)
+                val bow = bowDAO.loadBow(training.bowId!!.toLong())
+                val bowStr = """\"{"name": "%s", "type": "%s", "brand": "%s", "size": "%s"}\"""".format(bow.name, bow.type.toString(), bow.brand, bow.size)
+                fileWriter.append(bowStr)
                 fileWriter.append(',')
-                val arrow = arrowDAO.loadArrow(training.arrowId!!.toLong()).toString().replace(",", " ")
-                fileWriter.append(arrow)
+                val arrow = arrowDAO.loadArrow(training.arrowId!!.toLong())
+                val arrowStr = """\"{"name": "%s", "length": "%s", "material": "%s"}\"""".format(arrow.name, arrow.length, arrow.material)
+                fileWriter.append(arrowStr)
                 fileWriter.append(',')
                 fileWriter.append(training.arrowNumbering.toString())
                 fileWriter.append(',')
-                val env = training.environment.toString().replace(",", " ")
-                fileWriter.append(env)
+                val env = training.environment
+                val envStr = """\"{"indoor": "%s", "weather": "%s", "windspeed": %d, "winddirection": %d, "location": "%s"}\"""".format(env.indoor, env.weather, env.windSpeed, env.windDirection, env.location)
+                fileWriter.append(envStr)
                 fileWriter.append(',')
                 fileWriter.append(training.comment)
                 fileWriter.append(',')
@@ -120,7 +124,7 @@ class UploadToMantisFragment : SettingsFragmentBase() {
         }
 
         val ROUNDS_CSV_HEADER = "id, trainingId, index, shotsPerEnd," +
-                "maxEndCount, distance, comment, target, score"
+                "time, maxEndCount, distance, comment, target, score"
 
         val rounds = trainingDAO.loadTrainings().flatMap {
                         training -> roundDAO.loadRounds(training.id)
@@ -141,6 +145,8 @@ class UploadToMantisFragment : SettingsFragmentBase() {
                 fileWriter.append(round.index.toString())
                 fileWriter.append(',')
                 fileWriter.append(round.shotsPerEnd.toString())
+                fileWriter.append(',')
+                fileWriter.append(endDAO.loadEnds(round.id)[0].saveTime.toString())
                 fileWriter.append(',')
                 fileWriter.append(round.maxEndCount.toString())
                 fileWriter.append(',')
