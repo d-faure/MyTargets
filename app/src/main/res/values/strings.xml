@@ -294,6 +294,7 @@
     <string name="backup_drive_desc">Backing up your data allows you to restore all your trainings in case you lost or change your phone.</string>
     <string name="backup_now">Backup now</string>
     <string name="last_backup">Last backup: %s</string>
+    <string name="backup_location_root" translatable="false">Local Backup Location: %s</string>
     <string name="recent_backups">Recent backups</string>
     <string name="dialog_restore_title">Revert to previous version</string>
     <string name="restore_desc">Restoring the data will overwrite all the existing data with the backup.</string>

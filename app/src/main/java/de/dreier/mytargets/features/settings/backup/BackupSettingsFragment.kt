@@ -302,6 +302,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         binding.recentBackupsList.visibility = VISIBLE
         adapter?.setList(list.toMutableList())
         binding.lastBackupLabel.visibility = if (list.isNotEmpty()) VISIBLE else GONE
+        binding.backupLocationRoot.visibility = VISIBLE
         updateLabelTimer?.cancel()
         if (list.isNotEmpty()) {
             val time = list[0].lastModifiedAt
@@ -313,6 +314,10 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
                             R.string.last_backup, DateUtils
                                 .getRelativeTimeSpanString(time)
                         )
+                        binding.backupLocationRoot.text = getString(
+                                R.string.backup_location_root,
+                                context!!.filesDir.toString()
+                                        + "/" + "MyTargets")
                     }
                 }
             }
