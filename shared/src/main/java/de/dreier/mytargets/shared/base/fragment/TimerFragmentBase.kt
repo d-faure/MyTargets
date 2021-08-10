@@ -141,7 +141,9 @@ abstract class TimerFragmentBase : Fragment(), View.OnClickListener {
     private fun playSignal(n: Int) {
         if (n > 0) {
             if (settings.sound) {
-                playHorn(n)
+                try {
+                    playHorn(n)
+                } catch (e: Exception) { }
             }
             if (settings.vibrate) {
                 val pattern = LongArray(1 + n * 2)
