@@ -138,7 +138,7 @@ class HandicapCalculator {
         for ((index, radius) in zoneMap.iterator()) {
             var zoneRadiusSquared = (radius + arrowRadius).pow(2)
             if (radius == lastEntry.value) {
-                exponentTotals -= BigDecimal.valueOf(exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
+                exponentTotals += BigDecimal.valueOf(exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
             } else {
                 exponentTotals += BigDecimal.valueOf(zoneScoreStep * exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
             }

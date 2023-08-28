@@ -253,11 +253,15 @@ class HandicapCalculatorTest {
         unit.setTargetDistance(Dimension(80.0f, Dimension.Unit.YARDS))
         assertBigDecimalEquals(BigDecimal("6.7122107117"), unit.averageArrowScoreForHandicap(36))
 
+        // 122cm, 80y (73.152m)
+        unit.setTargetSize(Dimension(122f, Dimension.Unit.CENTIMETER))
+        unit.setTargetDistance(Dimension(80.0f, Dimension.Unit.YARDS))
+        assertBigDecimalEquals(BigDecimal("0.1981725984"), unit.averageArrowScoreForHandicap(77))
+
         // 60cm, 18m
         unit.setTargetSize(Dimension(60f, Dimension.Unit.CENTIMETER))
         unit.setTargetDistance(Dimension(18.0f, Dimension.Unit.METER))
         assertBigDecimalEquals(BigDecimal("8.9152743398"), unit.averageArrowScoreForHandicap(26))
-
     }
 
     @Test
