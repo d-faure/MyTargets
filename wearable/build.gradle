@@ -18,7 +18,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion compileSdkVersionCode
     namespace = "de.dreier.mytargets"
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -30,7 +29,8 @@ android {
     defaultConfig {
         applicationId 'de.dreier.mytargets'
         minSdkVersion 23
-        targetSdkVersion 33
+        compileSdk compileSdkVersionCode
+        targetSdkVersion 34
         versionCode gitVersionCode
         versionName gitVersionName
     }

@@ -20,7 +20,6 @@ apply plugin: 'kotlin-parcelize'
 
 android {
     namespace = "de.dreier.mytargets.shared"
-    compileSdkVersion compileSdkVersionCode
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -30,7 +29,8 @@ android {
     }
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 33
+        compileSdk compileSdkVersionCode
+        targetSdkVersion 34
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary true
     }
@@ -73,7 +73,7 @@ dependencies {
     testImplementation dependencies.mockito
     testImplementation dependencies.truth
     androidTestImplementation dependencies.runner
-    androidTestImplementation 'androidx.test:core:1.1.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.0'
+    androidTestImplementation 'androidx.test:core:1.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     implementation dependencies.kotlinStdlibJdk7
 }

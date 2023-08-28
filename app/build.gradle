@@ -30,7 +30,6 @@ apply plugin: 'kotlin-parcelize'
 android {
     namespace = "de.dreier.mytargets"
     testNamespace = "de.dreier.mytargets.test"
-    compileSdkVersion compileSdkVersionCode
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -41,9 +40,10 @@ android {
     defaultConfig {
         applicationId 'de.dreier.mytargets'
         minSdkVersion 16
-        targetSdkVersion 33
-        versionCode 325
-        versionName "3.2.5"
+        compileSdk compileSdkVersionCode
+        targetSdkVersion 34
+        versionCode 330
+        versionName "3.3.0"
         vectorDrawables.useSupportLibrary true
         javaCompileOptions {
             annotationProcessorOptions {
@@ -101,6 +101,7 @@ android {
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), '../tools/rules-proguard.pro'
+
         }
     }
 
@@ -223,7 +224,6 @@ dependencies {
 
     implementation dependencies.androidLanguages
 
-    implementation dependencies.versionInfoMaterialDialog
 
     implementation dependencies.signaturePad
 
@@ -242,10 +242,8 @@ dependencies {
     testImplementation dependencies.kotlinTestJunit
 
     androidTestImplementation dependencies.truth
-    //   androidTestImplementation dependencies.androidxTestCore
-//    androidTestImplementation dependencies.androidxTestMonitor
-    androidTestImplementation 'androidx.test:core:1.1.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.0'
+    androidTestImplementation 'androidx.test:core:1.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation dependencies.runner
     androidTestImplementation dependencies.rules
     androidTestUtil dependencies.androidTestOrchestrator
@@ -263,7 +261,7 @@ dependencies {
 
 }
 
-configurations.all {
+configurations.configureEach {
     exclude module: 'httpclient'
     exclude module: 'commons-logging'
     resolutionStrategy.eachDependency { details ->
