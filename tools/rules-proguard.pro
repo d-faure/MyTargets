@@ -98,3 +98,37 @@
 -keepnames class * implements kotlinx.parcelize.Parcelize {
     *;
 }
+# Parcel reading may lookup/validate the parcel and creator via their
+# inner-class relationship. Ensure the attributes are kept and the
+# inner/outer relationship is soft pinned. The 'allowshrinking' option
+# allows the classes to be removed if unused, but otherwise their attributes
+# are retained.
+-keepattributes EnclosingClass,InnerClasses
+-keep,allowshrinking,allowobfuscation class * implements android.os.Parcelable {}
+-keep,allowshrinking,allowobfuscation class * implements android.os.Parcelable$Creator {}
+
+-keep class de.dreier.mytargets.shared.models.db.Training {
+    *;
+}
+# Keep ThreeTenABP classes
+-keep class org.threeten.bp.** { *; }
+-keepclassmembers class org.threeten.bp.** { *; }
+
+# Keep ThreeTenABP Android System classes (if used)
+-keep class org.threeten.bp.zone.AndroidZoneRulesProvider { *; }
+-keep class org.threeten.bp.zone.AndroidZoneRules { *; }
+
+# Additional ProGuard rules for ThreeTenABP
+-keepclassmembers enum org.threeten.bp.temporal.ChronoField {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+-keepclassmembers class org.threeten.bp.zone.TzdbZoneRulesProvider {
+    public static **[] getAvailableRulesIds();
+    public static **[] getAvailableRules();
+}
+-keep class org.threeten.bp.zone.*
+
+# Add other rules as needed for specific classes used in your project
+
