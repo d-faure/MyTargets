@@ -46,6 +46,20 @@ android {
         debug {}
         release {}
     }
+
+    flavorDimensions "mode"
+
+    productFlavors {
+        dev {
+            dimension "mode"
+        }
+        regular {
+            dimension "mode"
+        }
+        screengrab {
+            dimension "mode"
+        }
+    }
 }
 
 dependencies {
