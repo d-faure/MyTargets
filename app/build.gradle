@@ -41,9 +41,9 @@ android {
         applicationId 'de.dreier.mytargets'
         minSdkVersion 16
         compileSdk compileSdkVersionCode
-        targetSdkVersion 34
-        versionCode 338
-        versionName "3.3.8"
+        targetSdkVersion 36
+        versionCode 339
+        versionName "3.3.9"
         vectorDrawables.useSupportLibrary true
         javaCompileOptions {
             annotationProcessorOptions {

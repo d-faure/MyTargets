@@ -14,7 +14,7 @@
  */
 
 ext {
-    compileSdkVersionCode = 34
+    compileSdkVersionCode = 36
 
     libraryVersion = [
             aboutPage            : '1.2.5',
