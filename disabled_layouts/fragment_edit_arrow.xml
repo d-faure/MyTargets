@@ -1,0 +1,335 @@
+<!--
+  ~ Copyright (C) 2018 Florian Dreier
+  ~
+  ~ This file is part of MyTargets.
+  ~
+  ~ MyTargets is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License version 2
+  ~ as published by the Free Software Foundation.
+  ~
+  ~ MyTargets is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  -->
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="android.view.View"/>
+
+        <variable
+            name="arrow"
+            type="de.dreier.mytargets.features.arrows.EditArrowViewModel"/>
+
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:descendantFocusability="beforeDescendants"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp">
+
+        <FrameLayout style="@style/propertyFrameLayout">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/name"
+                app:srcCompat="@drawable/ic_title_grey600_24dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout style="@style/propertyTextInputLayout">
+
+                <de.dreier.mytargets.views.TextInputEditText
+                    android:id="@+id/name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/name"
+                    android:inputType="textNoSuggestions"
+                    android:text="@={arrow.name}"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </FrameLayout>
+
+        <FrameLayout style="@style/propertyFrameLayout">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/max_arrow_number"
+                app:srcCompat="@drawable/ic_arrow_number_grey600_24dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/maxArrowNumberTextInputLayout"
+                style="@style/propertyTextInputLayout">
+
+                <de.dreier.mytargets.views.TextInputEditText
+                    android:id="@+id/maxArrowNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/max_arrow_number"
+                    android:inputType="number"
+                    android:text="@={`` + arrow.maxArrowNumber}"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            style="@style/propertyFrameLayout"
+            app:propertyShouldShow="@{true}"
+            app:propertyShowAll="@{arrow.showAll}"
+            app:propertyValue="@{arrow.length}">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/length"
+                app:srcCompat="@drawable/ic_arrow_length_grey600_24dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout style="@style/propertyTextInputLayout">
+
+                <de.dreier.mytargets.views.TextInputEditText
+                    android:id="@+id/length"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/length"
+                    android:inputType="textNoSuggestions"
+                    android:text="@={arrow.length}"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            style="@style/propertyFrameLayout"
+            app:propertyShouldShow="@{true}"
+            app:propertyShowAll="@{arrow.showAll}"
+            app:propertyValue="@{arrow.material}">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/material"
+                app:srcCompat="@drawable/ic_arrow_material_grey600_24dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout style="@style/propertyTextInputLayout">
+
+                <de.dreier.mytargets.views.TextInputEditText
+                    android:id="@+id/material"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/material"
+                    android:inputType="textNoSuggestions"
+                    android:text="@={arrow.material}"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            style="@style/propertyFrameLayout"
+            app:propertyShouldShow="@{true}"
+            app:propertyShowAll="@{arrow.showAll}"
+            app:propertyValue="@{arrow.spine}">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/spine"
+                app:srcCompat="@drawable/ic_arrow_spine_grey600_24dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout style="@style/propertyTextInputLayout">
+
+                <de.dreier.mytargets.views.TextInputEditText
+                    android:id="@+id/spine"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/spine"
+                    android:inputType="textNoSuggestions"
+                    android:text="@={arrow.spine}"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            style="@style/propertyFrameLayout">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/diameter"
+                app:srcCompat="@drawable/ic_arrow_diameter_grey600_24dp"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/diameterTextInputLayout"
+                    style="@style/propertyTextInputLayout"
+                    android:layout_toLeftOf="@+id/diameterUnit"
+                    android:layout_toStartOf="@+id/diameterUnit"
+                    app:errorText="@{arrow.diameterErrorText}">
+
+                    <de.dreier.mytargets.views.TextInputEditText
+                        android:id="@+id/diameter"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/diameter"
+                        android:inputType="numberDecimal"
+                        android:text="@={``+arrow.diameterValue}"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Spinner
+                    android:id="@+id/diameterUnit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:drawSelectorOnTop="true"
+                    android:entries="@array/arrow_diameter_units"
+                    app:selectedUnit="@={arrow.diameterUnit}"/>
+
+            </RelativeLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            style="@style/propertyFrameLayout"
+            app:propertyShouldShow="@{true}"
+            app:propertyShowAll="@{arrow.showAll}"
+            app:propertyValue="@{arrow.weight}">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/weight"
+                app:srcCompat="@drawable/ic_arrow_weight_grey600_24dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout style="@style/propertyTextInputLayout">
+
+                <de.dreier.mytargets.views.TextInputEditText
+                    android:id="@+id/weight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/weight"
+                    android:inputType="textNoSuggestions"
+                    android:text="@={arrow.weight}"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            style="@style/propertyFrameLayout"
+            app:propertyShouldShow="@{true}"
+            app:propertyShowAll="@{arrow.showAll}"
+            app:propertyValue="@{arrow.tipWeight}">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/tip_weight"
+                app:srcCompat="@drawable/ic_arrow_tip_weight_grey600_24dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout style="@style/propertyTextInputLayout">
+
+                <de.dreier.mytargets.views.TextInputEditText
+                    android:id="@+id/tip_weight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/tip_weight"
+                    android:inputType="textNoSuggestions"
+                    android:text="@={arrow.tipWeight}"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            style="@style/propertyFrameLayout"
+            app:propertyShouldShow="@{true}"
+            app:propertyShowAll="@{arrow.showAll}"
+            app:propertyValue="@{arrow.vanes}">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/vanes"
+                app:srcCompat="@drawable/ic_arrow_vanes_grey600_24dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout style="@style/propertyTextInputLayout">
+
+                <de.dreier.mytargets.views.TextInputEditText
+                    android:id="@+id/vanes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/vanes"
+                    android:inputType="textNoSuggestions"
+                    android:text="@={arrow.vanes}"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            style="@style/propertyFrameLayout"
+            app:propertyShouldShow="@{true}"
+            app:propertyShowAll="@{arrow.showAll}"
+            app:propertyValue="@{arrow.nock}">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/nock"
+                app:srcCompat="@drawable/ic_arrow_nock_grey600_24dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout style="@style/propertyTextInputLayout">
+
+                <de.dreier.mytargets.views.TextInputEditText
+                    android:id="@+id/nock"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/nock"
+                    android:inputType="textNoSuggestions"
+                    android:text="@={arrow.nock}"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            style="@style/propertyFrameLayout"
+            app:propertyShouldShow="@{true}"
+            app:propertyShowAll="@{arrow.showAll}"
+            app:propertyValue="@{arrow.comment}">
+
+            <ImageView
+                style="@style/propertyImageView"
+                android:contentDescription="@string/comment"
+                app:srcCompat="@drawable/ic_comment_grey600_24dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout style="@style/propertyTextInputLayout">
+
+                <de.dreier.mytargets.views.TextInputEditText
+                    android:id="@+id/comment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/comment"
+                    android:inputType="textMultiLine"
+                    android:text="@={arrow.comment}"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </FrameLayout>
+
+        <Button
+            android:id="@+id/moreFields"
+            style="@style/propertyAddButton"
+            android:text="@string/more_fields"
+            android:visibility="@{arrow.showAll || arrow.areAllPropertiesSet ? View.GONE : View.VISIBLE}"/>
+
+    </LinearLayout>
+
+</layout>

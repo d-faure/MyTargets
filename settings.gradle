@@ -14,6 +14,13 @@
  */
 
 include ':app'
-include ':wearable'
+// Removed wearable module to fix build issues
+// include ':wearable'
 include ':shared'
 include ':tools'
+include ':discreteseekbar'
+include ':signaturepad'
+// Temporarily disabled for quick SDK 36 release
+// include ':permissionsdispatcher'
+// include ':permissionsdispatcher-annotation'
+// include ':permissionsdispatcher-processor'

@@ -199,13 +199,14 @@ dependencies {
     implementation dependencies.androidState
     kapt dependencies.androidStateProcessor
 
-    implementation dependencies.permissionsDispatcher
-    kapt dependencies.permissionsDispatcherProcessor
+    // Temporarily disabled PermissionsDispatcher for quick SDK 36 release
+    // implementation project(':permissionsdispatcher')
+    // kapt project(':permissionsdispatcher-processor')
 
 
     implementation dependencies.mpAndroidChart
 
-    implementation dependencies.discreteSeekbar
+    implementation project(':discreteseekbar')
 
     implementation dependencies.easyImage
 
@@ -225,9 +226,10 @@ dependencies {
     implementation dependencies.androidLanguages
 
 
-    implementation dependencies.signaturePad
+    implementation project(':signaturepad')
 
     implementation dependencies.archLifecycleExtensions
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.2'
     kapt dependencies.archLifecycleCompiler
     implementation dependencies.archRoomRuntime
     kapt dependencies.archRoomCompiler
@@ -235,7 +237,8 @@ dependencies {
     implementation dependencies.archNavigationUi
 
     implementation project(':shared')
-    wearApp project(':wearable')
+    // Removed wearable dependency
+    // wearApp project(':wearable')
 
     testImplementation dependencies.jUnit
     testImplementation dependencies.kotlinTest

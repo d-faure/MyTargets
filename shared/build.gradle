@@ -15,7 +15,8 @@
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
+// Temporarily disabled KAPT in shared module due to Java module system issues
+// apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-parcelize'
 
 android {
@@ -81,7 +82,7 @@ dependencies {
     implementation dependencies.androidxCoreKtx
 
     implementation dependencies.androidState
-    kapt dependencies.androidStateProcessor
+    // kapt dependencies.androidStateProcessor
 
     testImplementation dependencies.jUnit
     testImplementation dependencies.mockito

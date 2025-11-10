@@ -34,8 +34,9 @@ import de.dreier.mytargets.base.gallery.adapters.ViewPagerAdapter
 import de.dreier.mytargets.base.navigation.NavigationController
 import de.dreier.mytargets.databinding.ActivityGalleryBinding
 import de.dreier.mytargets.utils.*
-import permissions.dispatcher.NeedsPermission
-import permissions.dispatcher.RuntimePermissions
+import de.dreier.mytargets.utils.NeedsPermission
+import de.dreier.mytargets.utils.RuntimePermissions
+import de.dreier.mytargets.utils.PermissionUtils
 import pl.aprilapps.easyphotopicker.DefaultCallback
 import pl.aprilapps.easyphotopicker.EasyImage
 import java.io.File
@@ -104,7 +105,11 @@ class GalleryActivity : ChildActivityBase() {
         binding.pager.currentItem = currentPos
 
         if (imageList.size() == 0 && savedInstanceState == null) {
-            onTakePictureWithPermissionCheck()
+            if (PermissionUtils.hasCameraPermission(this)) {
+                onTakePicture()
+            } else {
+                PermissionUtils.requestCameraPermission(this)
+            }
         }
     }
 
@@ -176,12 +181,10 @@ class GalleryActivity : ChildActivityBase() {
         navigationController.setResultSuccess(imageList)
     }
 
-    @NeedsPermission(Manifest.permission.CAMERA)
     internal fun onTakePicture() {
         EasyImage.openCameraForImage(this, 0)
     }
 
-    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
     internal fun onSelectImage() {
         EasyImage.openGallery(this, 0)
     }
@@ -193,7 +196,18 @@ class GalleryActivity : ChildActivityBase() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        onRequestPermissionsResult(requestCode, grantResults)
+        when (requestCode) {
+            PermissionUtils.REQUEST_CAMERA -> {
+                if (PermissionUtils.isPermissionGranted(grantResults)) {
+                    onTakePicture()
+                }
+            }
+            PermissionUtils.REQUEST_STORAGE -> {
+                if (PermissionUtils.isPermissionGranted(grantResults)) {
+                    onSelectImage()
+                }
+            }
+        }
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -254,7 +268,11 @@ class GalleryActivity : ChildActivityBase() {
 
     private fun goToImage(pos: Int) {
         if (imageList.size() == pos) {
-            onTakePictureWithPermissionCheck()
+            if (PermissionUtils.hasCameraPermission(this)) {
+                onTakePicture()
+            } else {
+                PermissionUtils.requestCameraPermission(this)
+            }
         } else {
             binding.pager.setCurrentItem(pos, true)
         }

@@ -1,0 +1,21 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace = "com.github.gcacace.signaturepad"
+    compileSdk 36
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 36
+    }
+
+    buildFeatures {
+        viewBinding true
+        dataBinding true
+    }
+}

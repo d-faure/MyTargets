@@ -37,8 +37,9 @@ import de.dreier.mytargets.shared.models.Thumbnail
 import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.Utils
 import de.dreier.mytargets.utils.moveTo
-import permissions.dispatcher.NeedsPermission
-import permissions.dispatcher.RuntimePermissions
+import de.dreier.mytargets.utils.NeedsPermission
+import de.dreier.mytargets.utils.RuntimePermissions
+import de.dreier.mytargets.utils.PermissionUtils
 import pl.aprilapps.easyphotopicker.DefaultCallback
 import pl.aprilapps.easyphotopicker.EasyImage
 import java.io.File
@@ -130,11 +131,19 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.action_from_gallery -> {
-                    onSelectImageWithPermissionCheck()
+                    if (PermissionUtils.hasStoragePermission(requireContext())) {
+                        onSelectImage()
+                    } else {
+                        PermissionUtils.requestStoragePermission(this)
+                    }
                     true
                 }
                 R.id.action_take_picture -> {
-                    onTakePictureWithPermissionCheck()
+                    if (PermissionUtils.hasCameraPermission(requireContext())) {
+                        onTakePicture()
+                    } else {
+                        PermissionUtils.requestCameraPermission(this)
+                    }
                     true
                 }
                 else -> false
@@ -143,12 +152,10 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
         popup.show()
     }
 
-    @NeedsPermission(Manifest.permission.CAMERA)
     internal fun onTakePicture() {
         EasyImage.openCameraForImage(this, 0)
     }
 
-    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
     internal fun onSelectImage() {
         EasyImage.openGallery(this, 0)
     }
@@ -160,7 +167,18 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        onRequestPermissionsResult(requestCode, grantResults)
+        when (requestCode) {
+            PermissionUtils.REQUEST_CAMERA -> {
+                if (PermissionUtils.isPermissionGranted(grantResults)) {
+                    onTakePicture()
+                }
+            }
+            PermissionUtils.REQUEST_STORAGE -> {
+                if (PermissionUtils.isPermissionGranted(grantResults)) {
+                    onSelectImage()
+                }
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

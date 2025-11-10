@@ -60,10 +60,11 @@ import de.dreier.mytargets.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import permissions.dispatcher.NeedsPermission
-import permissions.dispatcher.OnNeverAskAgain
-import permissions.dispatcher.OnPermissionDenied
-import permissions.dispatcher.RuntimePermissions
+import de.dreier.mytargets.utils.NeedsPermission
+import de.dreier.mytargets.utils.OnNeverAskAgain
+import de.dreier.mytargets.utils.OnPermissionDenied
+import de.dreier.mytargets.utils.RuntimePermissions
+import de.dreier.mytargets.utils.PermissionUtils
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.text.SimpleDateFormat
@@ -164,7 +165,11 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_import) {
-            showFilePickerWithPermissionCheck()
+            if (PermissionUtils.hasStoragePermission(requireContext())) {
+                showFilePicker()
+            } else {
+                PermissionUtils.requestStoragePermission(this)
+            }
             return true
         } else if (item.itemId == R.id.action_fix_db) {
             DatabaseFixer.fix(ApplicationInstance.db)
@@ -191,7 +196,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
     override fun onResume() {
         super.onResume()
         if (!isLeaving) {
-            internalApplyBackupLocationWithPermissionCheck(SettingsManager.backupLocation)
+            internalApplyBackupLocation(SettingsManager.backupLocation)
             updateAutomaticBackupSwitch()
         }
 
@@ -259,7 +264,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
                 EBackupLocation.list.indexOf(item)
             ) { _, _, index, _ ->
                 val location = EBackupLocation.list[index]
-                internalApplyBackupLocationWithPermissionCheck(location)
+                internalApplyBackupLocation(location)
                 true
             }
             .show()
@@ -272,12 +277,16 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         binding.backupLocation.summary.text = backupLocation.toString()
     }
 
-    private fun internalApplyBackupLocationWithPermissionCheck(item: EBackupLocation) {
+    private fun internalApplyBackupLocation(item: EBackupLocation) {
         if (item.needsStoragePermissions()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 retrieveBackup(item)
             } else {
-                applyBackupLocationWithPermissionCheck(item)
+                if (PermissionUtils.hasWriteStoragePermission(requireContext())) {
+                    applyBackupLocation(item)
+                } else {
+                    PermissionUtils.requestWriteStoragePermission(this)
+                }
             }
 
         } else {
@@ -309,7 +318,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
             context!!,
             object : IAsyncBackupRestore.ConnectionListener {
                 override fun onLoginCancelled() {
-                    internalApplyBackupLocationWithPermissionCheck(EBackupLocation.INTERNAL_STORAGE)
+                    internalApplyBackupLocation(EBackupLocation.INTERNAL_STORAGE)
                 }
 
                 override fun onStartIntent(intent: Intent, code: Int) {
@@ -432,7 +441,6 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         startActivityForResult(intent, IMPORT_FROM_URI)
     }
 
-    @OnNeverAskAgain(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun neverAskAgainForWritePermission() {
         isLeaving = true
         MaterialDialog.Builder(context!!)
@@ -444,7 +452,6 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
             .show()
     }
 
-    @OnPermissionDenied(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     internal fun showDeniedForWrite() {
         leaveBackupSettings()
     }
@@ -455,6 +462,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         h.post { activity!!.supportFragmentManager.popBackStack() }
     }
 
+
     @SuppressLint("NeedOnRequestPermissionsResult")
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -462,7 +470,20 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        onRequestPermissionsResult(requestCode, grantResults)
+        when (requestCode) {
+            PermissionUtils.REQUEST_STORAGE -> {
+                if (PermissionUtils.isPermissionGranted(grantResults)) {
+                    showFilePicker()
+                }
+            }
+            PermissionUtils.REQUEST_WRITE_STORAGE -> {
+                if (PermissionUtils.isPermissionGranted(grantResults)) {
+                    applyBackupLocation(SettingsManager.backupLocation)
+                } else {
+                    showDeniedForWrite()
+                }
+            }
+        }
     }
 
     private fun importFromUri(uri: Uri) {

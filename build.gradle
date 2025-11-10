@@ -14,9 +14,8 @@
  */
 
 buildscript {
-    ext.kotlinVersion = '1.8.20'
+    ext.kotlinVersion = '1.9.10'
     repositories {
-        jcenter()
         mavenCentral()
         google()
         maven { url 'https://jitpack.io' }
@@ -42,7 +41,6 @@ apply from: 'dependencies.gradle'
 
 allprojects {
     repositories {
-        jcenter()
         mavenCentral()
         google()
         maven { url 'https://jitpack.io' }
