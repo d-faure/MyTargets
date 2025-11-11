@@ -120,7 +120,12 @@ object GoogleDriveBackup {
                             exception,
                             "Unable to query files."
                         )
+                        listener.onError(exception.localizedMessage ?: "Unable to query files from Google Drive")
                     }
+            } ?: run {
+                // If driveServiceHelper is null, notify the listener with an error
+                Timber.e("DriveServiceHelper is null when trying to get backups")
+                listener.onError("Google Drive service not initialized")
             }
         }
 
@@ -240,12 +245,22 @@ object GoogleDriveBackup {
             Arrays.asList(DriveScopes.DRIVE_FILE, DriveScopes.DRIVE_APPDATA)
         )
         credential.selectedAccount = googleAccount.account
+        
+        // Create HTTP transport with timeouts to prevent infinite hangs
+        val httpTransport = AndroidHttp.newCompatibleTransport()
+        
         return Drive.Builder(
-            AndroidHttp.newCompatibleTransport(),
+            httpTransport,
             GsonFactory(),
             credential
         )
             .setApplicationName("MyTargets")
+            // Set HTTP request timeouts to prevent infinite hangs
+            .setHttpRequestInitializer { request ->
+                credential.initialize(request)
+                request.connectTimeout = 60000 // 60 seconds connect timeout
+                request.readTimeout = 120000 // 120 seconds read timeout (for large file uploads)
+            }
             .build()
     }
 
@@ -274,12 +289,28 @@ object GoogleDriveBackup {
                 BackupUtils.zip(context, ApplicationInstance.db, FileOutputStream(tempFile))
                 val fileContent = FileContent(MYTARGETS_MIME_TYPE, tempFile)
 
-                googleDriveService.files().create(metadata, fileContent).execute()
+                // Set timeouts on the request to prevent infinite hangs
+                val request = googleDriveService.files().create(metadata, fileContent)
+                request.mediaHttpUploader?.apply {
+                    setDirectUploadEnabled(true)
+                    setProgressListener { uploader ->
+                        Timber.d("Upload progress: ${uploader.uploadState} - ${uploader.progress * 100}%")
+                    }
+                }
+                
+                val result = request.execute()
                     ?: throw BackupException("Null result when requesting file creation.")
+                
+                Timber.i("Backup uploaded successfully: ${result.id}")
             } catch (e: IOException) {
                 // The Task failed, this is the same exception you'd get in a non-blocking
                 // failure handler.
-                throw BackupException(e.localizedMessage, e)
+                Timber.e(e, "Failed to upload backup to Google Drive")
+                throw BackupException(e.localizedMessage ?: "Failed to upload backup", e)
+            } catch (e: Exception) {
+                // Catch any other unexpected exceptions
+                Timber.e(e, "Unexpected error during backup upload")
+                throw BackupException(e.localizedMessage ?: "Unexpected error during backup", e)
             } finally {
                 tempFile.delete()
             }

@@ -24,3 +24,4 @@ annotation class OnPermissionDenied(vararg val value: String)
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.SOURCE)
 annotation class OnNeverAskAgain(vararg val value: String)
+

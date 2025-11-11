@@ -55,15 +55,18 @@ internal class SyncAdapter(context: Context, autoInitialize: Boolean) :
         account: Account, extras: Bundle, authority: String,
         provider: ContentProviderClient, syncResult: SyncResult
     ) {
-        Timber.i("Beginning network synchronization")
+        Timber.i("Beginning network synchronization for backup location: ${SettingsManager.backupLocation}")
         val backup = SettingsManager.backupLocation.createBackup()
         try {
             backup.performBackup(context)
+            Timber.i("Network synchronization completed successfully")
         } catch (e: BackupException) {
-            Timber.w(e)
+            Timber.e(e, "Backup failed with BackupException")
+            syncResult.stats.numIoExceptions++
+        } catch (e: Exception) {
+            // Catch any unexpected exceptions to prevent sync from hanging
+            Timber.e(e, "Backup failed with unexpected exception")
             syncResult.stats.numIoExceptions++
         }
-
-        Timber.i("Network synchronization complete")
     }
 }

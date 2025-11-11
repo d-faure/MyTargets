@@ -89,6 +89,9 @@ object ExternalStorageBackup {
                     }
                     .sortedByDescending { it.lastModifiedAt }
                 listener.onLoadFinished(backups)
+            } else {
+                // Directory doesn't exist yet, return empty list
+                listener.onLoadFinished(emptyList())
             }
         }
 

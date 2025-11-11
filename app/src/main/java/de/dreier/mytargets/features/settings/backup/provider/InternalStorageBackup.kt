@@ -72,6 +72,9 @@ object InternalStorageBackup {
                     }
                     ?.sortedByDescending { it.lastModifiedAt }
                 listener.onLoadFinished(backups ?: emptyList())
+            } else {
+                // Directory doesn't exist yet, return empty list
+                listener.onLoadFinished(emptyList())
             }
         }
 

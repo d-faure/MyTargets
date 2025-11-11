@@ -81,3 +81,4 @@ object PermissionUtils {
         requestPermission(fragment, Manifest.permission.WRITE_EXTERNAL_STORAGE, REQUEST_WRITE_STORAGE)
     }
 }
+

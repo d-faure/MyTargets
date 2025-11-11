@@ -90,6 +90,8 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
      */
     private var syncObserverHandle: Any? = null
     private var isRefreshing = false
+    private var syncTimeoutHandler: Handler? = null
+    private var syncStartTime: Long = 0
 
     /**
      * Create a new anonymous SyncStatusObserver. It's attached to the app's ContentResolver in
@@ -103,13 +105,73 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
             val syncPending = ContentResolver.isSyncPending(account, SyncUtils.CONTENT_AUTHORITY)
             val wasRefreshing = isRefreshing
             isRefreshing = syncActive || syncPending
-            binding.backupNowButton.isEnabled = !isRefreshing
+            
+            Timber.d("Sync status changed - Active: $syncActive, Pending: $syncPending, Refreshing: $isRefreshing")
+            
+            // Keep button enabled so user can cancel if needed
             binding.backupProgressBar.isIndeterminate = true
             binding.backupProgressBar.visibility = if (isRefreshing) VISIBLE else GONE
-            if (wasRefreshing && !isRefreshing && backup != null) {
-                backup?.getBackups(this)
+            
+            // Update button text based on state
+            binding.backupNowButton.text = if (isRefreshing) {
+                getString(R.string.cancel)
+            } else {
+                getString(R.string.backup_now)
+            }
+            
+            if (isRefreshing && !wasRefreshing) {
+                // Sync just started - record start time and set timeout
+                syncStartTime = System.currentTimeMillis()
+                startSyncTimeout()
+            } else if (!isRefreshing && wasRefreshing) {
+                // Sync completed - cancel timeout and refresh backup list
+                cancelSyncTimeout()
+                if (backup != null) {
+                    backup?.getBackups(this)
+                }
             }
         }
+    }
+    
+    private fun startSyncTimeout() {
+        cancelSyncTimeout()
+        syncTimeoutHandler = Handler(requireContext().mainLooper)
+        // Set a 2-minute timeout for sync operations (reduced from 3 minutes)
+        syncTimeoutHandler?.postDelayed({
+            if (isRefreshing) {
+                val elapsedTime = (System.currentTimeMillis() - syncStartTime) / 1000
+                Timber.w("Sync timeout after $elapsedTime seconds - forcing progress bar to hide")
+                
+                // Force hide the progress bar
+                isRefreshing = false
+                binding.backupProgressBar.visibility = GONE
+                binding.backupNowButton.text = getString(R.string.backup_now)
+                
+                // Try to cancel any pending syncs
+                try {
+                    val account = GenericAccountService.account
+                    ContentResolver.cancelSync(account, SyncUtils.CONTENT_AUTHORITY)
+                    Timber.i("Cancelled sync due to timeout")
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to cancel sync")
+                }
+                
+                // Refresh the backup list
+                backup?.getBackups(this)
+                
+                // Show a toast to the user
+                Toast.makeText(
+                    requireContext(),
+                    "Backup operation timed out. Please check your connection and try again.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }, 120000) // 2 minutes = 120,000 milliseconds
+    }
+    
+    private fun cancelSyncTimeout() {
+        syncTimeoutHandler?.removeCallbacksAndMessages(null)
+        syncTimeoutHandler = null
     }
 
     /**
@@ -138,7 +200,29 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_backup, container, false)
         ToolbarUtils.showHomeAsUp(this)
 
-        binding.backupNowButton.setOnClickListener { SyncUtils.triggerBackup() }
+        binding.backupNowButton.setOnClickListener {
+            if (isRefreshing) {
+                // If backup is in progress, cancel it
+                Timber.i("User requested to cancel backup")
+                try {
+                    val account = GenericAccountService.account
+                    ContentResolver.cancelSync(account, SyncUtils.CONTENT_AUTHORITY)
+                    
+                    // Force clear the UI state
+                    isRefreshing = false
+                    binding.backupProgressBar.visibility = GONE
+                    binding.backupNowButton.text = getString(R.string.backup_now)
+                    cancelSyncTimeout()
+                    
+                    Toast.makeText(requireContext(), "Backup cancelled", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to cancel backup")
+                }
+            } else {
+                // Start backup
+                SyncUtils.triggerBackup()
+            }
+        }
 
         binding.automaticBackupSwitch.setOnClickListener { onAutomaticBackupChanged() }
 
@@ -200,6 +284,30 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
             updateAutomaticBackupSwitch()
         }
 
+        // Check if sync appears to be stuck from a previous session
+        val account = GenericAccountService.account
+        val syncActive = ContentResolver.isSyncActive(account, SyncUtils.CONTENT_AUTHORITY)
+        val syncPending = ContentResolver.isSyncPending(account, SyncUtils.CONTENT_AUTHORITY)
+        
+        if (syncActive || syncPending) {
+            Timber.w("Found sync in active/pending state on resume - Active: $syncActive, Pending: $syncPending")
+            // Force cancel it to clear the stuck state
+            try {
+                ContentResolver.cancelSync(account, SyncUtils.CONTENT_AUTHORITY)
+                Timber.i("Cancelled potentially stuck sync")
+                
+                // Immediately force the UI to clear the refreshing state
+                isRefreshing = false
+                binding.backupProgressBar.visibility = GONE
+                binding.backupNowButton.text = getString(R.string.backup_now)
+                
+                // Refresh the backup list
+                backup?.getBackups(this)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to cancel stuck sync")
+            }
+        }
+
         syncStatusObserver.onStatusChanged(0)
         syncObserverHandle = ContentResolver.addStatusChangeListener(
             SYNC_OBSERVER_TYPE_PENDING or SYNC_OBSERVER_TYPE_ACTIVE, syncStatusObserver
@@ -208,6 +316,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
 
     override fun onPause() {
         updateLabelTimer?.cancel()
+        cancelSyncTimeout()
         if (syncObserverHandle != null) {
             ContentResolver.removeStatusChangeListener(syncObserverHandle)
             syncObserverHandle = null
@@ -331,6 +440,8 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
                 }
 
                 override fun onConnectionSuspended() {
+                    binding.recentBackupsProgress.visibility = GONE
+                    binding.recentBackupsList.visibility = VISIBLE
                     showError(
                         R.string.loading_backups_failed,
                         getString(R.string.connection_failed)
@@ -520,6 +631,8 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
     }
 
     override fun onError(message: String) {
+        binding.recentBackupsProgress.visibility = GONE
+        binding.recentBackupsList.visibility = VISIBLE
         showError(R.string.loading_backups_failed, message)
     }
 
