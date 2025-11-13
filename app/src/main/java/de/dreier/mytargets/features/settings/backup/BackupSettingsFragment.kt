@@ -92,6 +92,9 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
     private var isRefreshing = false
     private var syncTimeoutHandler: Handler? = null
     private var syncStartTime: Long = 0
+    private var lastBackupCheckHandler: Handler? = null
+    private var backupCountBeforeSync: Int = 0
+    private var ignoreNextSyncStatus = false
 
     /**
      * Create a new anonymous SyncStatusObserver. It's attached to the app's ContentResolver in
@@ -100,6 +103,13 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
      */
     private val syncStatusObserver = SyncStatusObserver {
         activity?.runOnUiThread {
+            // Check if we should ignore this status update (just force-cleared UI)
+            if (ignoreNextSyncStatus) {
+                Timber.d("Ignoring sync status update after force-clear")
+                ignoreNextSyncStatus = false
+                return@runOnUiThread
+            }
+            
             val account = GenericAccountService.account
             val syncActive = ContentResolver.isSyncActive(account, SyncUtils.CONTENT_AUTHORITY)
             val syncPending = ContentResolver.isSyncPending(account, SyncUtils.CONTENT_AUTHORITY)
@@ -122,10 +132,13 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
             if (isRefreshing && !wasRefreshing) {
                 // Sync just started - record start time and set timeout
                 syncStartTime = System.currentTimeMillis()
+                backupCountBeforeSync = adapter?.itemCount ?: 0
                 startSyncTimeout()
+                startBackupCompletionCheck()
             } else if (!isRefreshing && wasRefreshing) {
                 // Sync completed - cancel timeout and refresh backup list
                 cancelSyncTimeout()
+                stopBackupCompletionCheck()
                 if (backup != null) {
                     backup?.getBackups(this)
                 }
@@ -172,6 +185,75 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
     private fun cancelSyncTimeout() {
         syncTimeoutHandler?.removeCallbacksAndMessages(null)
         syncTimeoutHandler = null
+    }
+    
+    private fun startBackupCompletionCheck() {
+        stopBackupCompletionCheck()
+        lastBackupCheckHandler = Handler(requireContext().mainLooper)
+        
+        // Check every 5 seconds if a new backup appeared
+        fun scheduleNextCheck() {
+            lastBackupCheckHandler?.postDelayed({
+                if (isRefreshing && backup != null) {
+                    Timber.d("Checking for backup completion...")
+                    backup?.getBackups(object : IAsyncBackupRestore.OnLoadFinishedListener {
+                        override fun onLoadFinished(backupEntries: List<BackupEntry>) {
+                            val currentCount = backupEntries.size
+                            Timber.d("Backup count check - Before: $backupCountBeforeSync, Current: $currentCount")
+                            
+                            if (currentCount > backupCountBeforeSync) {
+                                // New backup detected! Force completion
+                                Timber.i("New backup detected - forcing sync completion")
+                                forceCompleteSyncUI()
+                            } else {
+                                // Keep checking
+                                scheduleNextCheck()
+                            }
+                        }
+                        
+                        override fun onError(message: String) {
+                            Timber.e("Error checking backups: $message")
+                            // Keep checking despite error
+                            scheduleNextCheck()
+                        }
+                    })
+                }
+            }, 5000)
+        }
+        
+        // Start checking after 10 seconds (give backup time to start)
+        lastBackupCheckHandler?.postDelayed({
+            scheduleNextCheck()
+        }, 10000)
+    }
+    
+    private fun stopBackupCompletionCheck() {
+        lastBackupCheckHandler?.removeCallbacksAndMessages(null)
+        lastBackupCheckHandler = null
+    }
+    
+    private fun forceCompleteSyncUI() {
+        Timber.i("Forcing sync UI completion")
+        
+        // Cancel any pending syncs
+        try {
+            val account = GenericAccountService.account
+            ContentResolver.cancelSync(account, SyncUtils.CONTENT_AUTHORITY)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to cancel sync")
+        }
+        
+        // Force clear UI state
+        isRefreshing = false
+        binding.backupProgressBar.visibility = GONE
+        binding.backupNowButton.text = getString(R.string.backup_now)
+        cancelSyncTimeout()
+        stopBackupCompletionCheck()
+        
+        // Refresh the backup list one final time
+        backup?.getBackups(this)
+        
+        Toast.makeText(requireContext(), "Backup completed", Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -289,34 +371,43 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         val syncActive = ContentResolver.isSyncActive(account, SyncUtils.CONTENT_AUTHORITY)
         val syncPending = ContentResolver.isSyncPending(account, SyncUtils.CONTENT_AUTHORITY)
         
+        Timber.d("onResume - Sync state: Active=$syncActive, Pending=$syncPending")
+        
         if (syncActive || syncPending) {
-            Timber.w("Found sync in active/pending state on resume - Active: $syncActive, Pending: $syncPending")
+            Timber.w("Found sync in active/pending state on resume - cancelling it")
             // Force cancel it to clear the stuck state
             try {
                 ContentResolver.cancelSync(account, SyncUtils.CONTENT_AUTHORITY)
                 Timber.i("Cancelled potentially stuck sync")
-                
-                // Immediately force the UI to clear the refreshing state
-                isRefreshing = false
-                binding.backupProgressBar.visibility = GONE
-                binding.backupNowButton.text = getString(R.string.backup_now)
-                
-                // Refresh the backup list
-                backup?.getBackups(this)
             } catch (e: Exception) {
                 Timber.e(e, "Failed to cancel stuck sync")
             }
         }
+        
+        // Always force clear UI state on resume to prevent progress bar from reappearing
+        isRefreshing = false
+        binding.backupProgressBar.visibility = GONE
+        binding.backupNowButton.text = getString(R.string.backup_now)
+        
+        // Set flag to ignore the next sync status check
+        ignoreNextSyncStatus = true
+        
+        // Refresh the backup list
+        backup?.getBackups(this)
 
-        syncStatusObserver.onStatusChanged(0)
+        // Now register the observer (after clearing UI state)
         syncObserverHandle = ContentResolver.addStatusChangeListener(
             SYNC_OBSERVER_TYPE_PENDING or SYNC_OBSERVER_TYPE_ACTIVE, syncStatusObserver
         )
+        
+        // Trigger observer to check current state (will be ignored due to flag)
+        syncStatusObserver.onStatusChanged(0)
     }
 
     override fun onPause() {
         updateLabelTimer?.cancel()
         cancelSyncTimeout()
+        stopBackupCompletionCheck()
         if (syncObserverHandle != null) {
             ContentResolver.removeStatusChangeListener(syncObserverHandle)
             syncObserverHandle = null
