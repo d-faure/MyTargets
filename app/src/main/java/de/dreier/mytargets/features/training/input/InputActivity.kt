@@ -28,6 +28,7 @@ import androidx.annotation.RequiresApi
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.AsyncTaskLoader
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import androidx.loader.content.Loader
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.text.InputType
@@ -111,9 +112,16 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Enable edge-to-edge display
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        
         binding = DataBindingUtil.setContentView(this, R.layout.activity_input)
         setSupportActionBar(binding.toolbar)
+        ToolbarUtils.applyWindowInsets(binding.toolbar)
         ToolbarUtils.showHomeAsUp(this)
+        
         Utils.setupFabTransform(this, binding.root)
 
         if (Utils.isLollipop) {

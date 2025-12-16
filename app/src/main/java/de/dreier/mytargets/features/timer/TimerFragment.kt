@@ -51,6 +51,7 @@ class TimerFragment : TimerFragmentBase() {
         super.onActivityCreated(savedInstanceState)
         val activity = activity as AppCompatActivity
         activity.setSupportActionBar(binding.toolbar)
+        ToolbarUtils.applyWindowInsets(binding.toolbar)
         ToolbarUtils.showHomeAsUp(activity)
     }
 

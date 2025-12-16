@@ -26,6 +26,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
+import androidx.core.view.WindowCompat
 import androidx.databinding.DataBindingUtil
 import androidx.test.espresso.idling.CountingIdlingResource
 import de.dreier.mytargets.R
@@ -37,6 +38,7 @@ import de.dreier.mytargets.features.settings.ESettingsScreens
 import de.dreier.mytargets.features.settings.ESettingsScreens.MAIN
 import de.dreier.mytargets.features.settings.SettingsManager
 import de.dreier.mytargets.features.training.overview.TrainingsFragment
+import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.Utils
 import de.dreier.mytargets.utils.Utils.getCurrentLocale
 import im.delight.android.languages.Language
@@ -62,6 +64,12 @@ class MainActivity : AppCompatActivity() {
         Language.setFromPreference(this, SettingsManager.KEY_LANGUAGE)
         countryCode = getCountryCode()
         super.onCreate(savedInstanceState)
+        
+        // Enable edge-to-edge display for SDK 36+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+        
         navigationController = NavigationController(this)
         if (SettingsManager.shouldShowIntroActivity) {
             SettingsManager.shouldShowIntroActivity = false
@@ -71,6 +79,10 @@ class MainActivity : AppCompatActivity() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbar)
+
+        // Handle window insets for edge-to-edge display
+        ToolbarUtils.applyWindowInsets(binding.toolbar)
+        ToolbarUtils.applyWindowInsetsToBottom(binding.bottomNavigation)
 
         setupBottomNavigation()
         setupNavigationDrawer()

@@ -57,6 +57,11 @@ class GalleryActivity : ChildActivityBase() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Enable edge-to-edge display
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        
         binding = DataBindingUtil.setContentView(this, R.layout.activity_gallery)
 
         val title = intent.getStringExtra(EXTRA_TITLE)
@@ -65,6 +70,7 @@ class GalleryActivity : ChildActivityBase() {
         }
 
         setSupportActionBar(binding.toolbar)
+        ToolbarUtils.applyWindowInsets(binding.toolbar)
 
         ToolbarUtils.showHomeAsUp(this)
         if (title != null) {

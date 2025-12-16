@@ -17,9 +17,14 @@ package de.dreier.mytargets.base.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import de.dreier.mytargets.R
 
 abstract class SimpleFragmentActivityBase : ChildActivityBase() {
+
+    private var activityToolbar: Toolbar? = null
 
     val childFragment: Fragment
         get() = supportFragmentManager.findFragmentByTag(FRAGMENT_TAG)!!
@@ -28,6 +33,13 @@ abstract class SimpleFragmentActivityBase : ChildActivityBase() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Use layout that handles edge-to-edge with fitsSystemWindows
+        setContentView(R.layout.activity_simple_fragment)
+        
+        // Set up activity toolbar - fragments can override this with their own
+        activityToolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(activityToolbar)
 
         if (savedInstanceState == null) {
             // Create the fragment only when the activity is created for the first time.
@@ -39,9 +51,16 @@ abstract class SimpleFragmentActivityBase : ChildActivityBase() {
             }
 
             supportFragmentManager.beginTransaction()
-                .replace(android.R.id.content, childFragment, FRAGMENT_TAG)
+                .replace(R.id.fragment_container, childFragment, FRAGMENT_TAG)
                 .commit()
         }
+    }
+    
+    /**
+     * Hide the activity's toolbar when a fragment uses its own toolbar
+     */
+    fun hideActivityToolbar() {
+        activityToolbar?.visibility = View.GONE
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -54,7 +73,7 @@ abstract class SimpleFragmentActivityBase : ChildActivityBase() {
         }
 
         supportFragmentManager.beginTransaction()
-            .replace(android.R.id.content, childFragment!!, FRAGMENT_TAG)
+            .replace(R.id.fragment_container, childFragment!!, FRAGMENT_TAG)
             .commit()
     }
 

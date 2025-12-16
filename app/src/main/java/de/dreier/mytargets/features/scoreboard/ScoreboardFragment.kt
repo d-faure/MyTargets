@@ -52,6 +52,7 @@ import de.dreier.mytargets.shared.models.db.Signature
 import de.dreier.mytargets.shared.models.db.Training
 import de.dreier.mytargets.utils.MobileWearableClient
 import de.dreier.mytargets.utils.MobileWearableClient.Companion.BROADCAST_UPDATE_TRAINING_FROM_REMOTE
+import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.Utils
 import de.dreier.mytargets.utils.print.CustomPrintDocumentAdapter
 import de.dreier.mytargets.utils.print.ViewToPdfWriter
@@ -107,6 +108,10 @@ class ScoreboardFragment : FragmentBase() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        
+        // Set up toolbar with window insets for edge-to-edge display
+        ToolbarUtils.setSupportActionBar(this, binding!!.toolbar)
+        ToolbarUtils.showHomeAsUp(this)
 
         LocalBroadcastManager.getInstance(context!!).registerReceiver(
             updateReceiver,

@@ -17,10 +17,17 @@
         xmlns:tools="http://schemas.android.com/tools"
         tools:context="de.dreier.mytargets.features.statistics.DispersionPatternActivity">
 
-    <com.github.chrisbanes.photoview.PhotoView
-        android:id="@+id/dispersionView"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"/>
+        android:fitsSystemWindows="true">
+
+        <com.github.chrisbanes.photoview.PhotoView
+            android:id="@+id/dispersionView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"/>
+
+    </FrameLayout>
 
 </layout>

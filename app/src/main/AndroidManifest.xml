@@ -93,7 +93,7 @@
         </activity>
         <activity
             android:name=".features.main.IntroActivity"
-         />
+            android:theme="@style/AppTheme.CustomToolbar"/>
         <activity
             android:name=".features.training.TrainingActivity"
             android:launchMode="singleTop"
@@ -106,7 +106,8 @@
         <activity
             android:name=".features.training.RoundActivity"
             android:launchMode="singleTop"
-            android:parentActivityName=".features.training.TrainingActivity">
+            android:parentActivityName=".features.training.TrainingActivity"
+            android:theme="@style/AppTheme.CustomToolbar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.training.TrainingActivity"/>
@@ -180,7 +181,8 @@
         <activity
             android:name=".features.scoreboard.ScoreboardActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/scoreboard"/>
+            android:label="@string/scoreboard"
+            android:theme="@style/AppTheme.CustomToolbar"/>
         <activity
             android:name=".features.statistics.StatisticsActivity"
             android:label="@string/statistic"
@@ -189,7 +191,8 @@
             android:name=".features.arrows.ArrowListActivity"
             android:label="@string/arrow"
             android:launchMode="singleTop"
-            android:parentActivityName=".features.training.standardround.EditStandardRoundActivity">
+            android:parentActivityName=".features.training.standardround.EditStandardRoundActivity"
+            android:theme="@style/AppTheme.CustomToolbar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.training.standardround.EditStandardRoundActivity"/>
@@ -198,7 +201,8 @@
             android:name=".features.bows.BowListActivity"
             android:label="@string/bow"
             android:launchMode="singleTop"
-            android:parentActivityName=".features.training.standardround.EditStandardRoundActivity">
+            android:parentActivityName=".features.training.standardround.EditStandardRoundActivity"
+            android:theme="@style/AppTheme.CustomToolbar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.training.standardround.EditStandardRoundActivity"/>
@@ -237,7 +241,8 @@
             android:name=".features.training.environment.WindSpeedActivity"
             android:label="@string/wind_speed"
             android:launchMode="singleTop"
-            android:parentActivityName=".features.training.environment.EnvironmentActivity">
+            android:parentActivityName=".features.training.environment.EnvironmentActivity"
+            android:theme="@style/AppTheme.CustomToolbar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.training.environment.EnvironmentActivity"/>
@@ -246,7 +251,8 @@
             android:name=".features.training.environment.WindDirectionActivity"
             android:label="@string/wind_direction"
             android:launchMode="singleTop"
-            android:parentActivityName=".features.training.environment.EnvironmentActivity">
+            android:parentActivityName=".features.training.environment.EnvironmentActivity"
+            android:theme="@style/AppTheme.CustomToolbar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.training.environment.EnvironmentActivity"/>
@@ -255,7 +261,8 @@
             android:name=".features.training.standardround.StandardRoundActivity"
             android:label="@string/standard_rounds"
             android:launchMode="singleTop"
-            android:parentActivityName=".features.training.edit.EditTrainingActivity">
+            android:parentActivityName=".features.training.edit.EditTrainingActivity"
+            android:theme="@style/AppTheme.CustomToolbar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.training.edit.EditTrainingActivity"/>
@@ -266,7 +273,8 @@
             android:name=".features.settings.SettingsActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="@string/preferences"
-            android:parentActivityName=".features.main.MainActivity">
+            android:parentActivityName=".features.main.MainActivity"
+            android:theme="@style/AppTheme.CustomToolbar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.main.MainActivity"/>
@@ -274,7 +282,8 @@
         <activity
             android:name=".features.settings.about.AboutActivity"
             android:label="@string/about"
-            android:parentActivityName=".features.settings.SettingsActivity">
+            android:parentActivityName=".features.settings.SettingsActivity"
+            android:theme="@style/AppTheme.CustomToolbar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.settings.SettingsActivity"/>
@@ -282,17 +291,21 @@
         <activity
             android:name=".features.help.licences.LicencesActivity"
             android:label="@string/licences"
-            android:parentActivityName=".features.settings.SettingsActivity">
+            android:parentActivityName=".features.settings.SettingsActivity"
+            android:theme="@style/AppTheme.CustomToolbar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.settings.SettingsActivity"/>
         </activity>
 
-        <activity android:name=".features.statistics.DispersionPatternActivity"/>
+        <activity
+            android:name=".features.statistics.DispersionPatternActivity"
+            android:theme="@style/AppTheme.CustomToolbar"/>
 
         <activity
             android:name=".features.help.HelpActivity"
-            android:label="@string/help"/>
+            android:label="@string/help"
+            android:theme="@style/AppTheme.CustomToolbar"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"
