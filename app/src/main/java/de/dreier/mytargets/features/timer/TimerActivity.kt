@@ -16,6 +16,7 @@
 package de.dreier.mytargets.features.timer
 
 import android.os.Bundle
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import de.dreier.mytargets.base.activities.ChildActivityBase
 import de.dreier.mytargets.features.settings.SettingsManager
@@ -26,6 +27,9 @@ class TimerActivity : ChildActivityBase() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Enable edge-to-edge display for proper toolbar insets
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         if (savedInstanceState == null) {
             // Create the fragment only when the activity is created for the first time.

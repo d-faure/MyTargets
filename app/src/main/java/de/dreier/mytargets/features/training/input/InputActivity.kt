@@ -120,6 +120,7 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
         binding = DataBindingUtil.setContentView(this, R.layout.activity_input)
         setSupportActionBar(binding.toolbar)
         ToolbarUtils.applyWindowInsets(binding.toolbar)
+        ToolbarUtils.applyWindowInsetsToBottom(binding.butBar)
         ToolbarUtils.showHomeAsUp(this)
         
         Utils.setupFabTransform(this, binding.root)
