@@ -106,6 +106,8 @@ class RoundFragment :
                 .fromFab(binding.fab)
                 .start()
         }
+        // Apply bottom insets for navigation bar
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
 
         roundId = arguments!!.getLongOrNull(ROUND_ID) ?:
                 throw IllegalStateException("Missing required argument round id!")

@@ -19,9 +19,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import de.dreier.mytargets.R
 
@@ -37,25 +35,16 @@ abstract class SimpleFragmentActivityBase : ChildActivityBase() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Enable edge-to-edge display
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // Explicitly opt out of edge-to-edge for picker screens
+        // This ensures toolbar buttons are below status bar and clickable
+        WindowCompat.setDecorFitsSystemWindows(window, true)
         
-        // Use layout with toolbar
+        // Use layout with toolbar - let system handle status bar normally
         setContentView(R.layout.activity_simple_fragment)
         
         // Set up activity toolbar - fragments can override this with their own
         activityToolbar = findViewById(R.id.toolbar)
         setSupportActionBar(activityToolbar)
-        
-        // Apply window insets to toolbar for status bar padding
-        activityToolbar?.let { toolbar ->
-            ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, windowInsets ->
-                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-                view.setPadding(view.paddingLeft, insets.top, view.paddingRight, view.paddingBottom)
-                windowInsets
-            }
-            toolbar.post { ViewCompat.requestApplyInsets(toolbar) }
-        }
 
         if (savedInstanceState == null) {
             // Create the fragment only when the activity is created for the first time.

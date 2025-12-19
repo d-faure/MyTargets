@@ -74,6 +74,8 @@ class TrainingsFragment : ExpandableListFragment<Header, Training>() {
         binding.recyclerView.addItemDecoration(
             DividerItemDecoration(requireContext(), R.drawable.full_divider)
         )
+        // Apply bottom insets for navigation bar
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fabSpeedDial)
         binding.fabSpeedDial.setMenuListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.fab1 -> navigationController

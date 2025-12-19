@@ -20,6 +20,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import de.dreier.mytargets.R
@@ -55,14 +56,20 @@ object ToolbarUtils {
             windowInsets
         }
         
-        // Force request insets immediately
+        // Force request insets from the decor view (more reliable)
         toolbar.post {
-            ViewCompat.requestApplyInsets(toolbar)
+            toolbar.context?.let { context ->
+                if (context is AppCompatActivity) {
+                    ViewCompat.requestApplyInsets(context.window.decorView)
+                } else {
+                    ViewCompat.requestApplyInsets(toolbar)
+                }
+            } ?: ViewCompat.requestApplyInsets(toolbar)
         }
     }
     
     /**
-     * Apply window insets to a bottom view (like bottom navigation)
+     * Apply window insets to a bottom view (like bottom navigation or FAB)
      */
     fun applyWindowInsetsToBottom(view: View) {
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
@@ -70,25 +77,34 @@ object ToolbarUtils {
             
             Timber.d("Applying window insets to bottom view - Bottom: ${insets.bottom}")
             
-            // Apply bottom inset as padding
-            val currentPaddingLeft = v.paddingLeft
-            val currentPaddingTop = v.paddingTop
-            val currentPaddingRight = v.paddingRight
-            
-            v.setPadding(
-                currentPaddingLeft,
-                currentPaddingTop,
-                currentPaddingRight,
-                insets.bottom
-            )
+            // Apply bottom inset as margin for FABs or padding for other views
+            val lp = v.layoutParams
+            if (lp is android.view.ViewGroup.MarginLayoutParams) {
+                lp.bottomMargin = insets.bottom + 16 // Add extra margin for FABs
+                v.layoutParams = lp
+            } else {
+                // Apply bottom inset as padding
+                v.setPadding(
+                    v.paddingLeft,
+                    v.paddingTop,
+                    v.paddingRight,
+                    insets.bottom
+                )
+            }
             
             // Don't consume insets
             windowInsets
         }
         
-        // Force request insets immediately
+        // Force request insets from decor view (more reliable)
         view.post {
-            ViewCompat.requestApplyInsets(view)
+            view.context?.let { context ->
+                if (context is AppCompatActivity) {
+                    ViewCompat.requestApplyInsets(context.window.decorView)
+                } else {
+                    ViewCompat.requestApplyInsets(view)
+                }
+            } ?: ViewCompat.requestApplyInsets(view)
         }
     }
 
@@ -118,6 +134,9 @@ object ToolbarUtils {
         // If the activity is SimpleFragmentActivityBase, hide its toolbar since fragment has its own
         if (activity is de.dreier.mytargets.base.activities.SimpleFragmentActivityBase) {
             activity.hideActivityToolbar()
+            // Enable edge-to-edge for fragments with their own toolbar
+            WindowCompat.setDecorFitsSystemWindows(activity.window, false)
+            activity.window.statusBarColor = android.graphics.Color.TRANSPARENT
         }
         
         // Automatically apply window insets for edge-to-edge display

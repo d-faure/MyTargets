@@ -96,6 +96,8 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
         ToolbarUtils.showUpAsX(this)
         setHasOptionsMenu(true)
         binding.fab.setOnClickListener { this.onFabClicked(it) }
+        // Apply bottom insets for navigation bar
+        ToolbarUtils.applyWindowInsetsToBottom(binding.content)
         return binding.root
     }
 

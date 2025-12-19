@@ -83,6 +83,8 @@ class StandardRoundListFragment :
                 .fromFab(binding.fab).forResult(NEW_STANDARD_ROUND)
                 .start()
         }
+        // Apply bottom insets for navigation bar
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
         useDoubleClickSelection = true
         setHasOptionsMenu(true)
         return binding.root
