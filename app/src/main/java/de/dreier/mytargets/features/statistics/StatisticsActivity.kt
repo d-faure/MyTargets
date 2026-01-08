@@ -79,10 +79,14 @@ class StatisticsActivity : ChildActivityBase(),
         // Enable edge-to-edge display
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         
         binding = DataBindingUtil.setContentView(this, R.layout.activity_statistics)
         setSupportActionBar(binding.toolbar)
         ToolbarUtils.applyWindowInsets(binding.toolbar)
+        
+        // Apply bottom insets to filter drawer's reset button
+        ToolbarUtils.applyWindowInsetsToBottom(binding.reset)
 
         binding.reset.setOnClickListener { resetFilter() }
 

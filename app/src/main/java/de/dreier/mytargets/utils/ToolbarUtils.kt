@@ -29,82 +29,159 @@ import timber.log.Timber
 object ToolbarUtils {
     
     /**
-     * Apply window insets to toolbar for edge-to-edge display (SDK 36+)
+     * Apply window insets to toolbar for edge-to-edge display
      * Call this after setSupportActionBar
      */
     fun applyWindowInsets(toolbar: Toolbar) {
+        // Store original padding
+        val originalPaddingLeft = toolbar.paddingLeft
+        val originalPaddingRight = toolbar.paddingRight
+        val originalPaddingBottom = toolbar.paddingBottom
+        
         ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             
-            Timber.d("Applying window insets to toolbar - Top: ${insets.top}, Bottom: ${insets.bottom}")
+            Timber.d("Applying window insets to toolbar - Top: ${insets.top}")
             
             // Apply top inset as padding to toolbar
-            val currentPaddingLeft = view.paddingLeft
-            val currentPaddingRight = view.paddingRight
-            val currentPaddingBottom = view.paddingBottom
-            
             view.setPadding(
-                currentPaddingLeft,
+                originalPaddingLeft,
                 insets.top,
-                currentPaddingRight,
-                currentPaddingBottom
+                originalPaddingRight,
+                originalPaddingBottom
             )
-            
-            Timber.d("Toolbar padding applied: top=${insets.top}")
             
             // Don't consume - let other views handle insets too
             windowInsets
         }
         
-        // Force request insets from the decor view (more reliable)
-        toolbar.post {
-            toolbar.context?.let { context ->
-                if (context is AppCompatActivity) {
-                    ViewCompat.requestApplyInsets(context.window.decorView)
-                } else {
-                    ViewCompat.requestApplyInsets(toolbar)
+        // Request insets when view is attached
+        if (toolbar.isAttachedToWindow) {
+            requestInsetsForView(toolbar)
+        } else {
+            toolbar.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(v: View) {
+                    requestInsetsForView(v)
+                    v.removeOnAttachStateChangeListener(this)
                 }
-            } ?: ViewCompat.requestApplyInsets(toolbar)
+                override fun onViewDetachedFromWindow(v: View) {}
+            })
         }
     }
     
     /**
-     * Apply window insets to a bottom view (like bottom navigation or FAB)
+     * Apply window insets to a bottom view (like bottom navigation, button bar, or FAB)
+     * This adds padding/margin so the view is above the navigation bar (soft keys)
      */
     fun applyWindowInsetsToBottom(view: View) {
+        // Store original values
+        val originalPaddingBottom = view.paddingBottom
+        val originalPaddingLeft = view.paddingLeft
+        val originalPaddingRight = view.paddingRight
+        val originalPaddingTop = view.paddingTop
+        val originalMarginBottom = (view.layoutParams as? android.view.ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
+        
+        // Determine if this is a FAB (use margin) or other view (use padding)
+        val isFab = view is com.google.android.material.floatingactionbutton.FloatingActionButton
+        
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             
-            Timber.d("Applying window insets to bottom view - Bottom: ${insets.bottom}")
+            Timber.d("Applying bottom window insets - Bottom: ${insets.bottom}, isFab: $isFab, view: ${v.javaClass.simpleName}")
             
-            // Apply bottom inset as margin for FABs or padding for other views
-            val lp = v.layoutParams
-            if (lp is android.view.ViewGroup.MarginLayoutParams) {
-                lp.bottomMargin = insets.bottom + 16 // Add extra margin for FABs
-                v.layoutParams = lp
+            if (isFab) {
+                // For FABs, use margin so they float above the nav bar
+                val lp = v.layoutParams as? android.view.ViewGroup.MarginLayoutParams
+                if (lp != null) {
+                    lp.bottomMargin = originalMarginBottom + insets.bottom
+                    v.layoutParams = lp
+                }
             } else {
-                // Apply bottom inset as padding
+                // For other views like button bars, use padding
                 v.setPadding(
-                    v.paddingLeft,
-                    v.paddingTop,
-                    v.paddingRight,
-                    insets.bottom
+                    originalPaddingLeft,
+                    originalPaddingTop,
+                    originalPaddingRight,
+                    originalPaddingBottom + insets.bottom
                 )
             }
             
-            // Don't consume insets
+            // Don't consume insets so other views can use them
             windowInsets
         }
         
-        // Force request insets from decor view (more reliable)
+        // Request insets when view is attached and ready
+        if (view.isAttachedToWindow) {
+            requestInsetsForView(view)
+        } else {
+            view.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(v: View) {
+                    requestInsetsForView(v)
+                    v.removeOnAttachStateChangeListener(this)
+                }
+                override fun onViewDetachedFromWindow(v: View) {}
+            })
+        }
+    }
+    
+    private fun requestInsetsForView(view: View) {
+        // Use post to ensure layout is complete, then request insets from decor view
         view.post {
             view.context?.let { context ->
                 if (context is AppCompatActivity) {
                     ViewCompat.requestApplyInsets(context.window.decorView)
+                    Timber.d("Requested insets from decor view for ${view.javaClass.simpleName}")
                 } else {
                     ViewCompat.requestApplyInsets(view)
                 }
             } ?: ViewCompat.requestApplyInsets(view)
+        }
+    }
+    
+    /**
+     * Apply window insets to a scrollable container (like NestedScrollView or RecyclerView)
+     * This adds bottom padding so content can scroll above the navigation bar (soft keys)
+     */
+    fun applyWindowInsetsToScrollableContent(view: View) {
+        // Store original padding
+        val originalPaddingBottom = view.paddingBottom
+        val originalPaddingLeft = view.paddingLeft
+        val originalPaddingRight = view.paddingRight
+        val originalPaddingTop = view.paddingTop
+        
+        ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            
+            Timber.d("Applying scroll content window insets - Bottom: ${insets.bottom}")
+            
+            v.setPadding(
+                originalPaddingLeft,
+                originalPaddingTop,
+                originalPaddingRight,
+                originalPaddingBottom + insets.bottom
+            )
+            
+            // For scrollable views, disable clip to padding so content can scroll behind nav bar initially
+            if (v is androidx.recyclerview.widget.RecyclerView) {
+                v.clipToPadding = false
+            } else if (v is androidx.core.widget.NestedScrollView) {
+                v.clipToPadding = false
+            }
+            
+            windowInsets
+        }
+        
+        // Request insets when view is attached
+        if (view.isAttachedToWindow) {
+            requestInsetsForView(view)
+        } else {
+            view.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(v: View) {
+                    requestInsetsForView(v)
+                    v.removeOnAttachStateChangeListener(this)
+                }
+                override fun onViewDetachedFromWindow(v: View) {}
+            })
         }
     }
 
@@ -134,14 +211,20 @@ object ToolbarUtils {
         // If the activity is SimpleFragmentActivityBase, hide its toolbar since fragment has its own
         if (activity is de.dreier.mytargets.base.activities.SimpleFragmentActivityBase) {
             activity.hideActivityToolbar()
-            // Enable edge-to-edge for fragments with their own toolbar
-            WindowCompat.setDecorFitsSystemWindows(activity.window, false)
-            activity.window.statusBarColor = android.graphics.Color.TRANSPARENT
+            // Edge-to-edge is already enabled in SimpleFragmentActivityBase.onCreate()
         }
         
         // Automatically apply window insets for edge-to-edge display
         Timber.d("setSupportActionBar called for ${fragment.javaClass.simpleName} - applying insets")
         applyWindowInsets(toolbar)
+        
+        // Force a fresh inset dispatch to all views after toolbar is set up
+        // This ensures FABs and other views get the correct insets for soft navigation keys
+        toolbar.post {
+            activity.window?.decorView?.let { decorView ->
+                ViewCompat.requestApplyInsets(decorView)
+            }
+        }
     }
 
     fun setTitle(fragment: Fragment, @StringRes title: Int) {
