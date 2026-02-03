@@ -49,6 +49,11 @@ abstract class SettingsFragmentBase : PreferenceFragmentCompat(),
         view.setBackgroundColor(
             ContextCompat.getColor(context!!, R.color.background_material_light)
         )
+        
+        // Apply bottom insets to the preference list for navigation bar
+        listView?.let { recyclerView ->
+            ToolbarUtils.applyWindowInsetsToScrollableContent(recyclerView)
+        }
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {

@@ -85,8 +85,8 @@ class StatisticsActivity : ChildActivityBase(),
         setSupportActionBar(binding.toolbar)
         ToolbarUtils.applyWindowInsets(binding.toolbar)
         
-        // Apply bottom insets to filter drawer's reset button
-        ToolbarUtils.applyWindowInsetsToBottom(binding.reset)
+        // Apply bottom insets to filter drawer view
+        ToolbarUtils.applyWindowInsetsToBottom(binding.filterView)
 
         binding.reset.setOnClickListener { resetFilter() }
 

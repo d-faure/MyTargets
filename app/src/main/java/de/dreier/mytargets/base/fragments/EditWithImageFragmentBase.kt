@@ -92,12 +92,23 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
         savedInstanceState: Bundle?
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_edit_image, container, false)
+        
+        // Enable edge-to-edge for the activity
+        activity?.let { act ->
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(act.window, false)
+            act.window.statusBarColor = android.graphics.Color.TRANSPARENT
+            act.window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        }
+        
         ToolbarUtils.setSupportActionBar(this, binding.toolbar)
         ToolbarUtils.showUpAsX(this)
         setHasOptionsMenu(true)
         binding.fab.setOnClickListener { this.onFabClicked(it) }
-        // Apply bottom insets for navigation bar
-        ToolbarUtils.applyWindowInsetsToBottom(binding.content)
+        
+        // Apply bottom insets for navigation bar to content and FAB
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.content)
+        ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
+        
         return binding.root
     }
 

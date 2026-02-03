@@ -53,6 +53,12 @@ class EditArrowFragment : EditWithImageFragmentBase<ArrowImage>(R.drawable.arrow
         contentBinding.moreFields.setOnClickListener {
             viewModel.showAll.set(true)
         }
+        
+        // Set initial title for new arrows
+        if (arguments.getLongOrNull(ARROW_ID) == null) {
+            ToolbarUtils.setTitle(this@EditArrowFragment, getString(R.string.my_arrow))
+        }
+        
         viewModel.arrow.observe(this, Observer { arrow ->
             if (arrow == null) {
                 return@Observer

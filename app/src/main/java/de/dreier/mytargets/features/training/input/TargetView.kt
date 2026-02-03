@@ -113,7 +113,10 @@ class TargetView : TargetViewBase {
 
     private val spotEndMatrix: Matrix
         get() {
-            return if (currentShotIndex == EndRenderer.NO_SELECTION || inputMethod === KEYBOARD) {
+            // Only show a specific spot when actively placing/selecting a shot
+            // Otherwise show the full target with all spots (identity matrix)
+            // This ensures the view snaps back to show all spots between arrow placements
+            return if (currentShotIndex == EndRenderer.NO_SELECTION || inputMethod === KEYBOARD || !isCurrentlySelecting) {
                 Matrix()
             } else {
                 spotMatrices!![currentShotIndex % target.model.faceCount]
@@ -215,7 +218,9 @@ class TargetView : TargetViewBase {
         targetDrawable!!.setFocusedArrow(null)
         if (animator == null) {
             targetDrawable!!.setMatrix(fullMatrix!!)
-            if (currentShotIndex == EndRenderer.NO_SELECTION || inputMethod === KEYBOARD) {
+            // Show all spots when not actively selecting a shot position
+            // This ensures the view shows all target zones between arrow placements
+            if (currentShotIndex == EndRenderer.NO_SELECTION || inputMethod === KEYBOARD || !isCurrentlySelecting) {
                 targetDrawable!!.spotMatrix = Matrix()
             } else {
                 targetDrawable!!.spotMatrix =

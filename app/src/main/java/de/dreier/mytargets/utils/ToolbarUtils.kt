@@ -166,6 +166,8 @@ object ToolbarUtils {
                 v.clipToPadding = false
             } else if (v is androidx.core.widget.NestedScrollView) {
                 v.clipToPadding = false
+            } else if (v is android.widget.ScrollView) {
+                v.clipToPadding = false
             }
             
             windowInsets

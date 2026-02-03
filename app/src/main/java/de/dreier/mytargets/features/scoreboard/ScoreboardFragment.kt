@@ -109,9 +109,19 @@ class ScoreboardFragment : FragmentBase() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         
+        // Enable edge-to-edge for the activity
+        activity?.let { act ->
+            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(act.window, false)
+            act.window.statusBarColor = android.graphics.Color.TRANSPARENT
+            act.window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        }
+        
         // Set up toolbar with window insets for edge-to-edge display
         ToolbarUtils.setSupportActionBar(this, binding!!.toolbar)
         ToolbarUtils.showHomeAsUp(this)
+        
+        // Apply bottom insets to the ScrollView for navigation bar
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding!!.scrollView)
 
         LocalBroadcastManager.getInstance(context!!).registerReceiver(
             updateReceiver,
