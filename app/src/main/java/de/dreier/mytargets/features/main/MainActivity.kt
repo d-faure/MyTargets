@@ -65,11 +65,9 @@ class MainActivity : AppCompatActivity() {
         countryCode = getCountryCode()
         super.onCreate(savedInstanceState)
         
-        // Enable edge-to-edge display for SDK 36+
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
-        
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         navigationController = NavigationController(this)
         if (SettingsManager.shouldShowIntroActivity) {
             SettingsManager.shouldShowIntroActivity = false
@@ -80,10 +78,8 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbar)
 
-        // Handle window insets for edge-to-edge display
         ToolbarUtils.applyWindowInsets(binding.toolbar)
         ToolbarUtils.applyWindowInsetsToBottom(binding.bottomNavigation)
-
         setupBottomNavigation()
         setupNavigationDrawer()
         if (savedInstanceState == null) {
@@ -135,9 +131,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupNavigationDrawer() {
-        if (Utils.isLollipop) {
-            window.statusBarColor = Color.TRANSPARENT
-        }
 
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {

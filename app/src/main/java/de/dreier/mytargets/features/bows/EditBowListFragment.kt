@@ -81,7 +81,6 @@ class EditBowListFragment : EditableListFragmentBase<Bow, SimpleListAdapterBase<
             false
         }
 
-        // Apply bottom insets for navigation bar
         de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fabSpeedDial)
         return binding.root
     }

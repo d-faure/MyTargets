@@ -17,12 +17,17 @@ package de.dreier.mytargets.base.fragments
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
+import android.net.Uri
+import android.provider.MediaStore
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import androidx.annotation.CallSuper
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -42,6 +47,7 @@ import de.dreier.mytargets.utils.RuntimePermissions
 import de.dreier.mytargets.utils.PermissionUtils
 import pl.aprilapps.easyphotopicker.DefaultCallback
 import pl.aprilapps.easyphotopicker.EasyImage
+import timber.log.Timber
 import java.io.File
 import java.io.IOException
 
@@ -93,19 +99,40 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_edit_image, container, false)
         
-        // Enable edge-to-edge for the activity
-        activity?.let { act ->
-            androidx.core.view.WindowCompat.setDecorFitsSystemWindows(act.window, false)
-            act.window.statusBarColor = android.graphics.Color.TRANSPARENT
-            act.window.navigationBarColor = android.graphics.Color.TRANSPARENT
-        }
-        
         ToolbarUtils.setSupportActionBar(this, binding.toolbar)
+        // AppBarLayout owns top insets on this collapsing header screen.
+        val originalAppBarPaddingTop = binding.appBarLayout.paddingTop
+        val originalAppBarPaddingLeft = binding.appBarLayout.paddingLeft
+        val originalAppBarPaddingRight = binding.appBarLayout.paddingRight
+        val originalAppBarPaddingBottom = binding.appBarLayout.paddingBottom
+        val toolbarPaddingLeft = binding.toolbar.paddingLeft
+        val toolbarPaddingTop = binding.toolbar.paddingTop
+        val toolbarPaddingRight = binding.toolbar.paddingRight
+        val toolbarPaddingBottom = binding.toolbar.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { view, windowInsets ->
+            val topInsets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            val extraTopPx = (12 * view.resources.displayMetrics.density).toInt()
+            view.setPadding(
+                originalAppBarPaddingLeft,
+                originalAppBarPaddingTop + topInsets.top + extraTopPx,
+                originalAppBarPaddingRight,
+                originalAppBarPaddingBottom
+            )
+            // Keep toolbar touch target stable: no additional inset padding here.
+            binding.toolbar.setPadding(
+                toolbarPaddingLeft,
+                toolbarPaddingTop,
+                toolbarPaddingRight,
+                toolbarPaddingBottom
+            )
+            windowInsets
+        }
+        ViewCompat.requestApplyInsets(binding.appBarLayout)
         ToolbarUtils.showUpAsX(this)
         setHasOptionsMenu(true)
         binding.fab.setOnClickListener { this.onFabClicked(it) }
-        
-        // Apply bottom insets for navigation bar to content and FAB
         ToolbarUtils.applyWindowInsetsToScrollableContent(binding.content)
         ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
         
@@ -170,7 +197,20 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
     }
 
     internal fun onSelectImage() {
-        EasyImage.openGallery(this, 0)
+        try {
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            intent.type = "image/*"
+            startActivityForResult(intent, REQUEST_GALLERY_IMAGE)
+        } catch (e: Exception) {
+            try {
+                val fallback = Intent(Intent.ACTION_GET_CONTENT)
+                fallback.type = "image/*"
+                fallback.addCategory(Intent.CATEGORY_OPENABLE)
+                startActivityForResult(fallback, REQUEST_GALLERY_IMAGE)
+            } catch (e2: Exception) {
+                Timber.e(e2, "No gallery app available")
+            }
+        }
     }
 
     @SuppressLint("NeedOnRequestPermissionsResult")
@@ -196,6 +236,20 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == Activity.RESULT_OK) {
+            val uri = data?.data
+                ?: data?.clipData?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.uri
+            if (uri != null) {
+                val file = copyUriToLocalFile(uri)
+                if (file != null) {
+                    oldImageFile = imageFile
+                    loadImage(file)
+                }
+            }
+            return
+        }
+
         EasyImage.handleActivityResult(requestCode, resultCode, data, activity,
             object : DefaultCallback() {
 
@@ -210,13 +264,28 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
                 }
 
                 override fun onCanceled(source: EasyImage.ImageSource?, type: Int) {
-                    //Cancel handling, you might wanna remove taken photo if it was canceled
                     if (source == EasyImage.ImageSource.CAMERA_IMAGE) {
                         val photoFile = EasyImage.lastlyTakenButCanceledPhoto(context!!)
                         photoFile?.delete()
                     }
                 }
             })
+    }
+
+    private fun copyUriToLocalFile(uri: Uri): File? {
+        return try {
+            val input = requireContext().contentResolver.openInputStream(uri) ?: return null
+            val file = File.createTempFile("gallery_img", ".jpg", requireContext().filesDir)
+            input.use { it.copyTo(file.outputStream()) }
+            file
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to copy gallery image")
+            null
+        }
+    }
+
+    companion object {
+        private const val REQUEST_GALLERY_IMAGE = 7723
     }
 
     protected fun loadImage(imageFile: File?) {

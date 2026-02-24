@@ -16,15 +16,13 @@
 package de.dreier.mytargets.base.activities
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import de.dreier.mytargets.R
+import de.dreier.mytargets.utils.ToolbarUtils
 
 abstract class SimpleFragmentActivityBase : ChildActivityBase() {
 
@@ -37,20 +35,14 @@ abstract class SimpleFragmentActivityBase : ChildActivityBase() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Enable edge-to-edge from the start to properly handle soft navigation keys
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
-        
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_simple_fragment)
         
-        // Set up activity toolbar - fragments can override this with their own
         activityToolbar = findViewById(R.id.toolbar)
         setSupportActionBar(activityToolbar)
-        
-        // Apply insets to the activity toolbar
-        applyInsetsToActivityToolbar()
+        activityToolbar?.let { ToolbarUtils.applyWindowInsets(it) }
 
         if (savedInstanceState == null) {
             // Create the fragment only when the activity is created for the first time.
@@ -64,21 +56,6 @@ abstract class SimpleFragmentActivityBase : ChildActivityBase() {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, childFragment, FRAGMENT_TAG)
                 .commit()
-        }
-    }
-    
-    private fun applyInsetsToActivityToolbar() {
-        activityToolbar?.let { toolbar ->
-            ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, windowInsets ->
-                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-                view.setPadding(
-                    view.paddingLeft,
-                    insets.top,
-                    view.paddingRight,
-                    view.paddingBottom
-                )
-                windowInsets
-            }
         }
     }
     

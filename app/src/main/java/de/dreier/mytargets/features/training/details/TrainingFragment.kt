@@ -76,7 +76,6 @@ open class TrainingFragment : EditableListFragmentBase<Round, SimpleListAdapterB
             // New round to free training
             navigationController.navigateToCreateRound(trainingId, binding.fab)
         }
-        // Apply bottom insets for navigation bar
         ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
         return binding.root
     }

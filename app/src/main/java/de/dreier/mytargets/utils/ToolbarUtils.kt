@@ -27,6 +27,14 @@ import de.dreier.mytargets.R
 import timber.log.Timber
 
 object ToolbarUtils {
+    private const val EXTRA_TOP_SPACE_DP = 8
+    private const val EXTRA_BOTTOM_SPACE_DP = 12
+    private const val EXTRA_SCROLL_SPACE_DP = 24
+
+    private fun dpToPx(view: View, dp: Int): Int {
+        val density = view.resources.displayMetrics.density
+        return (dp * density).toInt()
+    }
     
     /**
      * Apply window insets to toolbar for edge-to-edge display
@@ -39,14 +47,17 @@ object ToolbarUtils {
         val originalPaddingBottom = toolbar.paddingBottom
         
         ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            val extraTop = dpToPx(view, EXTRA_TOP_SPACE_DP)
             
             Timber.d("Applying window insets to toolbar - Top: ${insets.top}")
             
             // Apply top inset as padding to toolbar
             view.setPadding(
                 originalPaddingLeft,
-                insets.top,
+                insets.top + extraTop,
                 originalPaddingRight,
                 originalPaddingBottom
             )
@@ -85,15 +96,16 @@ object ToolbarUtils {
         val isFab = view is com.google.android.material.floatingactionbutton.FloatingActionButton
         
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val navInsets = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val extraBottom = dpToPx(v, EXTRA_BOTTOM_SPACE_DP)
             
-            Timber.d("Applying bottom window insets - Bottom: ${insets.bottom}, isFab: $isFab, view: ${v.javaClass.simpleName}")
+            Timber.d("Applying bottom window insets - Bottom: ${navInsets.bottom}, isFab: $isFab, view: ${v.javaClass.simpleName}")
             
             if (isFab) {
                 // For FABs, use margin so they float above the nav bar
                 val lp = v.layoutParams as? android.view.ViewGroup.MarginLayoutParams
                 if (lp != null) {
-                    lp.bottomMargin = originalMarginBottom + insets.bottom
+                    lp.bottomMargin = originalMarginBottom + navInsets.bottom + extraBottom
                     v.layoutParams = lp
                 }
             } else {
@@ -102,7 +114,7 @@ object ToolbarUtils {
                     originalPaddingLeft,
                     originalPaddingTop,
                     originalPaddingRight,
-                    originalPaddingBottom + insets.bottom
+                    originalPaddingBottom + navInsets.bottom + extraBottom
                 )
             }
             
@@ -150,15 +162,18 @@ object ToolbarUtils {
         val originalPaddingTop = view.paddingTop
         
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val navInsets = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val imeInsets = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
+            val extraBottom = dpToPx(v, EXTRA_SCROLL_SPACE_DP)
+            val safeBottomInset = maxOf(navInsets.bottom, imeInsets.bottom)
             
-            Timber.d("Applying scroll content window insets - Bottom: ${insets.bottom}")
+            Timber.d("Applying scroll content window insets - Bottom: $safeBottomInset")
             
             v.setPadding(
                 originalPaddingLeft,
                 originalPaddingTop,
                 originalPaddingRight,
-                originalPaddingBottom + insets.bottom
+                originalPaddingBottom + safeBottomInset + extraBottom
             )
             
             // For scrollable views, disable clip to padding so content can scroll behind nav bar initially

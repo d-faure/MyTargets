@@ -58,10 +58,9 @@ class GalleryActivity : ChildActivityBase() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Enable edge-to-edge display
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
-        
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         binding = DataBindingUtil.setContentView(this, R.layout.activity_gallery)
 
         val title = intent.getStringExtra(EXTRA_TITLE)
@@ -71,7 +70,6 @@ class GalleryActivity : ChildActivityBase() {
 
         setSupportActionBar(binding.toolbar)
         ToolbarUtils.applyWindowInsets(binding.toolbar)
-
         ToolbarUtils.showHomeAsUp(this)
         if (title != null) {
             ToolbarUtils.setTitle(this, title)
@@ -192,7 +190,23 @@ class GalleryActivity : ChildActivityBase() {
     }
 
     internal fun onSelectImage() {
-        EasyImage.openGallery(this, 0)
+        try {
+            val intent = Intent(
+                Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            )
+            intent.type = "image/*"
+            startActivityForResult(intent, REQUEST_GALLERY_IMAGE)
+        } catch (e: Exception) {
+            try {
+                val fallback = Intent(Intent.ACTION_GET_CONTENT)
+                fallback.type = "image/*"
+                fallback.addCategory(Intent.CATEGORY_OPENABLE)
+                startActivityForResult(fallback, REQUEST_GALLERY_IMAGE)
+            } catch (e2: Exception) {
+                timber.log.Timber.e(e2, "No gallery app available")
+            }
+        }
     }
 
     @SuppressLint("NeedOnRequestPermissionsResult")
@@ -218,6 +232,17 @@ class GalleryActivity : ChildActivityBase() {
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK) {
+            val uri = data?.data
+                ?: data?.clipData?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.uri
+            if (uri != null) {
+                val file = copyUriToLocalFile(uri)
+                if (file != null) loadImages(listOf(file))
+            }
+            return
+        }
+
         EasyImage.handleActivityResult(requestCode, resultCode, data, this,
             object : DefaultCallback() {
 
@@ -230,7 +255,6 @@ class GalleryActivity : ChildActivityBase() {
                 }
 
                 override fun onCanceled(source: EasyImage.ImageSource?, type: Int) {
-                    //Cancel handling, you might wanna remove taken photo if it was canceled
                     if (source == EasyImage.ImageSource.CAMERA_IMAGE) {
                         val photoFile = EasyImage
                             .lastlyTakenButCanceledPhoto(applicationContext)
@@ -238,6 +262,18 @@ class GalleryActivity : ChildActivityBase() {
                     }
                 }
             })
+    }
+
+    private fun copyUriToLocalFile(uri: android.net.Uri): File? {
+        return try {
+            val input = contentResolver.openInputStream(uri) ?: return null
+            val file = File.createTempFile("gallery_img", ".jpg", filesDir)
+            input.use { it.copyTo(file.outputStream()) }
+            file
+        } catch (e: Exception) {
+            timber.log.Timber.e(e, "Failed to copy gallery image")
+            null
+        }
     }
 
     private fun loadImages(imageFile: List<File>) {
@@ -287,6 +323,7 @@ class GalleryActivity : ChildActivityBase() {
     companion object {
         const val EXTRA_IMAGES = "images"
         const val EXTRA_TITLE = "title"
+        private const val REQUEST_GALLERY_IMAGE = 7723
 
         fun getResult(data: Intent): ImageList {
             return data.getParcelableExtra(NavigationController.ITEM)!!

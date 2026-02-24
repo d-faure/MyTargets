@@ -28,9 +28,7 @@ class TimerActivity : ChildActivityBase() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Enable edge-to-edge display for proper toolbar insets
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
         if (savedInstanceState == null) {
             // Create the fragment only when the activity is created for the first time.
             // ie. not after orientation changes

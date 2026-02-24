@@ -60,7 +60,6 @@ class DistanceGridFragment : SelectItemFragmentBase<Dimension, SimpleListAdapter
                 .setOnClickListener(this@DistanceGridFragment)
                 .show()
         }
-        // Apply bottom insets for navigation bar
         de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
         return binding.root
     }

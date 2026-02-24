@@ -75,6 +75,7 @@ class TargetListFragment :
         useDoubleClickSelection = true
         ToolbarUtils.setSupportActionBar(this, binding.toolbar)
         ToolbarUtils.showHomeAsUp(this)
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.recyclerView)
         setHasOptionsMenu(true)
         return binding.root
     }

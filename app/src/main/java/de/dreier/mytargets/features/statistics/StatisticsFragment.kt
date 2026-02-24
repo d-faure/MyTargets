@@ -199,9 +199,7 @@ class StatisticsFragment : FragmentBase() {
         binding.arrows.adapter = adapter
         binding.arrows.isNestedScrollingEnabled = false
         
-        // Apply bottom insets to scrollable content so it can scroll above nav bar
         ToolbarUtils.applyWindowInsetsToScrollableContent(binding.root)
-
         ToolbarUtils.showHomeAsUp(this)
         return binding.root
     }
