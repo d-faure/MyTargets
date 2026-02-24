@@ -19,6 +19,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -38,6 +39,7 @@ import android.widget.EditText
 import android.widget.Toast
 import com.evernote.android.state.State
 import com.google.android.material.appbar.AppBarLayout
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import de.dreier.mytargets.R
 import de.dreier.mytargets.databinding.FragmentEditImageBinding
@@ -298,7 +300,27 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
                 .load(imageFile)
                 .fit()
                 .centerCrop()
-                .into(binding.imageView)
+                .into(binding.imageView, object : Callback {
+                    override fun onSuccess() {
+                        // Picasso decoded successfully.
+                    }
+
+                    override fun onError() {
+                        // Some gallery formats/metadata fail in Picasso on certain devices.
+                        // Fallback to framework decoding so users still see the selected image.
+                        val bitmap = BitmapFactory.decodeFile(imageFile.path)
+                        if (bitmap != null) {
+                            binding.imageView.setImageBitmap(bitmap)
+                        } else {
+                            binding.imageView.setImageResource(defaultDrawable)
+                            Toast.makeText(
+                                requireContext(),
+                                "Failed to display selected image",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                })
         }
     }
 
