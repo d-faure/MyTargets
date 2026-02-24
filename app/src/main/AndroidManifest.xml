@@ -161,7 +161,7 @@
             android:name=".features.bows.EditBowActivity"
             android:parentActivityName=".features.main.MainActivity"
             android:theme="@style/AppTheme.CustomToolbar"
-            android:windowSoftInputMode="adjustResize|stateHidden">
+            android:windowSoftInputMode="adjustPan|stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.main.MainActivity"/>
@@ -170,7 +170,7 @@
             android:name=".features.arrows.EditArrowActivity"
             android:parentActivityName=".features.main.MainActivity"
             android:theme="@style/AppTheme.CustomToolbar"
-            android:windowSoftInputMode="adjustResize|stateHidden">
+            android:windowSoftInputMode="adjustPan|stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".features.main.MainActivity"/>

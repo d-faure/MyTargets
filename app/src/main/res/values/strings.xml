@@ -180,6 +180,7 @@
     <string name="expand_collapse">Expand/Collapse</string>
     <string name="new_round_template">New template</string>
     <string name="arrow_numbers">Arrow numbers</string>
+    <string name="all_arrow_numbers_used">All arrow numbers are already used in this end</string>
     <string name="round_removed">Round deleted!</string>
     <string name="custom_round">Custom round</string>
     <string name="filter">Filter</string>

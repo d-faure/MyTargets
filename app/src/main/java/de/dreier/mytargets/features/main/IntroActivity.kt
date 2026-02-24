@@ -18,7 +18,10 @@ package de.dreier.mytargets.features.main
 import io.github.dreierf.materialintroscreen.MaterialIntroActivity
 import io.github.dreierf.materialintroscreen.SlideFragmentBuilder
 import android.os.Bundle
+import android.view.View
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import de.dreier.mytargets.R
 
 class IntroActivity : MaterialIntroActivity() {
@@ -28,6 +31,7 @@ class IntroActivity : MaterialIntroActivity() {
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
+        applyBottomInsetsToNavigation()
         hideBackButton()
 
         enableLastSlideAlphaExitTransition(true)
@@ -51,5 +55,22 @@ class IntroActivity : MaterialIntroActivity() {
                 .description(getString(R.string.intro_description_everything_in_one_place))
                 .build()
         )
+    }
+
+    private fun applyBottomInsetsToNavigation() {
+        val navView = findViewById<View>(R.id.navigation_view) ?: return
+        val originalPaddingBottom = navView.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(navView) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val extraBottomPx = (8 * v.resources.displayMetrics.density).toInt()
+            v.setPadding(
+                v.paddingLeft,
+                v.paddingTop,
+                v.paddingRight,
+                originalPaddingBottom + insets.bottom + extraBottomPx
+            )
+            windowInsets
+        }
+        ViewCompat.requestApplyInsets(navView)
     }
 }

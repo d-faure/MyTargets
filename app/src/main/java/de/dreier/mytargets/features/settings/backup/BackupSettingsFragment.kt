@@ -319,6 +319,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         binding.recentBackupsList.isNestedScrollingEnabled = false
         binding.recentBackupsList
             .addItemDecoration(DividerItemDecoration(context!!, VERTICAL))
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.backupScrollView)
 
         setHasOptionsMenu(true)
         return binding.root

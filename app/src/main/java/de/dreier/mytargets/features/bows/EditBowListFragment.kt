@@ -81,6 +81,7 @@ class EditBowListFragment : EditableListFragmentBase<Bow, SimpleListAdapterBase<
             false
         }
 
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToScrollableContent(binding.recyclerView)
         de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fabSpeedDial)
         return binding.root
     }

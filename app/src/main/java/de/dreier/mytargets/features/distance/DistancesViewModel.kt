@@ -37,10 +37,10 @@ class DistancesViewModel(app: Application) : AndroidViewModel(app) {
             dimensionDAO.getAll(unit)
         }
         distances = dbDistances.map { filteredDistances ->
-            val distances = mutableSetOf(de.dreier.mytargets.shared.models.Dimension.UNKNOWN)
+            val distances = mutableSetOf<Dimension>()
 
             // Add currently selected distance to list
-            if (this.distance.value?.unit == unit.value) {
+            if (this.distance.value?.unit == unit.value && this.distance.value!!.value >= 0f) {
                 distances.add(this.distance.value!!)
             }
             distances.addAll(filteredDistances)

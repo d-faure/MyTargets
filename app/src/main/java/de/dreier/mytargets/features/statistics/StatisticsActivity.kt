@@ -82,6 +82,7 @@ class StatisticsActivity : ChildActivityBase(),
         binding = DataBindingUtil.setContentView(this, R.layout.activity_statistics)
         setSupportActionBar(binding.toolbar)
         ToolbarUtils.applyWindowInsets(binding.toolbar)
+        ToolbarUtils.applyWindowInsetsToBottom(binding.filterView)
 
         binding.reset.setOnClickListener { resetFilter() }
 

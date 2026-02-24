@@ -85,7 +85,7 @@ class StandardRoundListFragment :
         }
         ToolbarUtils.applyWindowInsetsToScrollableContent(binding.recyclerView)
         de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
-        useDoubleClickSelection = true
+        useDoubleClickSelection = false
         setHasOptionsMenu(true)
         return binding.root
     }

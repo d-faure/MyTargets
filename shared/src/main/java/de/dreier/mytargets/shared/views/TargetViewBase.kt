@@ -353,6 +353,7 @@ abstract class TargetViewBase : View, View.OnTouchListener {
                     currentShotIndex -= 1
                     val shot = shots[currentShotIndex]
                     shot.scoringRing = Shot.NOTHING_SELECTED
+                    shot.arrowNumber = null
                     notifyTargetShotsChanged()
                     animateToNewState()
                 }

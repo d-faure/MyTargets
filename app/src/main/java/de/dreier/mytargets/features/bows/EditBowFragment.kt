@@ -87,7 +87,8 @@ class EditBowFragment : EditWithImageFragmentBase<BowImage>(R.drawable.recurve_b
                 imageFiles = emptyList()
             }
         }
-        ToolbarUtils.setTitle(this, bow.name)
+        val bowTitle = if (bow.name.isBlank()) getString(R.string.my_bow) else bow.name
+        ToolbarUtils.setTitle(this, bowTitle)
         contentBinding.bow = bow
         contentBinding.showAll = false
 
