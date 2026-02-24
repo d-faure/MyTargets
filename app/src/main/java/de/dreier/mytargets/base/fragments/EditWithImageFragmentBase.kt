@@ -20,9 +20,12 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.appcompat.widget.PopupMenu
@@ -32,6 +35,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Toast
 import com.evernote.android.state.State
 import com.google.android.material.appbar.AppBarLayout
 import com.squareup.picasso.Picasso
@@ -63,6 +67,18 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
 
     @State
     var oldImageFile: File? = null
+
+    private val pickVisualMediaLauncher = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        handlePickedImageUri(uri)
+    }
+
+    private val getContentLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        handlePickedImageUri(uri)
+    }
 
     protected var imageFiles: List<T>
         get() {
@@ -171,11 +187,7 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.action_from_gallery -> {
-                    if (PermissionUtils.hasStoragePermission(requireContext())) {
-                        onSelectImage()
-                    } else {
-                        PermissionUtils.requestStoragePermission(this)
-                    }
+                    onSelectImage()
                     true
                 }
                 R.id.action_take_picture -> {
@@ -198,18 +210,16 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
 
     internal fun onSelectImage() {
         try {
-            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            intent.type = "image/*"
-            startActivityForResult(intent, REQUEST_GALLERY_IMAGE)
-        } catch (e: Exception) {
-            try {
-                val fallback = Intent(Intent.ACTION_GET_CONTENT)
-                fallback.type = "image/*"
-                fallback.addCategory(Intent.CATEGORY_OPENABLE)
-                startActivityForResult(fallback, REQUEST_GALLERY_IMAGE)
-            } catch (e2: Exception) {
-                Timber.e(e2, "No gallery app available")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                pickVisualMediaLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            } else {
+                getContentLauncher.launch("image/*")
             }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to launch image picker")
+            Toast.makeText(requireContext(), "No gallery app available", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -226,29 +236,11 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
                     onTakePicture()
                 }
             }
-            PermissionUtils.REQUEST_STORAGE -> {
-                if (PermissionUtils.isPermissionGranted(grantResults)) {
-                    onSelectImage()
-                }
-            }
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == Activity.RESULT_OK) {
-            val uri = data?.data
-                ?: data?.clipData?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.uri
-            if (uri != null) {
-                val file = copyUriToLocalFile(uri)
-                if (file != null) {
-                    oldImageFile = imageFile
-                    loadImage(file)
-                }
-            }
-            return
-        }
 
         EasyImage.handleActivityResult(requestCode, resultCode, data, activity,
             object : DefaultCallback() {
@@ -272,6 +264,19 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
             })
     }
 
+    private fun handlePickedImageUri(uri: Uri?) {
+        if (uri == null) {
+            return
+        }
+        val file = copyUriToLocalFile(uri)
+        if (file != null) {
+            oldImageFile = imageFile
+            loadImage(file)
+        } else {
+            Toast.makeText(requireContext(), "Failed to load selected image", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun copyUriToLocalFile(uri: Uri): File? {
         return try {
             val input = requireContext().contentResolver.openInputStream(uri) ?: return null
@@ -282,10 +287,6 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
             Timber.e(e, "Failed to copy gallery image")
             null
         }
-    }
-
-    companion object {
-        private const val REQUEST_GALLERY_IMAGE = 7723
     }
 
     protected fun loadImage(imageFile: File?) {
