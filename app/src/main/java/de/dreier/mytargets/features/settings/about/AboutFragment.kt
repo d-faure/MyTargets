@@ -25,6 +25,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import de.dreier.mytargets.BuildConfig
 import de.dreier.mytargets.R
+import de.dreier.mytargets.utils.ToolbarUtils
 import mehdi.sakout.aboutpage.AboutPage
 import mehdi.sakout.aboutpage.Element
 
@@ -68,7 +69,7 @@ class AboutFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return AboutPage(context)
+        val aboutView = AboutPage(context)
             .isRTL(false)
             .setImage(R.drawable.product_logo_144dp)
             .setDescription(getString(R.string.my_targets) + "\n" + version)
@@ -101,6 +102,8 @@ class AboutFragment : Fragment() {
                     null)
             )
             .create()
+        ToolbarUtils.applyWindowInsetsToScrollableContent(aboutView)
+        return aboutView
     }
 
     private inner class WebElement internal constructor(

@@ -20,6 +20,8 @@ import android.content.Intent
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import androidx.annotation.CallSuper
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import android.view.*
 import de.dreier.mytargets.R
@@ -53,6 +55,15 @@ class HelpFragment : Fragment() {
             return prompt
         }
 
+    private fun addBottomSpacerToHtml(html: String): String {
+        val spacer = "<div style=\"height: 140px;\"></div>"
+        return if (html.contains("</body>", ignoreCase = true)) {
+            html.replace("</body>", "$spacer</body>", ignoreCase = true)
+        } else {
+            html + spacer
+        }
+    }
+
     @CallSuper
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,10 +71,29 @@ class HelpFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_web, container, false)
-        val prompt = helpHtmlPage
+        val prompt = addBottomSpacerToHtml(helpHtmlPage)
         binding.webView
             .loadDataWithBaseURL("file:///android_asset/", prompt, "text/html", "utf-8", "")
         binding.webView.isHorizontalScrollBarEnabled = false
+        val originalPaddingLeft = binding.webView.paddingLeft
+        val originalPaddingTop = binding.webView.paddingTop
+        val originalPaddingRight = binding.webView.paddingRight
+        val originalPaddingBottom = binding.webView.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.webView) { view, windowInsets ->
+            val navInsets = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val imeInsets = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
+            val safeBottomInset = maxOf(navInsets.bottom, imeInsets.bottom)
+            val extraBottomPx = (40 * view.resources.displayMetrics.density).toInt()
+            view.setPadding(
+                originalPaddingLeft,
+                originalPaddingTop,
+                originalPaddingRight,
+                originalPaddingBottom + safeBottomInset + extraBottomPx
+            )
+            binding.webView.clipToPadding = false
+            windowInsets
+        }
+        ViewCompat.requestApplyInsets(binding.webView)
         return binding.root
     }
 

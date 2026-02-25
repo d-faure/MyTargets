@@ -23,18 +23,17 @@ import de.dreier.mytargets.shared.targets.models.TargetModelBase
 import de.dreier.mytargets.shared.targets.scoringstyle.ScoringStyle
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.math.abs
 import kotlin.math.exp
-import kotlin.math.sqrt
+import kotlin.math.pow
 
 class HandicapCalculator {
     constructor(round: Round) {
-        this.arrowCount = round.score.shotCount
-        this.targetModel = round.target.model
-        this.scoringStyle = round.target.getScoringStyle()
-        this.targetSize = round.target.diameter
-        this.maxScore = round.score.totalPoints
-        this.reachedScore = round.score.reachedPoints
+        setArrowCount(round.score.shotCount)
+        setTargetModel(round.target.model)
+        setScoringStyle(round.target.getScoringStyle())
+        setTargetSize(round.target.diameter)
+        maxScore = round.score.totalPoints
+        reachedScore = round.score.reachedPoints
         setTargetDistance(round.distance)
     }
 
@@ -56,111 +55,124 @@ class HandicapCalculator {
         private set
     lateinit var metricDistance: BigDecimal
         private set
-    var arrowRadius = BigDecimal("0.357")
+    var arrowRadius: BigDecimal = BigDecimal("0.357")
         private set
 
     companion object {
-        // Australian handicap range: 0 to 100
+        // Handicap range: 0 to 100 (inclusive)
         @JvmStatic
         fun handicapLowerBound(): Int = 0
 
         @JvmStatic
         fun handicapUpperBound(): Int = 100
+
+        private const val HANDICAP_TABLE_BASE_COEFFICIENT = 1.91153596182896e-6
+        private const val HANDICAP_COEFFICIENT_BASE = 1.07
+        private const val GROUP_RADIUS_BASE = 1.036
+        private const val GROUP_RADIUS_EXPONENT_OFFSET = 12.9
     }
 
-
-    private fun setTargetDistance(distanceDimension: Dimension) {
+    fun setTargetDistance(distanceDimension: Dimension) {
         targetDistance = distanceDimension
-        this.metricDistance =
-            BigDecimal.valueOf(distanceDimension.convertTo(Dimension.Unit.METER).value.toDouble())
+        // Using toString() avoids float->double precision noise and preserves expected scale (e.g. "70.0", "13.716").
+        metricDistance = BigDecimal(distanceDimension.convertTo(Dimension.Unit.METER).value.toString())
     }
 
+    fun setTargetModel(targetModel: TargetModelBase) {
+        this.targetModel = targetModel
+    }
+
+    fun setScoringStyle(scoringStyle: ScoringStyle) {
+        this.scoringStyle = scoringStyle
+    }
+
+    fun setTargetSize(targetSize: Dimension) {
+        this.targetSize = targetModel.getRealSize(targetSize)
+    }
 
     fun setArrowRadius(arrowRadius: BigDecimal) {
-        this.arrowRadius = arrowRadius
+        this.arrowRadius = arrowRadius.setScale(4, RoundingMode.HALF_UP)
     }
 
-
-    private fun dispersionFactor(handicap: Int): BigDecimal {
-        val australianK = BigDecimal("1.234e-6")
-        val australianA = BigDecimal("1.075")
-        return BigDecimal.valueOf(1) + australianK.multiply(australianA.pow((handicap + 4.3).toInt()))
-            .multiply(metricDistance.pow(2))
+    fun setArrowCount(arrowCount: Int) {
+        this.arrowCount = arrowCount.coerceAtLeast(1)
     }
 
-    private fun groupRadius(handicap: Int): BigDecimal {
-        val australianConstant = BigDecimal("0.048") // Replace with actual Australian value
+    fun handicapCoefficient(handicap: Int): Double {
+        return HANDICAP_TABLE_BASE_COEFFICIENT * HANDICAP_COEFFICIENT_BASE.pow(handicap.toDouble())
+    }
 
-        // Define australianA within the function's scope (or move to companion object)
-        val australianA = BigDecimal("1.075") // Replace with actual Australian value
+    fun dispersionFactor(handicap: Int): BigDecimal {
+        val d = metricDistance.toDouble()
+        val factor = 1.0 + handicapCoefficient(handicap) * d * d
+        return BigDecimal.valueOf(factor)
+    }
 
-        return australianConstant * metricDistance * australianA.pow((handicap + 12.9).toInt()) * dispersionFactor(
-            handicap
+    fun angularDeviation(handicap: Int): BigDecimal {
+        return BigDecimal.valueOf(
+            (GROUP_RADIUS_BASE.pow(handicap.toDouble() + GROUP_RADIUS_EXPONENT_OFFSET)) *
+                5.0 * (10.0.pow(-4.0)) * 180.0 / Math.PI
         )
     }
 
-    private fun averageArrowScoreForHandicap(handicap: Int): BigDecimal {
-        val groupRadiusSquared = groupRadius(handicap).pow(2)
-        val zoneMap = targetModel.getZoneSizeMap(
-            scoringStyle,
-            targetSize
-        ) // Assuming zoneMap is accurate for Australian targets
-
-        return calculateAustralianAverageArrowScore(zoneMap, groupRadiusSquared, handicap)
+    fun groupRadius(handicap: Int): BigDecimal {
+        // sigma=groupRadiusCm==100*distance_in_metres*(1.036^(handicap+12.9))*5*(10^-4)*Dispersion_Factor
+        return BigDecimal("0.05") *
+            metricDistance *
+            BigDecimal.valueOf(GROUP_RADIUS_BASE.pow(handicap.toDouble() + GROUP_RADIUS_EXPONENT_OFFSET)) *
+            dispersionFactor(handicap)
     }
 
-    private fun calculateAustralianAverageArrowScore(
+    fun averageArrowScoreForHandicap(handicap: Int): BigDecimal {
+        val groupRadiusSquared = groupRadius(handicap).pow(2)
+        val zoneMap = targetModel.getZoneSizeMap(scoringStyle, targetSize)
+        val bestArrowScore = BigDecimal(zoneMap.keys.maxOrNull().toString())
+
+        val zoneScoreStep = (zoneMap.keys.elementAt(0) - zoneMap.keys.elementAt(1))
+        return if (zoneScoreStep == 2) {
+            imperialCalc(zoneMap, groupRadiusSquared, bestArrowScore, zoneScoreStep)
+        } else {
+            metricCalc(zoneMap, groupRadiusSquared, bestArrowScore)
+        }
+    }
+
+    private fun metricCalc(
         zoneMap: Map<Int, BigDecimal>,
         groupRadiusSquared: BigDecimal,
-        handicap: Int
+        bestArrowScore: BigDecimal
     ): BigDecimal {
-        // Implementation based on Australian handicap system tables and formulas
-        var expectedScore = BigDecimal.ZERO
-        val theta = calculateTheta(handicap) // Use your existing theta calculation
-        val xValues = calculateXValues(zoneMap)  // Convert zone radii to x values (see below)
-
-        for (i in xValues.indices) {
-            val zoneScore =
-                BigDecimal(zoneMap.keys.elementAt(i)) // Assuming scores are keys in zoneMap
-            val hitProbability = calculateHitProbability(
-                xValues[i],
-                theta
-            ) // Calculate hit probability for this zone
-            expectedScore += zoneScore * hitProbability
+        var exponentTotals = BigDecimal.ZERO
+        for ((_, radius) in zoneMap) {
+            val zoneRadiusSquared = (radius + arrowRadius).pow(2)
+            exponentTotals += BigDecimal.valueOf(exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
         }
-
-        return expectedScore
+        return (bestArrowScore - exponentTotals)
     }
 
-    private fun calculateTheta(handicap: Int): Double {
-        // This is a rough approximation based on the relationship between handicap and theta described in the article.
-        // It assumes a linear relationship, which may not be accurate for the actual Australian system.
-        val baseTheta = 0.05 // Example starting point for theta at handicap 0
-        val thetaIncrementPerHandicap = 0.005 // Example increment (needs to be adjusted)
-        return baseTheta + (handicap * thetaIncrementPerHandicap)
-    }
-
-    private fun calculateXValues(zoneMap: Map<Int, BigDecimal>): List<Double> {
-        // Convert zone radii to x values based on target face size and arrow radius
-        return zoneMap.values.map { radius ->
-            (radius + arrowRadius).toDouble() / (targetSize.value.toDouble() / 2)
+    private fun imperialCalc(
+        zoneMap: Map<Int, BigDecimal>,
+        groupRadiusSquared: BigDecimal,
+        bestArrowScore: BigDecimal,
+        zoneScoreStep: Int
+    ): BigDecimal {
+        var exponentTotals = BigDecimal.ZERO
+        val lastEntry = zoneMap.entries.last()
+        for ((_, radius) in zoneMap) {
+            val zoneRadiusSquared = (radius + arrowRadius).pow(2)
+            val expTerm = BigDecimal.valueOf(exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
+            exponentTotals = if (radius == lastEntry.value) {
+                exponentTotals - expTerm
+            } else {
+                exponentTotals + BigDecimal.valueOf(zoneScoreStep.toDouble()) * expTerm
+            }
         }
+        return (bestArrowScore - exponentTotals)
     }
-
-    private fun calculateHitProbability(xValue: Double, theta: Double): BigDecimal {
-        // Calculate the probability of hitting a zone using the normal distribution approximation
-        val zScore = xValue / theta
-        val probability =
-            BigDecimal(0.5 * (1 + erf(zScore / sqrt(2.0)))) // Using error function (erf)
-        return probability
-    }
-
 
     fun handicapScoresList(rounded: Boolean = true): List<BigDecimal> {
         val decimalPlaces: Int = if (rounded) 0 else 2
         val handicapList = ArrayList<BigDecimal>()
         for (handicap: Int in handicapLowerBound()..handicapUpperBound()) {
-//            handicapList.add((BigDecimal(arrowCount) * averageArrowScoreForHandicap(handicap).setScale(2, RoundingMode.HALF_UP)).setScale(0, RoundingMode.UP).toInt())
             val average = averageArrowScoreForHandicap(handicap)
             val roundScore = (BigDecimal(arrowCount) * average)
             handicapList.add(roundScore.setScale(decimalPlaces, RoundingMode.HALF_UP))
@@ -168,22 +180,19 @@ class HandicapCalculator {
         return handicapList
     }
 
-    private fun erf(x: Double): Double {
-        // This is a basic approximation of the error function
-        // You can find more accurate implementations online
-        val a1 = 0.254829592
-        val a2 = -0.284496736
-        val a3 = 1.421413741
-        val a4 = -1.453152027
-        val a5 = 1.061405429
-        val p = 0.3275911
+    fun getHandicapForScore(totalScore: Int): Int {
+        val score = BigDecimal(totalScore.toString())
+        val scoreList = handicapScoresList(true)
+        for (handicap: Int in handicapLowerBound()..handicapUpperBound()) {
+            if (score >= scoreList[handicap]) {
+                return handicap
+            }
+        }
+        return handicapUpperBound()
+    }
 
-        val sign = if (x < 0) -1 else 1
-        val xAbs = abs(x)
-
-        val t = 1.0 / (1.0 + p * xAbs)
-        val y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * exp(-xAbs * xAbs)
-        return sign * y
+    fun getHandicap(): Int {
+        return getHandicapForScore(reachedScore)
     }
 
 }
