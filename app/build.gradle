@@ -42,8 +42,8 @@ android {
         minSdkVersion 16
         compileSdk compileSdkVersionCode
         targetSdkVersion 36
-        versionCode 339
-        versionName "3.3.9"
+        versionCode 340
+        versionName "3.4.0"
         vectorDrawables.useSupportLibrary true
         javaCompileOptions {
             annotationProcessorOptions {

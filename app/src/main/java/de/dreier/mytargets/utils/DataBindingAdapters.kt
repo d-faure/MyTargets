@@ -20,7 +20,12 @@ object DataBindingAdapters {
         showAll: Boolean?,
         propertyValue: Any?
     ) {
-        val visible = (shouldShow == true) || (showAll == true)
+        val hasValue = when (propertyValue) {
+            null -> false
+            is String -> propertyValue.replace("null", "").isNotBlank()
+            else -> propertyValue.toString().replace("null", "").isNotBlank()
+        }
+        val visible = shouldShow == true && (showAll == true || hasValue)
         view.visibility = if (visible) View.VISIBLE else View.GONE
     }
     
