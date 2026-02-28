@@ -41,7 +41,6 @@ import de.dreier.mytargets.shared.models.Target
 import de.dreier.mytargets.shared.models.db.Bow
 import de.dreier.mytargets.shared.models.db.Round
 import de.dreier.mytargets.shared.models.db.Training
-import de.dreier.mytargets.shared.targets.models.WA3Ring3Spot
 import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.Utils
 import de.dreier.mytargets.utils.getLongOrNull
@@ -224,8 +223,9 @@ class EditTrainingFragment : EditFragmentBase(), DatePickerDialog.OnDateSetListe
 
     private fun setScoringStyleForCompoundBow(bow: Bow?) {
         val target = binding.target.selectedItem
-        if (bow != null && target != null && target.id <= WA3Ring3Spot.ID) {
-            if (bow.type === EBowType.COMPOUND_BOW && target.scoringStyleIndex == 0) {
+        if (bow != null && target != null) {
+            val hasCompoundStyle = target.model.scoringStyles.size > 2
+            if (bow.type === EBowType.COMPOUND_BOW && target.scoringStyleIndex == 0 && hasCompoundStyle) {
                 target.scoringStyleIndex = 2
                 binding.target.setItem(target)
             } else if (bow.type !== EBowType.COMPOUND_BOW && target.scoringStyleIndex == 2) {

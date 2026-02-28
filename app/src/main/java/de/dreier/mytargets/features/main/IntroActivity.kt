@@ -57,6 +57,19 @@ class IntroActivity : MaterialIntroActivity() {
         )
     }
 
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        try {
+            super.onRestoreInstanceState(savedInstanceState)
+        } catch (e: NullPointerException) {
+            // Work around a third-party intro library crash where page indicators
+            // can restore before internal dot arrays are initialized.
+            val isKnownIndicatorCrash = e.stackTrace.any { it.className == "io.github.dreierf.materialintroscreen.widgets.InkPageIndicator" }
+            if (!isKnownIndicatorCrash) {
+                throw e
+            }
+        }
+    }
+
     private fun applyBottomInsetsToNavigation() {
         val navView = findViewById<View>(R.id.navigation_view) ?: return
         val originalPaddingBottom = navView.paddingBottom
