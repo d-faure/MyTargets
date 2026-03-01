@@ -29,7 +29,7 @@ android {
     defaultConfig {
         applicationId 'de.dreier.mytargets'
         minSdkVersion 23
-        compileSdk compileSdkVersionCode
+        compileSdk libs.versions.compileSdk.get().toInteger()
         targetSdkVersion 34
         versionCode gitVersionCode
         versionName gitVersionName
@@ -70,22 +70,20 @@ android {
 }
 
 dependencies {
-    Map<String, String> dependencies = rootProject.ext.dependencies
+    implementation libs.androidx.wearable
+    compileOnly libs.wearable
+    implementation libs.androidx.core
+    implementation libs.androidx.wear
+    implementation libs.androidx.core.ktx
 
-    implementation dependencies.androidxWearable
-    compileOnly dependencies.wearable
-    implementation dependencies.androidxCore
-    implementation dependencies.androidxWear
-    implementation dependencies.androidxCoreKtx
+    implementation libs.android.state
+    kapt libs.android.state.processor
 
-    implementation dependencies.androidState
-    kapt dependencies.androidStateProcessor
-
-    implementation dependencies.archLifecycleExtensions
-    kapt dependencies.archLifecycleCompiler
-    implementation dependencies.archRoomRuntime
-    kapt dependencies.archRoomCompiler
+    implementation libs.arch.lifecycle.extensions
+    kapt libs.arch.lifecycle.compiler
+    implementation libs.arch.room.runtime
+    kapt libs.arch.room.compiler
 
     implementation project(':shared')
-    implementation dependencies.kotlinStdlibJdk7
+    implementation libs.kotlin.stdlib.jdk7
 }

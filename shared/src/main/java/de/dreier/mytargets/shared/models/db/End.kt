@@ -16,7 +16,7 @@
 package de.dreier.mytargets.shared.models.db
 
 import androidx.room.*
-import androidx.room.ForeignKey.CASCADE
+
 import android.os.Parcelable
 import de.dreier.mytargets.shared.models.IIdSettable
 import de.dreier.mytargets.shared.models.Score
@@ -30,7 +30,7 @@ import org.threeten.bp.LocalTime
             entity = Round::class,
             parentColumns = ["id"],
             childColumns = ["roundId"],
-            onDelete = CASCADE
+            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [

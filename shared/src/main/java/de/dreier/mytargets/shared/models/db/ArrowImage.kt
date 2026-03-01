@@ -17,7 +17,7 @@ package de.dreier.mytargets.shared.models.db
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.ForeignKey.CASCADE
+
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import android.os.Parcelable
@@ -31,7 +31,7 @@ import kotlinx.parcelize.Parcelize
             entity = Arrow::class,
             parentColumns = ["id"],
             childColumns = ["arrowId"],
-            onDelete = CASCADE
+            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [

@@ -39,8 +39,8 @@ android {
     }
     defaultConfig {
         applicationId 'de.dreier.mytargets'
-        minSdkVersion 21
-        compileSdk compileSdkVersionCode
+        minSdkVersion libs.versions.minSdk.get().toInteger()
+        compileSdk libs.versions.compileSdk.get().toInteger()
         targetSdkVersion 36
         versionCode 342
         versionName "3.4.2"
@@ -94,7 +94,8 @@ android {
         debug {
             applicationIdSuffix '.debug'
             signingConfig signingConfigs.debug
-            testCoverageEnabled true
+            enableUnitTestCoverage true
+            enableAndroidTestCoverage true
         }
         release {
             signingConfig signingConfigs.release
@@ -148,119 +149,117 @@ android {
 // apply from: '../tools/script-play-store.gradle'
 
 dependencies {
-    Map<String, String> dependencies = rootProject.ext.dependencies
+    implementation libs.kotlin.stdlib.jdk7
 
-    implementation dependencies.kotlinStdlibJdk7
+    implementation libs.androidx.core
+    implementation libs.androidx.legacy.core.utils
+    implementation libs.androidx.legacy.core.ui
+    implementation libs.androidx.fragment
+    implementation libs.androidx.legacy.v13
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.material
+    implementation libs.androidx.annotation
+    implementation libs.androidx.legacy.preference.v14
+    implementation libs.androidx.exifinterface
+    implementation libs.androidx.recyclerview
+    implementation libs.androidx.cardview
 
-    implementation dependencies.androidxCore
-    implementation dependencies.androidxCoreUtils
-    implementation dependencies.androidxCoreUi
-    implementation dependencies.androidxFragment
-    implementation dependencies.androidxV13
-    implementation dependencies.appCompat
-    implementation dependencies.androidxDesign
-    implementation dependencies.androidxAnnotations
-    implementation dependencies.androidxPreference
-    implementation dependencies.androidxExifInterface
-    implementation dependencies.recyclerView
-    implementation dependencies.cardView
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.fragment.ktx
 
-    implementation dependencies.androidxCoreKtx
-    implementation dependencies.androidFragmentKtx
+    implementation libs.timber
 
-    implementation dependencies.timber
+    implementation platform(libs.firebase.bom)
+    implementation libs.firebase.core
+    implementation libs.firebase.crashlytics
 
-    implementation dependencies.firebaseCore
-    implementation dependencies.firebaseCrashlytics
-
-    implementation dependencies.playServicesAuth
-    implementation(dependencies.googleHttpClientAuth) {
+    implementation libs.play.services.auth
+    implementation(libs.google.http.client.auth) {
 //        exclude: group: 'com.google.http-client:google-http-client-apache'
     }
-    implementation(dependencies.googleApiClientAndroid) {
+    implementation(libs.google.api.client.android) {
         exclude group: 'org.apache.httpcomponents'
         exclude group: 'com.google.http-client', module: 'google-http-client-apache'
     }
-    implementation(dependencies.googleApiServicesDrive) {
+    implementation(libs.google.api.services.drive) {
         exclude group: 'org.apache.httpcomponents'
         exclude group: 'com.google.http-client', module: 'google-http-client-apache'
     }
 
-    implementation dependencies.gson
+    implementation libs.gson
 
-    implementation dependencies.okHttp
-    implementation dependencies.okHttpUrlConnection
+    implementation libs.okhttp
+    implementation libs.okhttp.urlconnection
 
-    implementation dependencies.retrofit
-    implementation dependencies.retrofitConverterGson
+    implementation libs.retrofit
+    implementation libs.retrofit.converter.gson
 
-    implementation dependencies.picasso
+    implementation libs.picasso
 
-    implementation dependencies.androidState
-    kapt dependencies.androidStateProcessor
+    implementation libs.android.state
+    kapt libs.android.state.processor
 
     // Temporarily disabled PermissionsDispatcher for quick SDK 36 release
     // implementation project(':permissionsdispatcher')
     // kapt project(':permissionsdispatcher-processor')
 
 
-    implementation dependencies.mpAndroidChart
+    implementation libs.mpandroidchart
 
     implementation project(':discreteseekbar')
 
-    implementation dependencies.easyImage
+    implementation libs.easyimage
 
-    implementation dependencies.materialDialogs
+    implementation libs.material.dialogs
 
-    implementation dependencies.androidAboutPage
+    implementation libs.android.about.page
 
-    implementation dependencies.homageCore
-    implementation dependencies.homageRecyclerView
+    implementation libs.homage.core
+    implementation libs.homage.recyclerview
 
-    implementation dependencies.roundedImageView
+    implementation libs.rounded.image.view
 
-    implementation dependencies.materialIntroScreen
+    implementation libs.material.intro.screen
 
-    implementation dependencies.photoView
+    implementation libs.photo.view
 
-    implementation dependencies.androidLanguages
+    implementation libs.android.languages
 
 
     implementation project(':signaturepad')
 
-    implementation dependencies.archLifecycleExtensions
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.2'
-    kapt dependencies.archLifecycleCompiler
-    implementation dependencies.archRoomRuntime
-    kapt dependencies.archRoomCompiler
-    implementation dependencies.archNavigationFragment
-    implementation dependencies.archNavigationUi
+    implementation libs.arch.lifecycle.extensions
+    implementation libs.lifecycle.livedata.ktx
+    kapt libs.arch.lifecycle.compiler
+    implementation libs.arch.room.runtime
+    kapt libs.arch.room.compiler
+    implementation libs.arch.navigation.fragment
+    implementation libs.arch.navigation.ui
 
     implementation project(':shared')
     // Removed wearable dependency
     // wearApp project(':wearable')
 
-    testImplementation dependencies.jUnit
-    testImplementation dependencies.kotlinTest
-    testImplementation dependencies.kotlinTestJunit
+    testImplementation libs.junit4
+    testImplementation libs.kotlin.test
+    testImplementation libs.kotlin.test.junit
 
-    androidTestImplementation dependencies.truth
-    androidTestImplementation 'androidx.test:core:1.5.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation dependencies.runner
-    androidTestImplementation dependencies.rules
-    androidTestUtil dependencies.androidTestOrchestrator
-    androidTestImplementation dependencies.uiAutomator
-    androidTestImplementation dependencies.espressoCore
-    androidTestImplementation dependencies.espressoContrib
-    androidTestImplementation dependencies.espressoIntents
+    androidTestImplementation libs.truth
+    androidTestImplementation libs.androidx.test.core
+    androidTestImplementation libs.androidx.test.junit
+    androidTestImplementation libs.androidx.test.runner
+    androidTestImplementation libs.androidx.test.rules
+    androidTestUtil libs.androidx.test.orchestrator
+    androidTestImplementation libs.androidx.test.uiautomator
+    androidTestImplementation libs.espresso.core
+    androidTestImplementation libs.espresso.contrib
+    androidTestImplementation libs.espresso.intents
 
-    implementation dependencies.espressoIdlingResource
-    androidTestScreengrabImplementation dependencies.screengrab
-    androidTestImplementation dependencies.archRoomTesting
-    androidTestImplementation dependencies.androidxTestExt
+    implementation libs.espresso.idling.resource
+    androidTestScreengrabImplementation libs.screengrab
+    androidTestImplementation libs.arch.room.testing
 
-    implementation dependencies.multiDex
+    implementation libs.multidex
 
 }
 

@@ -16,7 +16,7 @@
 package de.dreier.mytargets.shared.models.db
 
 import androidx.room.*
-import androidx.room.ForeignKey.CASCADE
+
 import android.os.Parcel
 import android.os.Parcelable
 import de.dreier.mytargets.shared.models.Dimension
@@ -29,7 +29,7 @@ import de.dreier.mytargets.shared.models.Target
             entity = StandardRound::class,
             parentColumns = ["id"],
             childColumns = ["standardRoundId"],
-            onDelete = CASCADE
+            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [

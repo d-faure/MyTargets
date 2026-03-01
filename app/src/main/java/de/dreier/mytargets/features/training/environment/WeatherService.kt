@@ -41,7 +41,7 @@ class WeatherService {
                 val original = chain.request()
                 val request = original.newBuilder()
                     .header("Accept", "application/json")
-                    .method(original.method(), original.body())
+                    .method(original.method, original.body)
                     .build()
                 chain.proceed(request)
             }

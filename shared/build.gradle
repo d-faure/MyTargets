@@ -29,8 +29,8 @@ android {
         jvmTarget = '17'
     }
     defaultConfig {
-        minSdkVersion 16
-        compileSdk compileSdkVersionCode
+        minSdkVersion libs.versions.minSdk.get().toInteger()
+        compileSdk libs.versions.compileSdk.get().toInteger()
         targetSdkVersion 36
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary true
@@ -64,31 +64,29 @@ android {
 }
 
 dependencies {
-    Map<String, String> dependencies = rootProject.ext.dependencies
+    api libs.androidx.legacy.v4
+    api libs.androidx.fragment
+    api libs.androidx.legacy.core.ui
+    api libs.androidx.legacy.core.utils
+    api libs.androidx.media
+    api libs.androidx.annotation
+    api libs.threetenabp
+    api libs.play.services.wearable
+    implementation libs.timber
 
-    api dependencies.androidxV4
-    api dependencies.androidxFragment
-    api dependencies.androidxCoreUi
-    api dependencies.androidxCoreUtils
-    api dependencies.androidxMediaCompat
-    api dependencies.androidxAnnotations
-    api dependencies.threeTenABP
-    api dependencies.playServicesWearable
-    implementation dependencies.timber
+    implementation libs.arch.lifecycle.extensions
 
-    implementation dependencies.archLifecycleExtensions
+    api libs.arch.room.runtime
+    implementation libs.androidx.core.ktx
 
-    api dependencies.archRoomRuntime
-    implementation dependencies.androidxCoreKtx
-
-    implementation dependencies.androidState
+    implementation libs.android.state
     // kapt dependencies.androidStateProcessor
 
-    testImplementation dependencies.jUnit
-    testImplementation dependencies.mockito
-    testImplementation dependencies.truth
-    androidTestImplementation dependencies.runner
-    androidTestImplementation 'androidx.test:core:1.5.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    implementation dependencies.kotlinStdlibJdk7
+    testImplementation libs.junit4
+    testImplementation libs.mockito
+    testImplementation libs.truth
+    androidTestImplementation libs.androidx.test.runner
+    androidTestImplementation libs.androidx.test.core
+    androidTestImplementation libs.androidx.test.junit
+    implementation libs.kotlin.stdlib.jdk7
 }
