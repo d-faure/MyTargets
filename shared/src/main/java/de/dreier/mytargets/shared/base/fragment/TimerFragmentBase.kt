@@ -59,8 +59,15 @@ abstract class TimerFragmentBase : Fragment(), View.OnClickListener {
         changeStatus(currentStatus)
     }
 
+    override fun onStop() {
+        super.onStop()
+        countdown?.cancel()
+        countdown = null
+    }
+
     override fun onDetach() {
         countdown?.cancel()
+        countdown = null
         if (horn.isPlaying) {
             horn.stop()
         }
@@ -73,6 +80,7 @@ abstract class TimerFragmentBase : Fragment(), View.OnClickListener {
     }
 
     private fun changeStatus(status: ETimerState) {
+        if (!isAdded) return
         countdown?.cancel()
         if (status === ETimerState.EXIT) {
             if (exitAfterStop) {

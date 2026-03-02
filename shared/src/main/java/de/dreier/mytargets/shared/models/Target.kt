@@ -64,15 +64,19 @@ data class  Target(
     }
 
     fun getDetails(): String {
-        return model.scoringStyles[scoringStyleIndex].toString()
+        val index = getValidScoringStyleIndex() ?: return ""
+        return model.scoringStyles[index].toString()
     }
 
     fun getSelectableZoneList(arrow: Int): List<SelectableZone> {
-        return model.getSelectableZoneList(scoringStyleIndex, arrow)
+        val index = getValidScoringStyleIndex() ?: return emptyList()
+        return model.getSelectableZoneList(index, arrow)
     }
 
     fun getScoringStyle(): ScoringStyle {
-        return model.getScoringStyle(scoringStyleIndex)
+        val index = getValidScoringStyleIndex()
+            ?: throw IllegalStateException("Target $id has no scoring styles")
+        return model.getScoringStyle(index)
     }
 
     fun getReachedScore(shots: List<Shot>): Score {
@@ -84,6 +88,18 @@ data class  Target(
     }
 
     override fun compareTo(other: Target) = compareBy(Target::id).compare(this, other)
+
+    private fun getValidScoringStyleIndex(): Int? {
+        val styles = model.scoringStyles
+        if (styles.isEmpty()) {
+            return null
+        }
+        val normalizedIndex = scoringStyleIndex.coerceIn(0, styles.lastIndex)
+        if (normalizedIndex != scoringStyleIndex) {
+            scoringStyleIndex = normalizedIndex
+        }
+        return normalizedIndex
+    }
 
     companion object {
         fun singleSpotTargetFrom(spotTarget: Target): Target {

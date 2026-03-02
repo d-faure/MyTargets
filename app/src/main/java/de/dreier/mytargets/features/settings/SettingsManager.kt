@@ -139,7 +139,16 @@ object SettingsManager {
             val diameterValue = lastUsed[KEY_TARGET_DIAMETER_VALUE, 60]
             val diameterUnit = lastUsed[KEY_TARGET_DIAMETER_UNIT, CENTIMETER.toString()]
             val diameter = Dimension.from(diameterValue.toFloat(), diameterUnit)
-            return Target(targetId.toLong(), scoringStyle, diameter)
+            val target = Target(targetId.toLong(), scoringStyle, diameter)
+            val normalizedStyle = target.scoringStyleIndex.coerceIn(
+                0,
+                target.model.scoringStyles.lastIndex
+            )
+            if (normalizedStyle != target.scoringStyleIndex) {
+                target.scoringStyleIndex = normalizedStyle
+                lastUsed.edit().putInt(KEY_SCORING_STYLE, normalizedStyle).apply()
+            }
+            return target
         }
         set(value) = lastUsed.edit()
             .putInt(KEY_TARGET, value.id.toInt())

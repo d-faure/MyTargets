@@ -40,6 +40,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.IOException
+import java.util.concurrent.Executors
+import timber.log.Timber
 
 class EnvironmentSelector @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -124,32 +126,33 @@ class EnvironmentSelector @JvmOverloads constructor(
         setItem(null)
         Locator(context).getLocation(Locator.Method.NETWORK_THEN_GPS, object : Locator.Listener {
             override fun onLocationFound(location: Location) {
-                val locationStr = getAddressFromLocation(location.latitude, location.longitude)
-                val weatherService = WeatherService()
-                val weatherCall = weatherService
-                    .fetchCurrentWeather(location.longitude, location.latitude)
-                weatherCall.enqueue(object : Callback<CurrentWeather> {
-                    override fun onResponse(
-                        call: Call<CurrentWeather>,
-                        response: Response<CurrentWeather>
-                    ) {
-                        if (response.isSuccessful && response.body()?.httpCode == 200) {
-                            val toEnvironment = response.body()?.toEnvironment()
-                            setItem(
-                                toEnvironment?.copy(
-                                    location = locationStr
+                resolveAddressFromLocation(location.latitude, location.longitude) { locationStr ->
+                    val weatherService = WeatherService()
+                    val weatherCall = weatherService
+                        .fetchCurrentWeather(location.longitude, location.latitude)
+                    weatherCall.enqueue(object : Callback<CurrentWeather> {
+                        override fun onResponse(
+                            call: Call<CurrentWeather>,
+                            response: Response<CurrentWeather>
+                        ) {
+                            if (response.isSuccessful && response.body()?.httpCode == 200) {
+                                val toEnvironment = response.body()?.toEnvironment()
+                                setItem(
+                                    toEnvironment?.copy(
+                                        location = locationStr
                                             ?: toEnvironment.location
+                                    )
                                 )
-                            )
-                        } else {
+                            } else {
+                                setDefaultWeather()
+                            }
+                        }
+
+                        override fun onFailure(call: Call<CurrentWeather>, t: Throwable) {
                             setDefaultWeather()
                         }
-                    }
-
-                    override fun onFailure(call: Call<CurrentWeather>, t: Throwable) {
-                        setDefaultWeather()
-                    }
-                })
+                    })
+                }
             }
 
             override fun onLocationNotFound() {
@@ -158,27 +161,36 @@ class EnvironmentSelector @JvmOverloads constructor(
         })
     }
 
-    private fun getAddressFromLocation(latitude: Double, longitude: Double): String? {
+    private fun resolveAddressFromLocation(
+        latitude: Double,
+        longitude: Double,
+        callback: (String?) -> Unit
+    ) {
         val geoCoder = Geocoder(context, Utils.getCurrentLocale(context))
-
-        return try {
-            val addresses = geoCoder.getFromLocation(latitude, longitude, 1)!!
-
-            if (addresses.size > 0) {
-                val fetchedAddress = addresses[0]
-                var address = fetchedAddress.locality
-                if (fetchedAddress.subLocality != null) {
-                    address += ", ${fetchedAddress.subLocality}"
-                }
-                address
-            } else {
+        geocoderExecutor.execute {
+            val address = try {
+                @Suppress("DEPRECATION")
+                geoCoder.getFromLocation(latitude, longitude, 1)
+                    ?.firstOrNull()
+                    ?.toAddressString()
+            } catch (e: IOException) {
+                Timber.w(e, "Unable to geocode location")
+                null
+            } catch (e: IllegalArgumentException) {
+                Timber.w(e, "Invalid location passed to geocoder")
                 null
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
-            null
+            post { callback(address) }
         }
+    }
 
+    private fun android.location.Address.toAddressString(): String? {
+        val city = locality ?: return null
+        return if (subLocality.isNullOrEmpty()) {
+            city
+        } else {
+            "$city, $subLocality"
+        }
     }
 
     private fun setDefaultWeather() {
@@ -187,6 +199,7 @@ class EnvironmentSelector @JvmOverloads constructor(
 
     companion object {
         const val ENVIRONMENT_REQUEST_CODE = 9
+        private val geocoderExecutor = Executors.newSingleThreadExecutor()
 
         private val isTestMode: Boolean
             get() {

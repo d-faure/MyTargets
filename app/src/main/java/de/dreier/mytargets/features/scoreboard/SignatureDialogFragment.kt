@@ -40,10 +40,11 @@ class SignatureDialogFragment : DialogFragment() {
     ): View? {
         val binding = FragmentSignatureBinding.inflate(inflater, container, false)
         val args = arguments
-        val signature = args!!.getParcelable<Signature>(ARG_SIGNATURE)
+        val signatureId = args!!.getLong(ARG_SIGNATURE_ID)
+        val signature = signatureDAO.loadSignatureOrNull(signatureId) ?: return binding.root
         val defaultName = args.getString(ARG_DEFAULT_NAME)
 
-        if (signature!!.isSigned) {
+        if (signature.isSigned) {
             binding.signatureView.signatureBitmap = signature.bitmap
         }
         binding.editName.setOnClickListener {
@@ -89,13 +90,13 @@ class SignatureDialogFragment : DialogFragment() {
     }
 
     companion object {
-        private const val ARG_SIGNATURE = "signature_id"
+        private const val ARG_SIGNATURE_ID = "signature_id"
         private const val ARG_DEFAULT_NAME = "default_name"
 
         fun newInstance(signature: Signature, defaultName: String): SignatureDialogFragment {
             val fragment = SignatureDialogFragment()
             val args = Bundle()
-            args.putParcelable(ARG_SIGNATURE, signature)
+            args.putLong(ARG_SIGNATURE_ID, signature.id)
             args.putString(ARG_DEFAULT_NAME, defaultName)
             fragment.arguments = args
             return fragment

@@ -558,11 +558,13 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
             updateLabelTimer = Timer()
             val timerTask = object : TimerTask() {
                 override fun run() {
-                    activity!!.runOnUiThread {
-                        binding.lastBackupLabel.text = getString(
-                            R.string.last_backup, DateUtils
-                                .getRelativeTimeSpanString(time)
-                        )
+                    activity?.runOnUiThread {
+                        val relativeTime = DateUtils.getRelativeTimeSpanString(time).toString()
+                        binding.lastBackupLabel.text = try {
+                            getString(R.string.last_backup, relativeTime)
+                        } catch (_: IllegalArgumentException) {
+                            "${getString(R.string.last_backup).replace("%s", "").replace("% s", "").trim()}: $relativeTime"
+                        }
                     }
                 }
             }
