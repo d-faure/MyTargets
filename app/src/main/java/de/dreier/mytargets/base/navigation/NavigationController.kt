@@ -17,6 +17,7 @@ package de.dreier.mytargets.base.navigation
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Bundle
 import android.os.Parcelable
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
@@ -308,7 +309,12 @@ class NavigationController(
     fun setResultSuccess(data: Parcelable) {
         val intent = Intent()
         intent.putExtra(ITEM, data)
-        intent.putExtra(INTENT, activity.intent?.extras)
+        val sourceExtras = activity.intent?.extras
+        if (sourceExtras != null && sourceExtras.containsKey(SelectorBase.INDEX)) {
+            val forwarded = Bundle()
+            forwarded.putInt(SelectorBase.INDEX, sourceExtras.getInt(SelectorBase.INDEX))
+            intent.putExtra(INTENT, forwarded)
+        }
         setResultSuccess(intent)
     }
 

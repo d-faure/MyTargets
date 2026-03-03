@@ -19,6 +19,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
@@ -306,9 +307,7 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
                     }
 
                     override fun onError() {
-                        // Some gallery formats/metadata fail in Picasso on certain devices.
-                        // Fallback to framework decoding so users still see the selected image.
-                        val bitmap = BitmapFactory.decodeFile(imageFile.path)
+                        val bitmap = decodeSampledBitmap(imageFile)
                         if (bitmap != null) {
                             binding.imageView.setImageBitmap(bitmap)
                         } else {
@@ -322,6 +321,19 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
                     }
                 })
         }
+    }
+
+    private fun decodeSampledBitmap(file: File): Bitmap? {
+        val opts = BitmapFactory.Options()
+        opts.inJustDecodeBounds = true
+        BitmapFactory.decodeFile(file.path, opts)
+        val maxDim = maxOf(
+            binding.imageView.width.takeIf { it > 0 } ?: 1024,
+            binding.imageView.height.takeIf { it > 0 } ?: 1024
+        )
+        opts.inSampleSize = maxOf(opts.outWidth / maxDim, opts.outHeight / maxDim).coerceAtLeast(1)
+        opts.inJustDecodeBounds = false
+        return BitmapFactory.decodeFile(file.path, opts)
     }
 
     @CallSuper

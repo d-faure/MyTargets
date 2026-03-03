@@ -29,6 +29,7 @@ import kotlinx.android.parcel.Parcelize
 import timber.log.Timber
 import java.io.File
 import java.util.*
+import androidx.core.graphics.createBitmap
 
 @Parcelize
 class Thumbnail(val data: ByteArray) : Parcelable {
@@ -61,17 +62,27 @@ class Thumbnail(val data: ByteArray) : Parcelable {
         }
 
         fun from(imageFile: File): Thumbnail {
-            val thumbnail = ThumbnailUtils
-                .extractThumbnail(
-                    BitmapFactory.decodeFile(imageFile.path),
+            val opts = BitmapFactory.Options()
+            opts.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(imageFile.path, opts)
+            opts.inSampleSize = maxOf(
+                opts.outWidth / TARGET_SIZE_MICRO_THUMBNAIL,
+                opts.outHeight / TARGET_SIZE_MICRO_THUMBNAIL
+            ).coerceAtLeast(1)
+            opts.inJustDecodeBounds = false
+            val decoded = BitmapFactory.decodeFile(imageFile.path, opts)
+            val thumbnail = if (decoded != null) {
+                ThumbnailUtils.extractThumbnail(
+                    decoded,
                     TARGET_SIZE_MICRO_THUMBNAIL, TARGET_SIZE_MICRO_THUMBNAIL
                 )
-                    ?: Bitmap.createBitmap(
-                        TARGET_SIZE_MICRO_THUMBNAIL,
-                        TARGET_SIZE_MICRO_THUMBNAIL,
-                        Bitmap.Config.RGB_565
-                    )
-            return Thumbnail(thumbnail.toByteArray())
+            } else null
+            val finalBitmap = thumbnail ?: createBitmap(
+                TARGET_SIZE_MICRO_THUMBNAIL,
+                TARGET_SIZE_MICRO_THUMBNAIL,
+                Bitmap.Config.RGB_565
+            )
+            return Thumbnail(finalBitmap.toByteArray())
         }
 
         fun from(context: Context, @DrawableRes resId: Int): Thumbnail {

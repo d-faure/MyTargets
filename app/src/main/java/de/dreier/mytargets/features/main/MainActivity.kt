@@ -17,7 +17,6 @@ package de.dreier.mytargets.features.main
 
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -66,8 +65,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         navigationController = NavigationController(this)
         if (SettingsManager.shouldShowIntroActivity) {
             SettingsManager.shouldShowIntroActivity = false

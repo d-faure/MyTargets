@@ -36,8 +36,6 @@ abstract class SimpleFragmentActivityBase : ChildActivityBase() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         setContentView(R.layout.activity_simple_fragment)
         
         activityToolbar = findViewById(R.id.toolbar)

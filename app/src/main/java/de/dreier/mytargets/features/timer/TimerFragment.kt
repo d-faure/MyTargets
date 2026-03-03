@@ -17,19 +17,16 @@ package de.dreier.mytargets.features.timer
 
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
-import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import de.dreier.mytargets.R
 import de.dreier.mytargets.databinding.FragmentTimerBinding
 import de.dreier.mytargets.shared.base.fragment.ETimerState
 import de.dreier.mytargets.shared.base.fragment.ETimerState.*
 import de.dreier.mytargets.shared.base.fragment.TimerFragmentBase
 import de.dreier.mytargets.utils.ToolbarUtils
-import de.dreier.mytargets.utils.Utils
 
 /**
  * Shows the archery timer
@@ -61,11 +58,6 @@ class TimerFragment : TimerFragmentBase() {
 
     override fun applyStatus(status: ETimerState) {
         binding.root.setBackgroundResource(status.color)
-        if (Utils.isLollipop && activity != null) {
-            val window = activity!!.window
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.statusBarColor = ContextCompat.getColor(activity!!, status.color)
-        }
         binding.timerStatus.setText(getStatusText(status))
 
         if (status === FINISHED) {

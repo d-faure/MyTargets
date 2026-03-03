@@ -59,8 +59,6 @@ class GalleryActivity : ChildActivityBase() {
         super.onCreate(savedInstanceState)
         
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-        window.navigationBarColor = android.graphics.Color.TRANSPARENT
         binding = DataBindingUtil.setContentView(this, R.layout.activity_gallery)
 
         val title = intent.getStringExtra(EXTRA_TITLE)
