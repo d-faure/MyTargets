@@ -25,6 +25,19 @@ abstract class RoundDAO {
     @Query("SELECT * FROM `Round` WHERE `id` in (:roundIds)")
     abstract fun loadRounds(roundIds: LongArray): List<Round>
 
+    /**
+     * SQLite limits bind variables to 999 per statement. When roundIds is large
+     * (e.g. "all rounds" statistics for a long-time user) the plain IN-query throws
+     * SQLiteException: too many SQL variables. This method chunks the array into
+     * batches of at most 999 and merges the results.
+     */
+    @Transaction
+    open fun loadRoundsBatched(roundIds: LongArray): List<Round> {
+        return roundIds.toList()
+            .chunked(999)
+            .flatMap { chunk -> loadRounds(chunk.toLongArray()) }
+    }
+
     @Query("SELECT * FROM `Round` WHERE `trainingId` = :id ORDER BY `index`")
     abstract fun loadRounds(id: Long): List<Round>
 

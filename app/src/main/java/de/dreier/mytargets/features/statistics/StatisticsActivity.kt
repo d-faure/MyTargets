@@ -93,15 +93,20 @@ class StatisticsActivity : ChildActivityBase(),
 
     @SuppressLint("StaticFieldLeak")
     override fun onCreateLoader(i: Int, bundle: Bundle): Loader<List<Pair<Training, Round>>> {
-        val roundIds = if (intent.hasExtra(TRAINING_ID)) {
-            roundDAO.loadRounds(intent.getLongExtra(TRAINING_ID, 0)).map { it.id }
-                .toLongArray()
-        } else {
-            intent.getLongArrayExtra(ROUND_IDS)
-        }
         return object : AsyncTaskLoader<List<Pair<Training, Round>>>(this) {
             override fun loadInBackground(): List<Pair<Training, Round>> {
-                val rounds = roundDAO.loadRounds(roundIds!!)
+                // Resolve round IDs here (background thread) to avoid main-thread DB access,
+                // and use loadRoundsBatched to avoid SQLite's 999-variable limit.
+                val roundIds = if (intent.hasExtra(TRAINING_ID)) {
+                    roundDAO.loadRounds(intent.getLongExtra(TRAINING_ID, 0))
+                        .map { it.id }.toLongArray()
+                } else {
+                    intent.getLongArrayExtra(ROUND_IDS) ?: LongArray(0)
+                }
+                if (roundIds.isEmpty()) {
+                    return emptyList()
+                }
+                val rounds = roundDAO.loadRoundsBatched(roundIds)
                 val trainingsMap = rounds.map { (_, trainingId) -> trainingId!! }
                     .distinct()
                     .map { id -> Pair(id, trainingDAO.loadTraining(id)) }

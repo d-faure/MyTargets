@@ -205,7 +205,17 @@ class StatisticsFragment : FragmentBase() {
     }
 
     override fun onLoad(args: Bundle?): LoaderUICallback {
-        rounds = roundDAO.loadRounds(roundIds!!)
+        val ids = roundIds ?: LongArray(0)
+        if (ids.isEmpty()) {
+            rounds = emptyList()
+            return {
+                binding.dispersionPatternLayout.visibility = View.GONE
+                binding.arrowRankingLabel.visibility = View.GONE
+                adapter!!.setData(emptyList())
+            }
+        }
+
+        rounds = roundDAO.loadRoundsBatched(ids)
         val data = ArrowStatistic.getAll(target!!, rounds!!)
             .sortedWith(compareByDescending { it.totalScore.shotAverage })
 
