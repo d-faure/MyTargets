@@ -32,7 +32,7 @@
                 android:textColor="@color/tab_layout_text"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
-            <androidx.viewpager.widget.ViewPager
+            <de.dreier.mytargets.base.gallery.CustomViewPager
                 android:id="@+id/viewPager"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
