@@ -13,11 +13,11 @@
  * GNU General Public License for more details.
  */
 
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-// Temporarily disabled KAPT in shared module due to Java module system issues
-// apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlin-parcelize'
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.parcelize)
+}
 
 android {
     namespace = "de.dreier.mytargets.shared"

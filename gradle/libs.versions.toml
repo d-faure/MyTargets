@@ -3,6 +3,8 @@ compileSdk = "36"
 minSdk = "23"
 kotlin = "2.0.21"
 agp = "8.7.3"
+dexcount = "4.0.0"
+ben-manes-versions = "0.51.0"
 navigation-safe-args = "2.8.5"
 google-services = "4.4.2"
 firebase-crashlytics-gradle = "3.0.2"
@@ -66,6 +68,9 @@ espresso = "3.6.1"
 multidex = "2.0.1"
 threetenabp = "1.4.7"
 timber = "5.0.1"
+androidx-appcompat-discreteseekbar = "1.6.1"
+androidx-annotation-discreteseekbar = "1.6.0"
+androidx-core-discreteseekbar = "1.10.1"
 
 [libraries]
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
@@ -153,3 +158,18 @@ kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version
 multidex = { module = "androidx.multidex:multidex", version.ref = "multidex" }
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+androidx-appcompat-discreteseekbar = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat-discreteseekbar" }
+androidx-annotation-discreteseekbar = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation-discreteseekbar" }
+androidx-core-discreteseekbar = { module = "androidx.core:core", version.ref = "androidx-core-discreteseekbar" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+navigation-safe-args = { id = "androidx.navigation.safeargs", version.ref = "navigation-safe-args" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
+dexcount = { id = "com.getkeepsafe.dexcount", version.ref = "dexcount" }
+ben-manes-versions = { id = "com.github.ben-manes.versions", version.ref = "ben-manes-versions" }
