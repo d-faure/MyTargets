@@ -127,12 +127,17 @@ open class TargetModelBase protected constructor(
 
 
     fun getZoneSizeMap(scoringStyle: ScoringStyle, targetSize: Dimension): Map<Int, BigDecimal> {
-        var zoneMap = LinkedHashMap<Int, BigDecimal>()
-        var targetRadius = targetSize.value.toBigDecimal().div(BigDecimal.valueOf(2))
+        val zoneMap = LinkedHashMap<Int, BigDecimal>()
+        val targetRadius = targetSize.value.toBigDecimal().div(BigDecimal.valueOf(2))
         // TODO: convert to unit in a bit
         for ((zoneIndex, score) in scoringStyle.getPointsList().iterator().withIndex()) {
-                var radius = zones.get(zoneIndex).radius.toBigDecimal().times(targetRadius)
-                zoneMap.put(score, radius)
+            // Some scoring styles expose more score entries than physical target zones.
+            // Ignore out-of-bounds entries instead of crashing.
+            if (zoneIndex >= zones.size) {
+                break
+            }
+            val radius = zones[zoneIndex].radius.toBigDecimal().times(targetRadius)
+            zoneMap[score] = radius
         }
 
         return zoneMap

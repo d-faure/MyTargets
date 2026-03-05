@@ -112,6 +112,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupBottomNavigation() {
         binding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            if (supportFragmentManager.isStateSaved) return@setOnNavigationItemSelectedListener false
             val fragment = when (item.itemId) {
                 R.id.action_arrows -> EditArrowListFragment()
                 R.id.action_bows -> EditBowListFragment()
@@ -122,7 +123,7 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager
                 .beginTransaction()
                 .replace(R.id.content_frame, fragment)
-                .commit()
+                .commitAllowingStateLoss()
             true
         }
     }

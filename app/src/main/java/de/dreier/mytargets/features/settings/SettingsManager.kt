@@ -126,7 +126,7 @@ object SettingsManager {
         set(value) = lastUsed.edit()
             .putInt(KEY_DISTANCE_VALUE, value.value.toInt())
             .putString(KEY_DISTANCE_UNIT, value.unit?.toString())
-            .apply()
+            .commitInBackground()
 
     var shotsPerEnd: Int
         get() = lastUsed[KEY_ARROWS_PER_END, 3]
@@ -146,7 +146,7 @@ object SettingsManager {
             )
             if (normalizedStyle != target.scoringStyleIndex) {
                 target.scoringStyleIndex = normalizedStyle
-                lastUsed.edit().putInt(KEY_SCORING_STYLE, normalizedStyle).apply()
+                lastUsed.edit().putInt(KEY_SCORING_STYLE, normalizedStyle).commitInBackground()
             }
             return target
         }
@@ -155,7 +155,7 @@ object SettingsManager {
             .putInt(KEY_SCORING_STYLE, value.scoringStyleIndex)
             .putInt(KEY_TARGET_DIAMETER_VALUE, value.diameter.value.toInt())
             .putString(KEY_TARGET_DIAMETER_UNIT, value.diameter.unit?.toString())
-            .apply()
+            .commitInBackground()
 
     var timerEnabled: Boolean
         get() = lastUsed[KEY_TIMER, false]
@@ -189,7 +189,7 @@ object SettingsManager {
                 .putString(KEY_TIMER_WAIT_TIME, value.waitTime.toString())
                 .putString(KEY_TIMER_SHOOT_TIME, value.shootTime.toString())
                 .putString(KEY_TIMER_WARN_TIME, value.warnTime.toString())
-                .apply()
+                .commitInBackground()
         }
 
     var arrowNumbersEnabled: Boolean
@@ -334,7 +334,7 @@ object SettingsManager {
                 .putBoolean(KEY_INPUT_SUMMARY_SHOW_TRAINING, value.showTraining)
                 .putBoolean(KEY_INPUT_SUMMARY_SHOW_AVERAGE, value.showAverage)
                 .putString(KEY_INPUT_SUMMARY_AVERAGE_OF, value.averageScope.name)
-                .apply()
+                .commitInBackground()
         }
 
     var scoreConfiguration: Score.Configuration
@@ -352,7 +352,7 @@ object SettingsManager {
                 .putBoolean(KEY_OVERVIEW_SHOW_TOTAL_SCORE, value.showTotalScore)
                 .putBoolean(KEY_OVERVIEW_SHOW_PERCENTAGE, value.showPercentage)
                 .putBoolean(KEY_OVERVIEW_SHOW_ARROW_AVERAGE, value.showAverage)
-                .apply()
+                .commitInBackground()
         }
 
     val scoreboardConfiguration: ScoreboardConfiguration

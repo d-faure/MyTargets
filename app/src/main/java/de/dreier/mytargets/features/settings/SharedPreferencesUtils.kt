@@ -15,6 +15,18 @@
 package de.dreier.mytargets.features.settings
 
 import android.content.SharedPreferences
+import java.util.concurrent.Executors
+
+private val prefsWriteExecutor = Executors.newSingleThreadExecutor()
+
+/**
+ * Writes SharedPreferences changes on a background thread using commit() instead of apply().
+ * This avoids the QueuedWork.waitToFinish() blocking on Activity stop (Android 8-10)
+ * that causes RuntimeException in PendingTransactionActions$StopInfo.
+ */
+fun SharedPreferences.Editor.commitInBackground() {
+    prefsWriteExecutor.execute { commit() }
+}
 
 operator fun SharedPreferences.set(key: String, value: Any?) {
     when (value) {
@@ -70,5 +82,5 @@ inline fun SharedPreferences.edit(
 ) {
     val editor = edit()
     action(editor)
-    editor.apply()
+    editor.commitInBackground()
 }

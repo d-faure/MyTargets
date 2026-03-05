@@ -67,6 +67,7 @@ abstract class SimpleFragmentActivityBase : ChildActivityBase() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         setIntent(intent)
+        if (supportFragmentManager.isStateSaved) return
         var childFragment: Fragment? = supportFragmentManager.findFragmentByTag(FRAGMENT_TAG)
         if (childFragment == null && intent?.extras != null) {
             childFragment = instantiateFragment()
@@ -75,7 +76,7 @@ abstract class SimpleFragmentActivityBase : ChildActivityBase() {
 
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, childFragment!!, FRAGMENT_TAG)
-            .commit()
+            .commitAllowingStateLoss()
     }
 
     companion object {

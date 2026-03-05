@@ -265,7 +265,13 @@ class StatisticsFragment : FragmentBase() {
         binding.dispersionView.setImageDrawable(drawable)
 
         binding.dispersionViewOverlay.setOnClickListener {
-            navigationController.navigateToDispersionPattern(stats)
+            navigationController.navigateToDispersionPattern(
+                roundIds = roundIds!!,
+                target = target!!,
+                arrowName = null,
+                arrowNumber = null,
+                exportFileName = stats.exportFileName
+            )
         }
     }
 
@@ -569,7 +575,14 @@ class StatisticsFragment : FragmentBase() {
         }
 
         private fun onItemClicked() {
-            navigationController.navigateToDispersionPattern(mItem!!)
+            val item = mItem ?: return
+            navigationController.navigateToDispersionPattern(
+                roundIds = roundIds!!,
+                target = target!!,
+                arrowName = item.arrowName,
+                arrowNumber = item.arrowNumber,
+                exportFileName = null
+            )
         }
 
         fun bindItem(item: ArrowStatistic) {

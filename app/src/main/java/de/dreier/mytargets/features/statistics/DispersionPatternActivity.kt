@@ -27,11 +27,15 @@ import androidx.core.content.getSystemService
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.snackbar.Snackbar
 import de.dreier.mytargets.R
+import de.dreier.mytargets.app.ApplicationInstance
 import de.dreier.mytargets.base.activities.ChildActivityBase
 import de.dreier.mytargets.databinding.ActivityArrowRankingDetailsBinding
 import de.dreier.mytargets.features.scoreboard.EFileType
 import de.dreier.mytargets.features.settings.ESettingsScreens
 import de.dreier.mytargets.features.settings.SettingsManager
+import de.dreier.mytargets.shared.models.Dimension
+import de.dreier.mytargets.shared.models.Target
+import de.dreier.mytargets.shared.models.db.Shot
 import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.Utils
 import de.dreier.mytargets.utils.parcelableExtra
@@ -54,7 +58,42 @@ class DispersionPatternActivity : ChildActivityBase() {
             .setContentView(this, R.layout.activity_arrow_ranking_details)
         ToolbarUtils.applyWindowInsetsToScrollableContent(binding!!.dispersionView)
 
-        statistic = intent.parcelableExtra(intent,ITEM)!!
+        val roundIds = intent.getLongArrayExtra(ROUND_IDS)
+        val target = intent.parcelableExtra<Target>(intent, TARGET)
+        if (roundIds == null || target == null) {
+            finish()
+            return
+        }
+
+        val arrowName = intent.getStringExtra(ARROW_NAME)
+        val arrowNumber = intent.getStringExtra(ARROW_NUMBER)
+        val exportFileName = intent.getStringExtra(EXPORT_FILE_NAME)
+
+        val db = ApplicationInstance.db
+        val roundDAO = db.roundDAO()
+        val endDAO = db.endDAO()
+        val rounds = roundDAO.loadRoundsBatched(roundIds)
+
+        statistic = if (arrowNumber != null) {
+            val shots = rounds
+                .flatMap { roundDAO.loadEnds(it.id) }
+                .flatMap { endDAO.loadShots(it.id) }
+                .filter { it.arrowNumber == arrowNumber }
+            ArrowStatistic(target, shots).also {
+                it.arrowName = arrowName
+                it.arrowNumber = arrowNumber
+            }
+        } else {
+            val shots = rounds
+                .flatMap { roundDAO.loadEnds(it.id) }
+                .filter { it.exact }
+                .flatMap { endDAO.loadShots(it.id) }
+                .filter { it.scoringRing != Shot.NOTHING_SELECTED }
+            ArrowStatistic(target, shots).also {
+                it.exportFileName = exportFileName
+                it.arrowDiameter = Dimension(5f, Dimension.Unit.MILLIMETER)
+            }
+        }
 
         ToolbarUtils.showHomeAsUp(this)
         if (statistic.arrowName != null) {
@@ -142,6 +181,10 @@ class DispersionPatternActivity : ChildActivityBase() {
     }
 
     companion object {
-        const val ITEM = "item"
+        const val ROUND_IDS = "round_ids"
+        const val TARGET = "target"
+        const val ARROW_NAME = "arrow_name"
+        const val ARROW_NUMBER = "arrow_number"
+        const val EXPORT_FILE_NAME = "export_file_name"
     }
 }

@@ -40,7 +40,6 @@ import de.dreier.mytargets.features.settings.ESettingsScreens
 import de.dreier.mytargets.features.settings.SettingsActivity
 import de.dreier.mytargets.features.settings.SettingsManager
 import de.dreier.mytargets.features.settings.about.AboutActivity
-import de.dreier.mytargets.features.statistics.ArrowStatistic
 import de.dreier.mytargets.features.statistics.DispersionPatternActivity
 import de.dreier.mytargets.features.statistics.StatisticsActivity
 import de.dreier.mytargets.features.timer.TimerActivity
@@ -158,10 +157,26 @@ class NavigationController(
             .start()
     }
 
-    fun navigateToDispersionPattern(statistics: ArrowStatistic) {
-        IntentWrapper(activity, fragment, DispersionPatternActivity::class.java)
-            .with(DispersionPatternActivity.ITEM, statistics)
-            .start()
+    fun navigateToDispersionPattern(
+        roundIds: LongArray,
+        target: Target,
+        arrowName: String?,
+        arrowNumber: String?,
+        exportFileName: String?
+    ) {
+        val wrapper = IntentWrapper(activity, fragment, DispersionPatternActivity::class.java)
+            .with(DispersionPatternActivity.ROUND_IDS, roundIds)
+            .with(DispersionPatternActivity.TARGET, target)
+        if (arrowName != null) {
+            wrapper.with(DispersionPatternActivity.ARROW_NAME, arrowName)
+        }
+        if (arrowNumber != null) {
+            wrapper.with(DispersionPatternActivity.ARROW_NUMBER, arrowNumber)
+        }
+        if (exportFileName != null) {
+            wrapper.with(DispersionPatternActivity.EXPORT_FILE_NAME, exportFileName)
+        }
+        wrapper.start()
     }
 
     fun navigateToStatistics(roundIds: List<Long>) {

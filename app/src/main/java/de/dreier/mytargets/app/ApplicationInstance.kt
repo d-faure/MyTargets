@@ -49,13 +49,14 @@ class ApplicationInstance : SharedApplicationInstance() {
     }
 
     override fun onCreate() {
+        super.onCreate()
+        // Ensure Application context/resources are fully initialized before locale mutation.
         Language.setFromPreference(this, SettingsManager.KEY_LANGUAGE)
         if (BuildConfig.DEBUG) {
             enableDebugLogging()
         } else {
             Timber.plant(CrashReportingTree())
         }
-        super.onCreate()
         handleDatabaseImport()
         initRoomDb(this)
         wearableClient = MobileWearableClient(this)
@@ -103,6 +104,12 @@ class ApplicationInstance : SharedApplicationInstance() {
 
         lateinit var wearableClient: MobileWearableClient
         lateinit var db: AppDatabase
+
+        fun ensureDbInitialized(context: Context) {
+            if (!::db.isInitialized) {
+                initRoomDb(context.applicationContext)
+            }
+        }
 
         val lastSharedPreferences: SharedPreferences
             get() = SharedApplicationInstance.context.getSharedPreferences(MyBackupAgent.PREFS, 0)

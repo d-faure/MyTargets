@@ -50,7 +50,7 @@ class EditBowFragment : EditWithImageFragmentBase<BowImage>(R.drawable.recurve_b
     var bow: Bow? = null
 
     @State
-    var sightMarks: ArrayList<SightMark> = ArrayList()
+    var sightMarks: ArrayList<SightMark>? = null
 
     private lateinit var contentBinding: FragmentEditBowBinding
     private lateinit var adapter: SightMarksAdapter
@@ -85,9 +85,12 @@ class EditBowFragment : EditWithImageFragmentBase<BowImage>(R.drawable.recurve_b
                 defaultBow.name = getString(R.string.my_bow)
                 defaultBow.type = bowType
                 bow = defaultBow
-                sightMarks.add(SightMark())
+                sightMarks = arrayListOf(SightMark())
                 imageFiles = emptyList()
             }
+        }
+        if (sightMarks == null) {
+            sightMarks = arrayListOf()
         }
         val currentBow = bow ?: Bow().also { bow = it }
         val bowTitle = if (currentBow.name.isBlank()) getString(R.string.my_bow) else currentBow.name
@@ -96,7 +99,7 @@ class EditBowFragment : EditWithImageFragmentBase<BowImage>(R.drawable.recurve_b
         contentBinding.showAll = false
 
         loadImage(imageFile)
-        adapter = SightMarksAdapter(this, sightMarks)
+        adapter = SightMarksAdapter(this, sightMarks!!)
         contentBinding.sightMarks.adapter = adapter
         contentBinding.sightMarks.isNestedScrollingEnabled = false
         return rootView
@@ -117,9 +120,10 @@ class EditBowFragment : EditWithImageFragmentBase<BowImage>(R.drawable.recurve_b
     }
 
     private fun onAddSightSetting() {
-        sightMarks.add(SightMark())
-        adapter.setList(sightMarks)
-        adapter.notifyItemInserted(sightMarks.size - 1)
+        val marks = sightMarks ?: arrayListOf<SightMark>().also { sightMarks = it }
+        marks.add(SightMark())
+        adapter.setList(marks)
+        adapter.notifyItemInserted(marks.size - 1)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -128,8 +132,9 @@ class EditBowFragment : EditWithImageFragmentBase<BowImage>(R.drawable.recurve_b
             val intentData = data.getBundleExtra(INTENT)
             val index = intentData?.getInt(SelectorBase.INDEX)
             val parcelable = data.parcelableExtra<Dimension>(data, ITEM)
-            if (parcelable != null && index != null) {
-                sightMarks[index].distance = parcelable
+            val marks = sightMarks
+            if (parcelable != null && index != null && marks != null && index in marks.indices) {
+                marks[index].distance = parcelable
                 adapter.notifyItemChanged(index)
             }
 
@@ -139,7 +144,7 @@ class EditBowFragment : EditWithImageFragmentBase<BowImage>(R.drawable.recurve_b
     public override fun onSave() {
         super.onSave()
         val currentBow = buildBow()
-        bowDAO.saveBow(currentBow, imageFiles, sightMarks)
+        bowDAO.saveBow(currentBow, imageFiles, sightMarks ?: emptyList())
         navigationController.finish()
     }
 
