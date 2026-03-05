@@ -1,53 +1,52 @@
 [versions]
 compileSdk = "36"
 minSdk = "23"
-kotlin = "2.0.21"
-agp = "8.7.3"
+kotlin = "2.2.0"
+agp = "8.13.2"
 dexcount = "4.0.0"
-ben-manes-versions = "0.51.0"
-navigation-safe-args = "2.8.5"
-google-services = "4.4.2"
-firebase-crashlytics-gradle = "3.0.2"
+ben-manes-versions = "0.53.0"
+navigation-safe-args = "2.9.7"
+google-services = "4.4.4"
+firebase-crashlytics-gradle = "3.0.6"
 
 androidx-annotation = "1.9.1"
-androidx-core = "1.15.0"
-androidx-fragment = "1.8.5"
+androidx-core = "1.17.0"
+androidx-fragment = "1.8.9"
 androidx-legacy = "1.0.0"
-androidx-media = "1.7.0"
-appcompat = "1.7.0"
-material = "1.12.0"
-recyclerview = "1.3.2"
+androidx-media = "1.7.1"
+appcompat = "1.7.1"
+material = "1.13.0"
+recyclerview = "1.4.0"
 cardview = "1.0.0"
-exifinterface = "1.3.7"
+exifinterface = "1.4.2"
 
-androidx-test-core = "1.6.1"
-androidx-test-junit = "1.2.1"
-androidx-test-runner = "1.6.2"
-androidx-test-rules = "1.6.1"
+androidx-test-core = "1.7.0"
+androidx-test-junit = "1.3.0"
+androidx-test-runner = "1.7.0"
+androidx-test-rules = "1.7.0"
 androidx-test-uiautomator = "2.3.0"
-androidx-test-orchestrator = "1.5.0"
+androidx-test-orchestrator = "1.6.1"
 
-androidx-wear = "1.3.0"
+androidx-wear = "1.4.0"
 wearable-support = "2.9.0"
 
-lifecycle = "2.8.7"
-room = "2.6.1"
-navigation = "2.8.5"
+lifecycle = "2.10.0"
+room = "2.8.4"
+navigation = "2.9.7"
 
-play-services-auth = "21.3.0"
-play-services-wearable = "18.2.0"
-google-http-client = "1.30.2"
+play-services-auth = "21.5.1"
+play-services-wearable = "19.0.0"
+google-http-client-gson = "1.46.3"
 google-api-client = "1.30.2"
 google-api-services-drive = "v3-rev20190416-1.28.0"
-firebase-bom = "33.7.0"
+firebase-bom = "34.10.0"
 
-gson = "2.11.0"
+gson = "2.13.2"
 okhttp = "4.12.0"
 retrofit = "2.11.0"
 picasso = "2.5.2"
 
 android-state = "1.4.1"
-permissions-dispatcher = "4.9.2"
 mpandroidchart = "v3.0.3"
 easyimage = "2.1.0"
 material-dialogs = "0.9.6.0"
@@ -57,20 +56,16 @@ rounded-image-view = "2.3.0"
 material-intro-screen = "0.0.6"
 photo-view = "2.3.0"
 android-languages = "v1.0.1"
-signature-pad = "1.3.1"
 screengrab = "2.1.1"
 
-truth = "1.4.4"
+truth = "1.4.5"
 junit4 = "4.13.2"
-mockito = "5.14.2"
-espresso = "3.6.1"
+mockito = "5.22.0"
+espresso = "3.7.0"
 
 multidex = "2.0.1"
-threetenabp = "1.4.7"
+threetenabp = "1.4.9"
 timber = "5.0.1"
-androidx-appcompat-discreteseekbar = "1.6.1"
-androidx-annotation-discreteseekbar = "1.6.0"
-androidx-core-discreteseekbar = "1.10.1"
 
 [libraries]
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
@@ -112,8 +107,8 @@ lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx",
 
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
 play-services-wearable = { module = "com.google.android.gms:play-services-wearable", version.ref = "play-services-wearable" }
-google-http-client-auth = { module = "com.google.http-client:google-http-client-gson", version.ref = "google-http-client" }
-google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "google-http-client" }
+google-http-client-auth = { module = "com.google.http-client:google-http-client-gson", version.ref = "google-http-client-gson" }
+google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "google-api-client" }
 google-api-services-drive = { module = "com.google.apis:google-api-services-drive", version.ref = "google-api-services-drive" }
 firebase-core = { module = "com.google.firebase:firebase-analytics" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
@@ -128,8 +123,6 @@ picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 
 android-state = { module = "com.evernote:android-state", version.ref = "android-state" }
 android-state-processor = { module = "com.evernote:android-state-processor", version.ref = "android-state" }
-permissions-dispatcher = { module = "org.permissionsdispatcher:permissionsdispatcher", version.ref = "permissions-dispatcher" }
-permissions-dispatcher-processor = { module = "org.permissionsdispatcher:permissionsdispatcher-processor", version.ref = "permissions-dispatcher" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
 easyimage = { module = "com.github.jkwiecien:EasyImage", version.ref = "easyimage" }
 material-dialogs = { module = "com.afollestad.material-dialogs:core", version.ref = "material-dialogs" }
@@ -140,7 +133,6 @@ rounded-image-view = { module = "com.makeramen:roundedimageview", version.ref = 
 material-intro-screen = { module = "io.github.dreierf:material-intro-screen", version.ref = "material-intro-screen" }
 photo-view = { module = "com.github.chrisbanes:PhotoView", version.ref = "photo-view" }
 android-languages = { module = "com.github.delight-im:Android-Languages", version.ref = "android-languages" }
-signature-pad = { module = "com.github.gcacace:signature-pad", version.ref = "signature-pad" }
 screengrab = { module = "tools.fastlane:screengrab", version.ref = "screengrab" }
 
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
@@ -151,17 +143,12 @@ espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version
 espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espresso" }
 espresso-idling-resource = { module = "androidx.test.espresso:espresso-idling-resource", version.ref = "espresso" }
 
-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-stdlib-jdk7 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk7", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 multidex = { module = "androidx.multidex:multidex", version.ref = "multidex" }
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
-androidx-appcompat-discreteseekbar = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat-discreteseekbar" }
-androidx-annotation-discreteseekbar = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation-discreteseekbar" }
-androidx-core-discreteseekbar = { module = "androidx.core:core", version.ref = "androidx-core-discreteseekbar" }
-
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }

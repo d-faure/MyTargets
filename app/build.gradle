@@ -143,6 +143,11 @@ android {
     testOptions {
         execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
+
+    lint {
+        // Workaround for androidx lifecycle lint bug with current AGP/Kotlin toolchain combo
+        disable 'NullSafeMutableLiveData'
+    }
 }
 
 // apply from: '../tools/script-play-store.gradle'
@@ -174,7 +179,8 @@ dependencies {
 
     implementation libs.play.services.auth
     implementation(libs.google.http.client.auth) {
-//        exclude: group: 'com.google.http-client:google-http-client-apache'
+        exclude group: 'org.apache.httpcomponents'
+        exclude group: 'com.google.http-client', module: 'google-http-client-apache'
     }
     implementation(libs.google.api.client.android) {
         exclude group: 'org.apache.httpcomponents'
