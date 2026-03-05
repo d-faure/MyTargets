@@ -23,8 +23,7 @@ pluginManagement {
  */
 
 include ':app'
-// Removed wearable module to fix build issues
-// include ':wearable'
+include ':wearable'
 include ':shared'
 include ':tools'
 include ':discreteseekbar'

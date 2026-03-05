@@ -31,7 +31,6 @@ android {
     defaultConfig {
         minSdkVersion libs.versions.minSdk.get().toInteger()
         compileSdk libs.versions.compileSdk.get().toInteger()
-        targetSdkVersion 36
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary true
     }
@@ -60,6 +59,12 @@ android {
         screengrab {
             dimension "mode"
         }
+    }
+    lint {
+        targetSdk 36
+    }
+    testOptions {
+        targetSdk 36
     }
 }
 

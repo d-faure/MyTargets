@@ -63,6 +63,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig true
         viewBinding true
     }
     dataBinding {
@@ -242,8 +243,6 @@ dependencies {
     implementation libs.arch.navigation.ui
 
     implementation project(':shared')
-    // Removed wearable dependency
-    // wearApp project(':wearable')
 
     testImplementation libs.junit4
     testImplementation libs.kotlin.test

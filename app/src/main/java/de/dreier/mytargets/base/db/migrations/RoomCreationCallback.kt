@@ -75,7 +75,7 @@ object RoomCreationCallback : RoomDatabase.Callback() {
     ) {
         db.execSQL(
             "INSERT OR REPLACE INTO StandardRound($idColumn, club, name) VALUES (?,?,?)",
-            arrayOf(standardRound.id, standardRound.club, standardRound.name)
+            arrayOf<Any?>(standardRound.id, standardRound.club, standardRound.name)
         )
     }
 
@@ -90,7 +90,7 @@ object RoomCreationCallback : RoomDatabase.Callback() {
             "INSERT OR REPLACE INTO RoundTemplate($idColumn, $standardRoundColumn, `index`, " +
                     "shotsPerEnd, endCount, distance, targetId, $scoringStyleColumn, targetDiameter) " +
                     "VALUES (?,?,?,?,?,?,?,?,?)",
-            arrayOf(
+            arrayOf<Any?>(
                 roundTemplate.id, roundTemplate.standardRoundId, roundTemplate.index,
                 roundTemplate.shotsPerEnd, roundTemplate.endCount,
                 "${roundTemplate.distance.value} ${roundTemplate.distance.unit}",

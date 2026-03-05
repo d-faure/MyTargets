@@ -33,8 +33,10 @@ android {
         minSdkVersion 23
         compileSdk libs.versions.compileSdk.get().toInteger()
         targetSdkVersion 34
-        versionCode gitVersionCode
+        // Wear artifact must not reuse the same versionCode as phone artifact in Play delivery.
+        versionCode (gitVersionCode * 10 + 1)
         versionName gitVersionName
+        missingDimensionStrategy 'mode', 'regular'
     }
     dataBinding {
         enabled = true
@@ -60,7 +62,8 @@ android {
             applicationIdSuffix '.debug'
             signingConfig signingConfigs.debug
             minifyEnabled false
-            testCoverageEnabled true
+            enableUnitTestCoverage true
+            enableAndroidTestCoverage true
         }
         release {
             signingConfig signingConfigs.release

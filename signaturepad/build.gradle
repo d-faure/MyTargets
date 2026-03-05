@@ -13,11 +13,16 @@ android {
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 36
     }
 
     buildFeatures {
         viewBinding true
         dataBinding true
+    }
+    lint {
+        targetSdk 36
+    }
+    testOptions {
+        targetSdk 36
     }
 }
