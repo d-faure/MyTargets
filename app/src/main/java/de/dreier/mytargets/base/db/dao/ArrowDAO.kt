@@ -41,7 +41,7 @@ abstract class ArrowDAO {
     abstract fun insertArrow(arrow: Arrow): Long
 
     @Update
-    abstract fun updateArrow(arrow: Arrow)
+    abstract fun updateArrow(arrow: Arrow): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun insertArrowImages(images: List<ArrowImage>)
@@ -52,7 +52,11 @@ abstract class ArrowDAO {
     @Transaction
     open fun saveArrow(arrow: Arrow, images: List<ArrowImage>) {
         if (arrow.id > 0) {
-            updateArrow(arrow)
+            // If update hits 0 rows the arrow was deleted (e.g. undo after delete); re-insert it.
+            // insertArrow uses REPLACE and arrow.id is non-zero, so SQLite preserves the original ID.
+            if (updateArrow(arrow) == 0) {
+                arrow.id = insertArrow(arrow)
+            }
         } else {
             arrow.id = insertArrow(arrow)
         }

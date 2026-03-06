@@ -60,6 +60,7 @@
     <string name="share">Share</string>
     <string name="dispersion_pattern">Dispersion pattern</string>
     <string name="sharing_failed">Sharing failed!</string>
+    <string name="dispersion_pattern_load_error">Could not load dispersion pattern</string>
 
     <!-- Export -->
     <string name="send_exported">Send exported data</string>

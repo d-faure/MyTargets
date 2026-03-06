@@ -63,15 +63,23 @@ abstract class AggregationStrategyBase : IAggregationStrategy {
     private inner class ComputeTask : AsyncTask<List<Shot>, Int, IAggregationResultRenderer>() {
 
         override fun doInBackground(vararg array: List<Shot>): IAggregationResultRenderer {
-            return compute(array[0])
+            return try {
+                compute(array[0])
+            } catch (e: Exception) {
+                NOPResultRenderer()
+            }
         }
 
         override fun onPostExecute(clusterResultRenderer: IAggregationResultRenderer) {
             super.onPostExecute(clusterResultRenderer)
-            clusterResultRenderer.setColor(color)
-            result = clusterResultRenderer
-            isDirty = false
-            resultListener?.onResult()
+            try {
+                clusterResultRenderer.setColor(color)
+                result = clusterResultRenderer
+                isDirty = false
+                resultListener?.onResult()
+            } catch (e: Exception) {
+                // Drawable or listener was already cleaned up
+            }
         }
     }
 }

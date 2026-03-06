@@ -27,6 +27,18 @@
             android:layout_height="match_parent"
             android:padding="16dp"/>
 
+        <TextView
+            android:id="@+id/dispersionErrorView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="24dp"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="?attr/colorOnSurface"
+            android:gravity="center"
+            android:text="@string/dispersion_pattern_load_error"
+            android:visibility="gone"/>
+
     </FrameLayout>
 
 </layout>

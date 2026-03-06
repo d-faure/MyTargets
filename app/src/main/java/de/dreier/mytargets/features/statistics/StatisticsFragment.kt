@@ -35,6 +35,7 @@ import com.github.mikephil.charting.renderer.LineChartRenderer
 import com.github.mikephil.charting.utils.ColorTemplate
 import de.dreier.mytargets.R
 import de.dreier.mytargets.app.ApplicationInstance
+import timber.log.Timber
 import de.dreier.mytargets.base.fragments.FragmentBase
 import de.dreier.mytargets.base.fragments.LoaderUICallback
 import de.dreier.mytargets.databinding.FragmentStatisticsBinding
@@ -232,46 +233,51 @@ class StatisticsFragment : FragmentBase() {
     }
 
     private fun showDispersionView() {
-        val exactShots = rounds!!
-            .flatMap { roundDAO.loadEnds(it.id) }
-            .filter { it.exact }
-            .flatMap { endDAO.loadShots(it.id) }
-            .filter { (_, _, _, _, _, scoringRing) -> scoringRing != Shot.NOTHING_SELECTED }
-            .toList()
-        if (exactShots.isEmpty()) {
+        try {
+            val exactShots = rounds!!
+                .flatMap { roundDAO.loadEnds(it.id) }
+                .filter { it.exact }
+                .flatMap { endDAO.loadShots(it.id) }
+                .filter { (_, _, _, _, _, scoringRing) -> scoringRing != Shot.NOTHING_SELECTED }
+                .toList()
+            if (exactShots.isEmpty()) {
+                binding.dispersionPatternLayout.visibility = View.GONE
+                return
+            }
+            val stats = ArrowStatistic(target!!, exactShots)
+            stats.arrowDiameter = Dimension(5f, Dimension.Unit.MILLIMETER)
+
+            val trainingsIds = rounds!!
+                .map { it.trainingId!! }
+                .distinct()
+            if (trainingsIds.size == 1) {
+                val training = trainingDAO.loadTraining(trainingsIds[0])
+                val date = training.date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                val round = if (rounds!!.size == 1) {
+                    val index = rounds!![0].index + 1
+                    "-" + resources.getQuantityString(R.plurals.rounds, index, index)
+                        .replace(' ', '-')
+                } else ""
+                stats.exportFileName = "$date-${training.title}$round"
+            } else {
+                stats.exportFileName = ""
+            }
+
+            val drawable = DispersionPatternUtils.targetFromArrowStatistics(stats)
+            binding.dispersionView.setImageDrawable(drawable)
+
+            binding.dispersionViewOverlay.setOnClickListener {
+                navigationController.navigateToDispersionPattern(
+                    roundIds = roundIds!!,
+                    target = target!!,
+                    arrowName = null,
+                    arrowNumber = null,
+                    exportFileName = stats.exportFileName
+                )
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to render inline dispersion pattern")
             binding.dispersionPatternLayout.visibility = View.GONE
-            return
-        }
-        val stats = ArrowStatistic(target!!, exactShots)
-        stats.arrowDiameter = Dimension(5f, Dimension.Unit.MILLIMETER)
-
-        val trainingsIds = rounds!!
-            .map { it.trainingId!! }
-            .distinct()
-        if (trainingsIds.size == 1) {
-            val training = trainingDAO.loadTraining(trainingsIds[0])
-            val date = training.date.format(DateTimeFormatter.ISO_LOCAL_DATE)
-            val round = if (rounds!!.size == 1) {
-                val index = rounds!![0].index + 1
-                "-" + resources.getQuantityString(R.plurals.rounds, index, index)
-                    .replace(' ', '-')
-            } else ""
-            stats.exportFileName = "$date-${training.title}$round"
-        } else {
-            stats.exportFileName = ""
-        }
-
-        val drawable = DispersionPatternUtils.targetFromArrowStatistics(stats)
-        binding.dispersionView.setImageDrawable(drawable)
-
-        binding.dispersionViewOverlay.setOnClickListener {
-            navigationController.navigateToDispersionPattern(
-                roundIds = roundIds!!,
-                target = target!!,
-                arrowName = null,
-                arrowNumber = null,
-                exportFileName = stats.exportFileName
-            )
         }
     }
 

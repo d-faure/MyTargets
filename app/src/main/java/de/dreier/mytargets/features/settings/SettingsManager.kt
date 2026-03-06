@@ -216,10 +216,14 @@ object SettingsManager {
         set(value) = preferences.set(KEY_SHOW_MODE, value.toString())
 
     var aggregationStrategy: EAggregationStrategy
-        get() = EAggregationStrategy.valueOf(
-            preferences
-                .getString(KEY_AGGREGATION_STRATEGY, EAggregationStrategy.AVERAGE.toString())!!
-        )
+        get() = try {
+            EAggregationStrategy.valueOf(
+                preferences
+                    .getString(KEY_AGGREGATION_STRATEGY, EAggregationStrategy.AVERAGE.toString())!!
+            )
+        } catch (e: IllegalArgumentException) {
+            EAggregationStrategy.AVERAGE
+        }
         set(value) = preferences.set(KEY_AGGREGATION_STRATEGY, value.toString())
 
     var profileFirstName: String
@@ -277,11 +281,19 @@ object SettingsManager {
         set(value) = preferences.set(KEY_SCOREBOARD_SHARE_FILE_TYPE, value.name)
 
     var statisticsDispersionPatternFileType: EFileType
-        get() = EFileType.valueOf(preferences[KEY_STATISTICS_DISPERSION_PATTERN_FILE_TYPE, EFileType.JPG.name])
+        get() = try {
+            EFileType.valueOf(preferences[KEY_STATISTICS_DISPERSION_PATTERN_FILE_TYPE, EFileType.JPG.name])
+        } catch (e: IllegalArgumentException) {
+            EFileType.JPG
+        }
         set(value) = preferences.set(KEY_STATISTICS_DISPERSION_PATTERN_FILE_TYPE, value.name)
 
     var statisticsDispersionPatternAggregationStrategy: EAggregationStrategy
-        get() = EAggregationStrategy.valueOf(preferences[KEY_STATISTICS_DISPERSION_PATTERN_AGGREGATION_STRATEGY, EAggregationStrategy.AVERAGE.toString()])
+        get() = try {
+            EAggregationStrategy.valueOf(preferences[KEY_STATISTICS_DISPERSION_PATTERN_AGGREGATION_STRATEGY, EAggregationStrategy.AVERAGE.toString()])
+        } catch (e: IllegalArgumentException) {
+            EAggregationStrategy.AVERAGE
+        }
         set(value) = preferences.set(
             KEY_STATISTICS_DISPERSION_PATTERN_AGGREGATION_STRATEGY,
             value.toString()
