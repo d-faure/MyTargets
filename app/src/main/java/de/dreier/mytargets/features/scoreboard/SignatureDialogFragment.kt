@@ -17,6 +17,7 @@ package de.dreier.mytargets.features.scoreboard
 
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import android.text.InputType
@@ -28,27 +29,34 @@ import de.dreier.mytargets.R
 import de.dreier.mytargets.app.ApplicationInstance
 import de.dreier.mytargets.databinding.FragmentSignatureBinding
 import de.dreier.mytargets.shared.models.db.Signature
+import java.io.File
+import java.io.FileOutputStream
 
 class SignatureDialogFragment : DialogFragment() {
 
     private val signatureDAO = ApplicationInstance.db.signatureDAO()
+    private lateinit var binding: FragmentSignatureBinding
+    private var signatureId: Long = 0L
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val binding = FragmentSignatureBinding.inflate(inflater, container, false)
+        binding = FragmentSignatureBinding.inflate(inflater, container, false)
         val args = arguments
-        val signatureId = args!!.getLong(ARG_SIGNATURE_ID)
+        signatureId = args!!.getLong(ARG_SIGNATURE_ID)
         val signature = signatureDAO.loadSignatureOrNull(signatureId) ?: return binding.root
         val defaultName = args.getString(ARG_DEFAULT_NAME)
 
-        if (signature.isSigned) {
+        val draftBitmap = loadDraftBitmap()
+        if (draftBitmap != null) {
+            binding.signatureView.signatureBitmap = draftBitmap
+        } else if (signature.isSigned) {
             binding.signatureView.signatureBitmap = signature.bitmap
         }
         binding.editName.setOnClickListener {
-            MaterialDialog.Builder(context!!)
+            MaterialDialog.Builder(requireContext())
                 .title(R.string.name)
                 .inputType(InputType.TYPE_CLASS_TEXT)
                 .input(defaultName, signature.name) { _, input ->
@@ -67,11 +75,22 @@ class SignatureDialogFragment : DialogFragment() {
             }
             signature.bitmap = bitmap
             signatureDAO.updateSignature(signature)
+            deleteDraftBitmap()
             dismiss()
         }
-        binding.clear.setOnClickListener { binding.signatureView.clear() }
+        binding.clear.setOnClickListener {
+            binding.signatureView.clear()
+            deleteDraftBitmap()
+        }
         isCancelable = false
         return binding.root
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (::binding.isInitialized) {
+            saveDraftBitmap()
+        }
     }
 
     override fun onStart() {
@@ -87,6 +106,45 @@ class SignatureDialogFragment : DialogFragment() {
     private fun adjustDialogWidth() {
         val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
         dialog?.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
+    }
+
+    private fun saveDraftBitmap() {
+        val file = getDraftFile()
+        if (binding.signatureView.isEmpty) {
+            deleteDraftBitmap()
+            return
+        }
+        try {
+            val bitmap = binding.signatureView.transparentSignatureBitmap
+            FileOutputStream(file).use {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+            }
+        } catch (_: Exception) {
+            // Ignore draft persistence errors to avoid interrupting signature flow.
+        }
+    }
+
+    private fun loadDraftBitmap(): Bitmap? {
+        val file = getDraftFile()
+        if (!file.exists()) {
+            return null
+        }
+        return try {
+            BitmapFactory.decodeFile(file.absolutePath)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun deleteDraftBitmap() {
+        val file = getDraftFile()
+        if (file.exists()) {
+            file.delete()
+        }
+    }
+
+    private fun getDraftFile(): File {
+        return File(requireContext().cacheDir, "signature-draft-$signatureId.png")
     }
 
     companion object {
