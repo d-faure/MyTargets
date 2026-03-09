@@ -89,7 +89,7 @@ class ApplicationInstance : SharedApplicationInstance() {
     }
 
     override fun onTerminate() {
-        db.close()
+        dbOrNull?.close()
         wearableClient.disconnect()
         super.onTerminate()
     }
@@ -112,7 +112,23 @@ class ApplicationInstance : SharedApplicationInstance() {
     companion object {
 
         lateinit var wearableClient: MobileWearableClient
-        lateinit var db: AppDatabase
+        private val dbLock = Any()
+        private var _db: AppDatabase? = null
+
+        val db: AppDatabase
+            get() {
+                synchronized(dbLock) {
+                    val current = _db
+                    if (current != null && current.isOpen) {
+                        return current
+                    }
+                    initRoomDb(SharedApplicationInstance.context)
+                    return _db!!
+                }
+            }
+
+        private val dbOrNull: AppDatabase?
+            get() = synchronized(dbLock) { _db }
 
         /**
          * Guarantees that [db] is usable. Rebuilds the Room instance when
@@ -121,8 +137,11 @@ class ApplicationInstance : SharedApplicationInstance() {
          * a backup-restore cycle that may invalidate the old connection.
          */
         fun ensureDbInitialized(context: Context) {
-            if (!::db.isInitialized || !db.isOpen) {
-                initRoomDb(context.applicationContext)
+            synchronized(dbLock) {
+                val current = _db
+                if (current == null || !current.isOpen) {
+                    initRoomDb(context.applicationContext)
+                }
             }
         }
 
@@ -138,7 +157,7 @@ class ApplicationInstance : SharedApplicationInstance() {
          * perform synchronous reads during `onCreateView`.
          */
         fun initRoomDb(context: Context) {
-            db = Room.databaseBuilder(
+            _db = Room.databaseBuilder(
                 context,
                 AppDatabase::class.java, AppDatabase.DATABASE_FILE_NAME
             )

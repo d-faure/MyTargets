@@ -29,10 +29,12 @@ class DistancesViewModel(app: Application) : AndroidViewModel(app) {
     private val unit = MutableLiveData<Dimension.Unit>()
     private var distance = MutableLiveData<Dimension?>()
 
-    private val dimensionDAO = ApplicationInstance.db.dimensionDAO()
+    private val dimensionDAO: de.dreier.mytargets.base.db.dao.DimensionDAO
     val distances: LiveData<List<Dimension>>
 
     init {
+        ApplicationInstance.ensureDbInitialized(app.applicationContext)
+        dimensionDAO = ApplicationInstance.db.dimensionDAO()
         val dbDistances = unit.switchMap { unit ->
             dimensionDAO.getAll(unit)
         }

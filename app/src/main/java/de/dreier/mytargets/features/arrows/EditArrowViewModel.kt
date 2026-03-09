@@ -58,9 +58,11 @@ class EditArrowViewModel(app: Application) : AndroidViewModel(app) {
     var showAll = ObservableBoolean(false)
     var diameterErrorText = ObservableField<String>("")
 
-    private val arrowDAO = ApplicationInstance.db.arrowDAO()
+    private val arrowDAO: de.dreier.mytargets.base.db.dao.ArrowDAO
 
     init {
+        ApplicationInstance.ensureDbInitialized(app.applicationContext)
+        arrowDAO = ApplicationInstance.db.arrowDAO()
         arrow = arrowId.map { id ->
             if (id == null) {
                 null

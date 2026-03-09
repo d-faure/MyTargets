@@ -339,6 +339,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
             }
             return true
         } else if (item.itemId == R.id.action_fix_db) {
+            ApplicationInstance.ensureDbInitialized(requireContext())
             DatabaseFixer.fix(ApplicationInstance.db)
             return true
         } else if (item.itemId == R.id.action_remove_photos) {
@@ -350,6 +351,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
 
     private fun deleteAllPhotos() {
         lifecycleScope.launch(Dispatchers.IO) {  // Launch coroutine on IO dispatcher (background thread)
+            ApplicationInstance.ensureDbInitialized(requireContext())
             ApplicationInstance.db.imageDAO().removeAllPhotos(requireContext())
 
             // Back on the main thread for UI updates (Toast)
