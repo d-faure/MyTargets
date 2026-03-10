@@ -23,6 +23,7 @@ import android.print.PrintManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.content.getSystemService
 import androidx.databinding.DataBindingUtil
@@ -48,7 +49,7 @@ import java.io.File
 import java.io.IOException
 
 class DispersionPatternActivity : ChildActivityBase() {
-    private var binding: ActivityArrowRankingDetailsBinding? = null
+    private lateinit var binding: ActivityArrowRankingDetailsBinding
     private var statistic: ArrowStatistic? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,7 +59,20 @@ class DispersionPatternActivity : ChildActivityBase() {
             ?.isAppearanceLightStatusBars = true
         binding = DataBindingUtil
             .setContentView(this, R.layout.activity_arrow_ranking_details)
-        ToolbarUtils.applyWindowInsetsToScrollableContent(binding!!.dispersionView)
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.dispersionView)
+        binding.dispersionBackButton.setOnClickListener { navigationController.finish() }
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.dispersionBackButton) { view, insets ->
+            val topInset = insets.getInsets(
+                androidx.core.view.WindowInsetsCompat.Type.statusBars()
+                        or androidx.core.view.WindowInsetsCompat.Type.displayCutout()
+            ).top
+            val lp = view.layoutParams as ViewGroup.MarginLayoutParams
+            val density = view.resources.displayMetrics.density
+            lp.topMargin = topInset + (16 * density).toInt()
+            view.layoutParams = lp
+            insets
+        }
+        androidx.core.view.ViewCompat.requestApplyInsets(binding.dispersionBackButton)
 
         val roundIds = intent.getLongArrayExtra(ROUND_IDS)
         val target = intent.parcelableExtra<Target>(intent, TARGET)
@@ -126,14 +140,7 @@ class DispersionPatternActivity : ChildActivityBase() {
             return
         }
 
-        ToolbarUtils.showHomeAsUp(this)
-        val stat = statistic!!
-        if (stat.arrowName != null) {
-            ToolbarUtils.setTitle(this, getString(R.string.arrow_number_x, stat.arrowNumber))
-            ToolbarUtils.setSubtitle(this, stat.arrowName!!)
-        } else {
-            ToolbarUtils.setTitle(this, R.string.dispersion_pattern)
-        }
+        updateActionBarTitle()
     }
 
     override fun onResume() {
@@ -141,7 +148,7 @@ class DispersionPatternActivity : ChildActivityBase() {
         val stat = statistic ?: return
         try {
             val drawable = DispersionPatternUtils.targetFromArrowStatistics(stat)
-            binding!!.dispersionView.setImageDrawable(drawable)
+            binding.dispersionView.setImageDrawable(drawable)
         } catch (e: Exception) {
             Timber.e(e, "Dispersion: render failed, shots.size=${stat.shots.size}, target.id=${stat.target.id}")
             showErrorState()
@@ -150,11 +157,27 @@ class DispersionPatternActivity : ChildActivityBase() {
 
     private fun showErrorState() {
         statistic = null
-        binding!!.dispersionView.visibility = View.GONE
-        binding!!.dispersionErrorView.visibility = View.VISIBLE
-        ToolbarUtils.showHomeAsUp(this)
-        ToolbarUtils.setTitle(this, R.string.dispersion_pattern)
+        binding.dispersionView.visibility = View.GONE
+        binding.dispersionErrorView.visibility = View.VISIBLE
+        updateActionBarTitle()
         invalidateOptionsMenu()
+    }
+
+    private fun updateActionBarTitle() {
+        val actionBar = supportActionBar
+        if (actionBar == null) {
+            Timber.w("Dispersion: supportActionBar is null; skipping action bar updates")
+            return
+        }
+        actionBar.setDisplayHomeAsUpEnabled(true)
+        val stat = statistic
+        if (stat?.arrowName != null) {
+            actionBar.title = getString(R.string.arrow_number_x, stat.arrowNumber)
+            actionBar.subtitle = stat.arrowName
+        } else {
+            actionBar.setTitle(R.string.dispersion_pattern)
+            actionBar.subtitle = null
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -197,7 +220,7 @@ class DispersionPatternActivity : ChildActivityBase() {
                 startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
             } catch (e: IOException) {
                 Timber.e(e, "Dispersion: share failed")
-                Snackbar.make(binding!!.root, R.string.sharing_failed, Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, R.string.sharing_failed, Snackbar.LENGTH_SHORT).show()
             }
         }.start()
     }

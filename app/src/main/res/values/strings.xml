@@ -364,6 +364,7 @@
     <string name="warning_backup_experimental">Warning: This feature is still experimental! Please check in regular intervals if the backup was really successful!</string>
     <string name="drawer_open">Open drawer</string>
     <string name="drawer_close">Close drawer</string>
+    <string name="back">Back</string>
     <string name="help">Help</string>
     <string name="home">Home</string>
     <string name="click_to_enter_profile">Click to enter profile information</string>
