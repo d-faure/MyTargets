@@ -149,25 +149,28 @@ class HandicapCalculator {
         return (bestArrowScore - exponentTotals)
     }
 
-    private fun imperialCalc(
-        zoneMap: Map<Int, BigDecimal>,
-        groupRadiusSquared: BigDecimal,
-        bestArrowScore: BigDecimal,
-        zoneScoreStep: Int
-    ): BigDecimal {
-        var exponentTotals = BigDecimal.ZERO
-        val lastEntry = zoneMap.entries.last()
-        for ((_, radius) in zoneMap) {
-            val zoneRadiusSquared = (radius + arrowRadius).pow(2)
-            val expTerm = BigDecimal.valueOf(exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
-            exponentTotals = if (radius == lastEntry.value) {
-                exponentTotals - expTerm
-            } else {
-                exponentTotals + BigDecimal.valueOf(zoneScoreStep.toDouble()) * expTerm
-            }
-        }
-        return (bestArrowScore - exponentTotals)
-    }
+ private fun imperialCalc(
+      zoneMap: Map<Int, BigDecimal>,
+      groupRadiusSquared: BigDecimal,
+      bestArrowScore: BigDecimal,
+      zoneScoreStep: Int
+  ): BigDecimal {
+      var exponentTotals = BigDecimal.ZERO
+      val lastRadius = zoneMap.entries.last().value
+
+      for ((_, radius) in zoneMap) {
+          val zoneRadiusSquared = (radius + arrowRadius).pow(2)
+          val expTerm = BigDecimal.valueOf(exp(-(zoneRadiusSquared / groupRadiusSquared).toDouble()))
+
+          exponentTotals += if (radius == lastRadius) {
+              expTerm
+          } else {
+              BigDecimal.valueOf(zoneScoreStep.toDouble()) * expTerm
+          }
+      }
+
+      return bestArrowScore - exponentTotals
+  }
 
     fun handicapScoresList(rounded: Boolean = true): List<BigDecimal> {
         val decimalPlaces: Int = if (rounded) 0 else 2
