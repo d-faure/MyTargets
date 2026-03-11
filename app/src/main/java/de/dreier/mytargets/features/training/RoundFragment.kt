@@ -50,9 +50,9 @@ class RoundFragment :
     private lateinit var binding: FragmentListBinding
     private var round: Round? = null
 
-    private val roundDAO = ApplicationInstance.db.roundDAO()
-    private val endDAO = ApplicationInstance.db.endDAO()
-    private val endRepository = EndRepository(endDAO)
+    private val roundDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.roundDAO() }
+    private val endDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.endDAO() }
+    private val endRepository by lazy(LazyThreadSafetyMode.NONE) { EndRepository(endDAO) }
 
     private val updateReceiver = object : MobileWearableClient.EndUpdateReceiver() {
 

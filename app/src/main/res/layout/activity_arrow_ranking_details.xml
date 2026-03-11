@@ -34,9 +34,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:padding="24dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-            android:textColor="?android:textColorPrimary"
             android:gravity="center"
+            android:textColor="@color/primaryTextDefaultMaterialLight"
+            android:textSize="16sp"
             android:text="@string/dispersion_pattern_load_error"
             android:visibility="gone"/>
 

@@ -17,6 +17,7 @@ package de.dreier.mytargets.utils
 
 import de.dreier.mytargets.shared.SharedApplicationInstance
 import de.dreier.mytargets.shared.models.TimerSettings
+import androidx.core.content.edit
 
 object WearSettingsManager {
     private const val KEY_TIMER_ENABLED = "timer_enabled"
@@ -25,7 +26,8 @@ object WearSettingsManager {
     private const val KEY_TIMER_SHOOT_TIME = "timer_shoot_time"
     private const val KEY_TIMER_VIBRATE = "timer_vibrate"
     private const val KEY_TIMER_SOUND = "timer_sound"
-    private val preferences = SharedApplicationInstance.sharedPreferences
+    private val preferences
+        get() = SharedApplicationInstance.sharedPreferences
 
     var timerSettings: TimerSettings
         get() {
@@ -39,12 +41,12 @@ object WearSettingsManager {
             return settings
         }
         set(settings) = preferences
-                .edit()
-                .putBoolean(KEY_TIMER_ENABLED, settings.enabled)
-                .putBoolean(KEY_TIMER_VIBRATE, settings.vibrate)
-                .putBoolean(KEY_TIMER_SOUND, settings.sound)
-                .putInt(KEY_TIMER_WAIT_TIME, settings.waitTime)
-                .putInt(KEY_TIMER_SHOOT_TIME, settings.shootTime)
-                .putInt(KEY_TIMER_WARN_TIME, settings.warnTime)
-                .apply()
+                .edit {
+                    putBoolean(KEY_TIMER_ENABLED, settings.enabled)
+                        .putBoolean(KEY_TIMER_VIBRATE, settings.vibrate)
+                        .putBoolean(KEY_TIMER_SOUND, settings.sound)
+                        .putInt(KEY_TIMER_WAIT_TIME, settings.waitTime)
+                        .putInt(KEY_TIMER_SHOOT_TIME, settings.shootTime)
+                        .putInt(KEY_TIMER_WARN_TIME, settings.warnTime)
+                }
 }

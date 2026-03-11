@@ -21,6 +21,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase.*
 import de.dreier.mytargets.base.db.StandardRoundFactory
+import de.dreier.mytargets.shared.SharedApplicationInstance
 import de.dreier.mytargets.shared.models.Dimension
 import de.dreier.mytargets.shared.models.Target
 import de.dreier.mytargets.shared.models.augmented.AugmentedStandardRound
@@ -98,7 +99,7 @@ object Migration9 : Migration(8, 9) {
                     "scoring_style INTEGER," +
                     "UNIQUE(sid, r_index) ON CONFLICT REPLACE);"
         )
-        val rounds = StandardRoundFactory.initTable()
+        val rounds = StandardRoundFactory.initTable(SharedApplicationInstance.context)
         for (round in rounds) {
             insertStandardRound(database, round)
         }

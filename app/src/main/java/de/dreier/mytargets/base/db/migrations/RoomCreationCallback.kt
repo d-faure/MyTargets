@@ -15,91 +15,105 @@
 
 package de.dreier.mytargets.base.db.migrations
 
+import android.content.Context
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.RoomDatabase
 import de.dreier.mytargets.base.db.StandardRoundFactory
 import de.dreier.mytargets.shared.models.db.RoundTemplate
 import de.dreier.mytargets.shared.models.db.StandardRound
 
-object RoomCreationCallback : RoomDatabase.Callback() {
+class RoomCreationCallback(
+    context: Context
+) : RoomDatabase.Callback() {
+
+    private val context: Context = context.applicationContext
 
     override fun onCreate(db: SupportSQLiteDatabase) {
-        fillStandardRound(db, "id", "standardRoundId", "targetScoringStyleIndex")
+        fillStandardRound(
+            db = db,
+            context = context,
+            idColumn = "id",
+            standardRoundColumn = "standardRoundId",
+            scoringStyleColumn = "targetScoringStyleIndex"
+        )
         createScoreTriggers(db)
     }
 
-    fun fillStandardRound(
-        db: SupportSQLiteDatabase,
-        idColumn: String,
-        standardRoundColumn: String,
-        scoringStyleColumn: String
-    ) {
-        val standardRounds = StandardRoundFactory.initTable()
-        for (standardRound in standardRounds) {
-            saveStandardRound(
-                db,
-                standardRound.standardRound,
-                standardRound.roundTemplates,
-                idColumn,
-                standardRoundColumn,
-                scoringStyleColumn
+    companion object {
+        fun fillStandardRound(
+            db: SupportSQLiteDatabase,
+            context: Context,
+            idColumn: String,
+            standardRoundColumn: String,
+            scoringStyleColumn: String
+        ) {
+            val standardRounds = StandardRoundFactory.initTable(context)
+            for (standardRound in standardRounds) {
+                saveStandardRound(
+                    db,
+                    standardRound.standardRound,
+                    standardRound.roundTemplates,
+                    idColumn,
+                    standardRoundColumn,
+                    scoringStyleColumn
+                )
+            }
+        }
+
+        private fun saveStandardRound(
+            db: SupportSQLiteDatabase,
+            standardRound: StandardRound,
+            roundTemplates: List<RoundTemplate>,
+            idColumn: String,
+            standardRoundColumn: String,
+            scoringStyleColumn: String
+        ) {
+            insertStandardRound(db, standardRound, idColumn)
+            for (roundTemplate in roundTemplates) {
+                roundTemplate.standardRoundId = standardRound.id
+                insertRoundTemplate(
+                    db,
+                    roundTemplate,
+                    idColumn,
+                    standardRoundColumn,
+                    scoringStyleColumn
+                )
+            }
+        }
+
+        private fun insertStandardRound(
+            db: SupportSQLiteDatabase,
+            standardRound: StandardRound,
+            idColumn: String
+        ) {
+            db.execSQL(
+                "INSERT OR REPLACE INTO StandardRound($idColumn, club, name) VALUES (?,?,?)",
+                arrayOf<Any?>(standardRound.id, standardRound.club, standardRound.name)
             )
         }
-    }
 
-    private fun saveStandardRound(
-        db: SupportSQLiteDatabase,
-        standardRound: StandardRound,
-        roundTemplates: List<RoundTemplate>,
-        idColumn: String,
-        standardRoundColumn: String,
-        scoringStyleColumn: String
-    ) {
-        insertStandardRound(db, standardRound, idColumn)
-        for (roundTemplate in roundTemplates) {
-            roundTemplate.standardRoundId = standardRound.id
-            insertRoundTemplate(
-                db,
-                roundTemplate,
-                idColumn,
-                standardRoundColumn,
-                scoringStyleColumn
+        private fun insertRoundTemplate(
+            db: SupportSQLiteDatabase,
+            roundTemplate: RoundTemplate,
+            idColumn: String,
+            standardRoundColumn: String,
+            scoringStyleColumn: String
+        ) {
+            db.execSQL(
+                "INSERT OR REPLACE INTO RoundTemplate($idColumn, $standardRoundColumn, `index`, " +
+                        "shotsPerEnd, endCount, distance, targetId, $scoringStyleColumn, targetDiameter) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?)",
+                arrayOf<Any?>(
+                    roundTemplate.id, roundTemplate.standardRoundId, roundTemplate.index,
+                    roundTemplate.shotsPerEnd, roundTemplate.endCount,
+                    "${roundTemplate.distance.value} ${roundTemplate.distance.unit}",
+                    roundTemplate.targetTemplate.id,
+                    roundTemplate.targetTemplate.scoringStyleIndex,
+                    roundTemplate.targetTemplate.diameter.value.toString() + " " +
+                            roundTemplate.targetTemplate.diameter.unit
+                )
             )
         }
-    }
-
-    private fun insertStandardRound(
-        db: SupportSQLiteDatabase,
-        standardRound: StandardRound,
-        idColumn: String
-    ) {
-        db.execSQL(
-            "INSERT OR REPLACE INTO StandardRound($idColumn, club, name) VALUES (?,?,?)",
-            arrayOf<Any?>(standardRound.id, standardRound.club, standardRound.name)
-        )
-    }
-
-    private fun insertRoundTemplate(
-        db: SupportSQLiteDatabase,
-        roundTemplate: RoundTemplate,
-        idColumn: String,
-        standardRoundColumn: String,
-        scoringStyleColumn: String
-    ) {
-        db.execSQL(
-            "INSERT OR REPLACE INTO RoundTemplate($idColumn, $standardRoundColumn, `index`, " +
-                    "shotsPerEnd, endCount, distance, targetId, $scoringStyleColumn, targetDiameter) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?)",
-            arrayOf<Any?>(
-                roundTemplate.id, roundTemplate.standardRoundId, roundTemplate.index,
-                roundTemplate.shotsPerEnd, roundTemplate.endCount,
-                "${roundTemplate.distance.value} ${roundTemplate.distance.unit}",
-                roundTemplate.targetTemplate.id,
-                roundTemplate.targetTemplate.scoringStyleIndex,
-                roundTemplate.targetTemplate.diameter.value.toString() + " " +
-                        roundTemplate.targetTemplate.diameter.unit
-            )
-        )
     }
 
     private fun createScoreTriggers(database: SupportSQLiteDatabase) {

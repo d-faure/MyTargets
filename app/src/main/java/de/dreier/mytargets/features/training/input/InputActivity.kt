@@ -87,21 +87,23 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
     private var pendingSave: PendingEndSave? = null
     private var saveWorkerRunning = false
 
-    private val database = ApplicationInstance.db
-    private val trainingDAO = database.trainingDAO()
-    private val roundDAO = database.roundDAO()
-    private val endDAO = database.endDAO()
-    private val bowDAO = database.bowDAO()
-    private val arrowDAO = database.arrowDAO()
-    private val standardRoundDAO = database.standardRoundDAO()
-    private val roundRepository = RoundRepository(database)
-    private val trainingRepository = TrainingRepository(
-        database,
-        trainingDAO,
-        roundDAO,
-        roundRepository,
-        database.signatureDAO()
-    )
+    private val database by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db }
+    private val trainingDAO by lazy(LazyThreadSafetyMode.NONE) { database.trainingDAO() }
+    private val roundDAO by lazy(LazyThreadSafetyMode.NONE) { database.roundDAO() }
+    private val endDAO by lazy(LazyThreadSafetyMode.NONE) { database.endDAO() }
+    private val bowDAO by lazy(LazyThreadSafetyMode.NONE) { database.bowDAO() }
+    private val arrowDAO by lazy(LazyThreadSafetyMode.NONE) { database.arrowDAO() }
+    private val standardRoundDAO by lazy(LazyThreadSafetyMode.NONE) { database.standardRoundDAO() }
+    private val roundRepository by lazy(LazyThreadSafetyMode.NONE) { RoundRepository(database) }
+    private val trainingRepository by lazy(LazyThreadSafetyMode.NONE) {
+        TrainingRepository(
+            database,
+            trainingDAO,
+            roundDAO,
+            roundRepository,
+            database.signatureDAO()
+        )
+    }
 
     private val updateReceiver = object : MobileWearableClient.EndUpdateReceiver() {
 

@@ -40,19 +40,21 @@ import org.threeten.bp.LocalDate
  */
 class MobileWearableListener : WearableListenerService() {
 
-    private val database = ApplicationInstance.db
-    private val trainingDAO = database.trainingDAO()
-    private val roundDAO = database.roundDAO()
-    private val endDAO = database.endDAO()
-    private val standardRoundDAO = database.standardRoundDAO()
-    private val roundRepository = RoundRepository(database)
-    private val trainingRepository = TrainingRepository(
-        database,
-        trainingDAO,
-        roundDAO,
-        roundRepository,
-        database.signatureDAO()
-    )
+    private val database by lazy { ApplicationInstance.db }
+    private val trainingDAO by lazy(LazyThreadSafetyMode.NONE) { database.trainingDAO() }
+    private val roundDAO by lazy(LazyThreadSafetyMode.NONE) { database.roundDAO() }
+    private val endDAO by lazy(LazyThreadSafetyMode.NONE) { database.endDAO() }
+    private val standardRoundDAO by lazy(LazyThreadSafetyMode.NONE) { database.standardRoundDAO() }
+    private val roundRepository by lazy(LazyThreadSafetyMode.NONE) { RoundRepository(database) }
+    private val trainingRepository by lazy(LazyThreadSafetyMode.NONE) {
+        TrainingRepository(
+            database,
+            trainingDAO,
+            roundDAO,
+            roundRepository,
+            database.signatureDAO()
+        )
+    }
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
         super.onMessageReceived(messageEvent)

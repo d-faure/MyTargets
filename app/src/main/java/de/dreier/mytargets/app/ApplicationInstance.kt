@@ -122,7 +122,12 @@ class ApplicationInstance : SharedApplicationInstance() {
                     if (current != null && current.isOpen) {
                         return current
                     }
-                    initRoomDb(SharedApplicationInstance.context)
+                    val ctx = SharedApplicationInstance.contextOrNull
+                        ?: throw IllegalStateException(
+                            "Database accessed before context initialization. " +
+                            "Call ensureDbInitialized(context) first."
+                        )
+                    initRoomDb(ctx)
                     return _db!!
                 }
             }
@@ -138,6 +143,7 @@ class ApplicationInstance : SharedApplicationInstance() {
          */
         fun ensureDbInitialized(context: Context) {
             synchronized(dbLock) {
+                SharedApplicationInstance.initialize(context)
                 val current = _db
                 if (current == null || !current.isOpen) {
                     initRoomDb(context.applicationContext)
@@ -157,12 +163,13 @@ class ApplicationInstance : SharedApplicationInstance() {
          * perform synchronous reads during `onCreateView`.
          */
         fun initRoomDb(context: Context) {
+            SharedApplicationInstance.initialize(context)
             _db = Room.databaseBuilder(
                 context,
                 AppDatabase::class.java, AppDatabase.DATABASE_FILE_NAME
             )
                 .allowMainThreadQueries()
-                .addCallback(RoomCreationCallback)
+                .addCallback(RoomCreationCallback(context))
                 .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
                 .addMigrations(
                     Migration2, Migration3, Migration4,

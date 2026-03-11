@@ -55,7 +55,9 @@ class StandardRoundListFragment :
 
     private lateinit var binding: FragmentListBinding
 
-    private val standardRoundDAO = ApplicationInstance.db.standardRoundDAO()
+    private val standardRoundDAO by lazy(LazyThreadSafetyMode.NONE) {
+        ApplicationInstance.db.standardRoundDAO()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

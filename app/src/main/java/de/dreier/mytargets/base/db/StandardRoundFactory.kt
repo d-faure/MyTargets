@@ -15,8 +15,8 @@
 
 package de.dreier.mytargets.base.db
 
+import android.content.Context
 import de.dreier.mytargets.shared.R
-import de.dreier.mytargets.shared.SharedApplicationInstance
 import de.dreier.mytargets.shared.models.Dimension
 import de.dreier.mytargets.shared.models.Dimension.Unit.*
 import de.dreier.mytargets.shared.models.Target
@@ -38,11 +38,14 @@ object StandardRoundFactory {
     private const val UNOFFICIAL = 256
     private var idCounter: Long = 0
     private var roundCounter: Long = 0
+    private var buildContext: Context? = null
 
-    fun initTable(): List<AugmentedStandardRound> {
+    @Synchronized
+    fun initTable(context: Context): List<AugmentedStandardRound> {
         val rounds = mutableListOf<AugmentedStandardRound>()
-
-        /*
+        buildContext = context.applicationContext
+        try {
+            /*
             * 3 arrows = 2 min
             * 4 arrows = 2 min
             * 5 arrows, indoor, gnas = 2 min
@@ -50,14 +53,14 @@ object StandardRoundFactory {
             * 6 arrows = 4 min
             * */
 
-        idCounter = 0
-        roundCounter = 0
+            idCounter = 0
+            roundCounter = 0
 
-        // Indoor
-        rounds.add(
-            build(
-                AUSTRALIAN, R.string.australian_combined_indoor,
-                METER, CENTIMETER,
+            // Indoor
+            rounds.add(
+                build(
+                    AUSTRALIAN, R.string.australian_combined_indoor,
+                    METER, CENTIMETER,
                 WA5Ring.ID, 0, 3, 18, 40, 10, 25, 60, 10
             )
         )
@@ -1541,7 +1544,10 @@ object StandardRoundFactory {
             )
         )
 
-        return rounds
+            return rounds
+        } finally {
+            buildContext = null
+        }
     }
 
     /**
@@ -1569,7 +1575,9 @@ object StandardRoundFactory {
         val standardRound = StandardRound()
         idCounter++
         standardRound.id = idCounter
-        standardRound.name = SharedApplicationInstance.context.getString(name)
+        standardRound.name = requireNotNull(buildContext) {
+            "StandardRoundFactory.initTable(context) must set buildContext before build()"
+        }.getString(name)
         standardRound.club = institution
         val rounds = mutableListOf<RoundTemplate>()
         var i = 0

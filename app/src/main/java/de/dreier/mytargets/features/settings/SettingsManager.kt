@@ -43,9 +43,10 @@ import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle
 
 object SettingsManager {
-    private val lastUsed = ApplicationInstance
-        .lastSharedPreferences
-    private val preferences = SharedApplicationInstance.sharedPreferences
+    private val lastUsed
+        get() = ApplicationInstance.lastSharedPreferences
+    private val preferences
+        get() = SharedApplicationInstance.sharedPreferences
 
     const val KEY_TIMER_WARN_TIME = "timer_warn_time"
     const val KEY_TIMER_WAIT_TIME = "timer_wait_time"

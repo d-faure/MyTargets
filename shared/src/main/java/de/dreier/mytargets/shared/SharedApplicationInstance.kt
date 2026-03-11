@@ -28,7 +28,7 @@ open class SharedApplicationInstance : Application() {
     override fun onCreate() {
         super.onCreate()
         AndroidThreeTen.init(this)
-        context = applicationContext
+        initialize(applicationContext)
     }
 
     protected fun enableDebugLogging() {
@@ -48,7 +48,29 @@ open class SharedApplicationInstance : Application() {
 
     companion object {
 
-        lateinit var context: Context
+        @Volatile
+        private var appContext: Context? = null
+
+        val contextOrNull: Context?
+            get() = appContext
+
+        var context: Context
+            get() = appContext
+                ?: throw UninitializedPropertyAccessException(
+                    "SharedApplicationInstance.context has not been initialized"
+                )
+            set(value) {
+                appContext = value.applicationContext
+            }
+
+        fun initialize(context: Context) {
+            appContext = context.applicationContext
+        }
+
+        fun <T> runWithContext(onMissing: () -> T, block: Context.() -> T): T {
+            val context = appContext ?: return onMissing()
+            return block(context)
+        }
 
         fun getStr(@StringRes string: Int): String {
             return context.getString(string)

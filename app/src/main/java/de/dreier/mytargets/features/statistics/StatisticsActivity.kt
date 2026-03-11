@@ -68,10 +68,10 @@ class StatisticsActivity : ChildActivityBase(),
     @State
     var bowTags: HashSet<Long?>? = null
 
-    private val trainingDAO = ApplicationInstance.db.trainingDAO()
-    private val roundDAO = ApplicationInstance.db.roundDAO()
-    private val bowDAO = ApplicationInstance.db.bowDAO()
-    private val arrowDAO = ApplicationInstance.db.arrowDAO()
+    private val trainingDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.trainingDAO() }
+    private val roundDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.roundDAO() }
+    private val bowDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.bowDAO() }
+    private val arrowDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.arrowDAO() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

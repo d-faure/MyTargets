@@ -33,7 +33,9 @@ class StandardRoundSelector @JvmOverloads constructor(
     STANDARD_ROUND_REQUEST_CODE
 ) {
 
-    private val standardRoundDAO = ApplicationInstance.db.standardRoundDAO()
+    private val standardRoundDAO by lazy(LazyThreadSafetyMode.NONE) {
+        ApplicationInstance.db.standardRoundDAO()
+    }
 
     override fun bindView(item: AugmentedStandardRound) {
         view.name.text = item.standardRound.name

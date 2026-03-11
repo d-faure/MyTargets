@@ -17,14 +17,16 @@ package de.dreier.mytargets.base.db.migrations
 
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.migration.Migration
+import de.dreier.mytargets.shared.SharedApplicationInstance
 
 object Migration22 : Migration(21, 22) {
     override fun migrate(database: SupportSQLiteDatabase) {
         RoomCreationCallback.fillStandardRound(
-            database,
-            "_id",
-            "standardRound",
-            "targetScoringStyle"
+            db = database,
+            context = SharedApplicationInstance.context,
+            idColumn = "_id",
+            standardRoundColumn = "standardRound",
+            scoringStyleColumn = "targetScoringStyle"
         )
     }
 }

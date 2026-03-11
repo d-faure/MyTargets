@@ -34,8 +34,8 @@ class BowSelector @JvmOverloads constructor(
     BOW_REQUEST_CODE
 ) {
 
-    private val database = ApplicationInstance.db
-    private val bowDAO = database.bowDAO()
+    private val database by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db }
+    private val bowDAO by lazy(LazyThreadSafetyMode.NONE) { database.bowDAO() }
 
     override fun bindView(item: Bow) {
         view.name.text = item.name

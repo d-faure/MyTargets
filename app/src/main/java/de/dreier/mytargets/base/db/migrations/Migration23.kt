@@ -30,11 +30,11 @@ object Migration23 : Migration(22, 23) {
     }
 
     private fun removeFilePath(database: SupportSQLiteDatabase, tableName: String) {
+        val filesDir = SharedApplicationInstance.context.filesDir
         val cursor = database.query("SELECT _id, fileName FROM $tableName")
         while (cursor.moveToNext()) {
             val imageId = cursor.getLong(0)
             val fileName = cursor.getString(1)
-            val filesDir = SharedApplicationInstance.context.filesDir
             var imageFile = File(filesDir, fileName)
 
             val imageFromSomewhere = File(fileName)

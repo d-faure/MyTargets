@@ -35,7 +35,7 @@ internal class BowAdapter(
     private val longClickListener: OnItemLongClickListener<Bow>
 ) : SimpleListAdapterBase<Bow>(compareBy(Bow::name, Bow::id)) {
 
-    val bowDAO = ApplicationInstance.db.bowDAO()
+    val bowDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.bowDAO() }
 
     public override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
         val itemView = LayoutInflater.from(parent.context)

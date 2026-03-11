@@ -70,17 +70,19 @@ class ScoreboardFragment : FragmentBase() {
     private var training: Training? = null
     private lateinit var rounds: List<Round>
 
-    private val database = ApplicationInstance.db
-    private val trainingDAO = database.trainingDAO()
-    private val roundDAO = database.roundDAO()
-    private val roundRepository = RoundRepository(database)
-    private val trainingRepository = TrainingRepository(
-        database,
-        trainingDAO,
-        roundDAO,
-        roundRepository,
-        database.signatureDAO()
-    )
+    private val database by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db }
+    private val trainingDAO by lazy(LazyThreadSafetyMode.NONE) { database.trainingDAO() }
+    private val roundDAO by lazy(LazyThreadSafetyMode.NONE) { database.roundDAO() }
+    private val roundRepository by lazy(LazyThreadSafetyMode.NONE) { RoundRepository(database) }
+    private val trainingRepository by lazy(LazyThreadSafetyMode.NONE) {
+        TrainingRepository(
+            database,
+            trainingDAO,
+            roundDAO,
+            roundRepository,
+            database.signatureDAO()
+        )
+    }
 
     private val updateReceiver = object : MobileWearableClient.EndUpdateReceiver() {
 

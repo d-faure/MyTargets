@@ -34,7 +34,7 @@ import java.io.FileOutputStream
 
 class SignatureDialogFragment : DialogFragment() {
 
-    private val signatureDAO = ApplicationInstance.db.signatureDAO()
+    private val signatureDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.signatureDAO() }
     private lateinit var binding: FragmentSignatureBinding
     private var signatureId: Long = 0L
 

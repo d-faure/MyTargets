@@ -65,10 +65,10 @@ class StatisticsFragment : FragmentBase() {
     private var target: Target? = null
     private var animate: Boolean = false
 
-    private val database = ApplicationInstance.db
-    private val trainingDAO = database.trainingDAO()
-    private val roundDAO = database.roundDAO()
-    private val endDAO = database.endDAO()
+    private val database by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db }
+    private val trainingDAO by lazy(LazyThreadSafetyMode.NONE) { database.trainingDAO() }
+    private val roundDAO by lazy(LazyThreadSafetyMode.NONE) { database.roundDAO() }
+    private val endDAO by lazy(LazyThreadSafetyMode.NONE) { database.endDAO() }
 
     private val updateReceiver = object : MobileWearableClient.EndUpdateReceiver() {
 

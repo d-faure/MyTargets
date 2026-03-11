@@ -34,7 +34,7 @@ class ArrowSelector @JvmOverloads constructor(
     ARROW_REQUEST_CODE
 ) {
 
-    private val arrowDAO = ApplicationInstance.db.arrowDAO()
+    private val arrowDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.arrowDAO() }
 
     override fun bindView(item: Arrow) {
         view.name.text = item.name

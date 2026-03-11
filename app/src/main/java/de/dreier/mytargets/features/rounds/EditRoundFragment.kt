@@ -39,8 +39,8 @@ class EditRoundFragment : EditFragmentBase() {
     private var roundId: Long? = null
     private lateinit var binding: FragmentEditRoundBinding
 
-    private val trainingDAO = ApplicationInstance.db.trainingDAO()
-    private val roundDAO = ApplicationInstance.db.roundDAO()
+    private val trainingDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.trainingDAO() }
+    private val roundDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.roundDAO() }
 
     override fun onCreateView(
         inflater: LayoutInflater,

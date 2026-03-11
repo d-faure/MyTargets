@@ -27,16 +27,27 @@ data class Dimension(val value: Float, val unit: Unit?) : IIdProvider, Comparabl
         compareBy({ unit?.abbreviation }, Dimension::value).compare(this, other)
 
     override fun toString(): String {
-        val context = SharedApplicationInstance.context
         if (value == -1f) {
-            return context.getString(R.string.unknown)
+            return SharedApplicationInstance.runWithContext(
+                onMissing = { "Unknown" }
+            ) { getString(R.string.unknown) }
         } else if (unit == null) {
             return when (value.toInt()) {
-                Diameter.MINI_VALUE -> context.getString(R.string.mini)
-                Diameter.SMALL_VALUE -> context.getString(R.string.small)
-                Diameter.MEDIUM_VALUE -> context.getString(R.string.medium)
-                Diameter.LARGE_VALUE -> context.getString(R.string.large)
-                Diameter.XLARGE_VALUE -> context.getString(R.string.xlarge)
+                Diameter.MINI_VALUE -> SharedApplicationInstance.runWithContext(
+                    onMissing = { "Mini" }
+                ) { getString(R.string.mini) }
+                Diameter.SMALL_VALUE -> SharedApplicationInstance.runWithContext(
+                    onMissing = { "Small" }
+                ) { getString(R.string.small) }
+                Diameter.MEDIUM_VALUE -> SharedApplicationInstance.runWithContext(
+                    onMissing = { "Medium" }
+                ) { getString(R.string.medium) }
+                Diameter.LARGE_VALUE -> SharedApplicationInstance.runWithContext(
+                    onMissing = { "Large" }
+                ) { getString(R.string.large) }
+                Diameter.XLARGE_VALUE -> SharedApplicationInstance.runWithContext(
+                    onMissing = { "XLarge" }
+                ) { getString(R.string.xlarge) }
                 else -> ""
             }
         }
@@ -108,4 +119,3 @@ data class Dimension(val value: Float, val unit: Unit?) : IIdProvider, Comparabl
         }
     }
 }
-
