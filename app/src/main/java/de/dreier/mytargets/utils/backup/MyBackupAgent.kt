@@ -24,6 +24,7 @@ class MyBackupAgent : BackupAgentHelper() {
 
     // Allocate a helper and add it to the backup agent
     override fun onCreate() {
+        ApplicationInstance.ensureDbInitialized(applicationContext)
         addHelper(PREFS_BACKUP_KEY, SharedPreferencesBackupHelper(this, PREFS))
         addHelper(SQLITE_BACKUP_KEY, DbBackupHelper(this))
         addHelper(

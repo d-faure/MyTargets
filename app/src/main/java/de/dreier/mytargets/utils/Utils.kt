@@ -169,6 +169,6 @@ fun Bitmap.writeToJPGFile(file: File) {
     fileOutputStream.close()
     recycle()
     val exif = ExifInterface(file.absolutePath)
-    exif.dateTime = LocalDateTime.now().atOffset(ZoneOffset.UTC).toInstant().toEpochMilli()
+    exif.setAttribute(ExifInterface.TAG_DATETIME, java.text.SimpleDateFormat("yyyy:MM:dd HH:mm:ss", java.util.Locale.US).format(java.util.Date()))
     exif.saveAttributes()
 }

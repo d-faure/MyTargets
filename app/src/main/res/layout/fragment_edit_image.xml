@@ -47,8 +47,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:contentScrim="?attr/colorPrimary"
-                    app:expandedTitleMarginEnd="64dp"
-                    app:expandedTitleMarginStart="48dp"
+                    app:expandedTitleGravity="bottom|center_horizontal"
+                    app:collapsedTitleGravity="center"
+                    app:expandedTitleMarginBottom="16dp"
                     app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
                     <ImageView
@@ -61,7 +62,8 @@
                     <androidx.appcompat.widget.Toolbar
                         android:id="@+id/toolbar"
                         android:layout_width="match_parent"
-                        android:layout_height="?attr/actionBarSize"
+                        android:layout_height="wrap_content"
+                        android:minHeight="?attr/actionBarSize"
                         app:layout_collapseMode="pin"
                         app:popupTheme="@style/Theme.AppCompat.Light.DarkActionBar"/>
 

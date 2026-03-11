@@ -50,6 +50,7 @@ abstract class SelectPureListItemFragmentBase<T>(
         binding.recyclerView.itemAnimator = SlideInItemAnimator()
         adapter = ListAdapter()
         binding.recyclerView.adapter = adapter
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.recyclerView)
         binding.fab.visibility = View.GONE
         ToolbarUtils.showUpAsX(this)
         return binding.root

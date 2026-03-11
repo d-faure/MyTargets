@@ -25,6 +25,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import de.dreier.mytargets.BuildConfig
 import de.dreier.mytargets.R
+import de.dreier.mytargets.utils.ToolbarUtils
 import mehdi.sakout.aboutpage.AboutPage
 import mehdi.sakout.aboutpage.Element
 
@@ -36,11 +37,7 @@ class AboutFragment : Fragment() {
             BuildConfig.VERSION_NAME
         ) + " (${BuildConfig.VERSION_CODE})"
 
-    private val crowdinElement: Element
-        get() = WebElement(
-            R.string.translate_crowdin, R.drawable.about_icon_crowdin,
-            URL_CROWDIN
-        )
+
 
     private val betaTesterElement: Element
         get() = WebElement(R.string.test_beta, R.drawable.about_icon_beta_test, URL_PLAY_STORE)
@@ -51,11 +48,6 @@ class AboutFragment : Fragment() {
             URL_SLACK
         )
 
-    private val linkedInItem: Element
-        get() = WebElement(
-            R.string.network_linkedin, R.drawable.about_icon_linkedin,
-            URL_LINKEDIN
-        )
 
     private val shareElement: Element
         get() {
@@ -77,20 +69,16 @@ class AboutFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return AboutPage(context)
+        val aboutView = AboutPage(context)
             .isRTL(false)
             .setImage(R.drawable.product_logo_144dp)
             .setDescription(getString(R.string.my_targets) + "\n" + version)
             .addGroup(getString(R.string.contribute))
             .addItem(shareElement)
-            .addItem(crowdinElement)
             .addItem(betaTesterElement)
             .addGroup(getString(R.string.connect))
-            .addEmail("dreier.florian@gmail.com")
             .addPlayStore("de.dreier.mytargets")
             .addItem(slackElement)
-            .addGitHub("DreierF")
-            .addItem(linkedInItem)
             .addGroup(getString(R.string.special_thanks_to))
             .addItem(Element(getString(R.string.all_beta_testers), null))
             .addItem(
@@ -114,6 +102,8 @@ class AboutFragment : Fragment() {
                     null)
             )
             .create()
+        ToolbarUtils.applyWindowInsetsToScrollableContent(aboutView)
+        return aboutView
     }
 
     private inner class WebElement internal constructor(
@@ -134,8 +124,5 @@ class AboutFragment : Fragment() {
             "https://join.slack.com/t/mytargets/shared_invite/enQtNjk2NTE0MzU5NzE0LTc3NjAwYmZiNTcxMDA1NTI0M2UzYWY4ZGQwMjVhYjEyODQ0MDE2MjlhZjZiZTUwODg2YTE5YjhkN2FmZTQ2Njc"
         private const val URL_PLAY_STORE =
             "http://play.google.com/store/apps/details?id=de.dreier.mytargets"
-        private const val URL_PAYPAL = "https://www.paypal.me/floriandreier"
-        private const val URL_CROWDIN = "https://crowdin.com/project/mytargets"
-        private const val URL_LINKEDIN = "https://de.linkedin.com/in/florian-dreier-b056a1113"
     }
 }

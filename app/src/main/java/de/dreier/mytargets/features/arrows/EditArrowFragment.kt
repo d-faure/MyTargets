@@ -53,11 +53,14 @@ class EditArrowFragment : EditWithImageFragmentBase<ArrowImage>(R.drawable.arrow
         contentBinding.moreFields.setOnClickListener {
             viewModel.showAll.set(true)
         }
+        ToolbarUtils.setTitle(this@EditArrowFragment, getString(R.string.my_arrow))
+        
         viewModel.arrow.observe(this, Observer { arrow ->
             if (arrow == null) {
                 return@Observer
             }
-            ToolbarUtils.setTitle(this@EditArrowFragment, arrow.name)
+            val title = if (arrow.name.isBlank()) getString(R.string.my_arrow) else arrow.name
+            ToolbarUtils.setTitle(this@EditArrowFragment, title)
         })
         viewModel.images.observe(this, Observer { images ->
             if (images != null) {

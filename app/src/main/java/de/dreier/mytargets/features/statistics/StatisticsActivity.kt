@@ -20,19 +20,19 @@ import android.app.LoaderManager
 import android.content.AsyncTaskLoader
 import android.content.Intent
 import android.content.Loader
-import androidx.databinding.DataBindingUtil
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
+import android.view.Menu
+import android.view.MenuItem
+import androidx.core.view.GravityCompat.END
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
-import androidx.core.view.GravityCompat.END
-import android.view.Menu
-import android.view.MenuItem
 import com.afollestad.materialdialogs.MaterialDialog
 import com.evernote.android.state.State
+import com.google.android.material.snackbar.Snackbar
 import de.dreier.mytargets.R
 import de.dreier.mytargets.app.ApplicationInstance
 import de.dreier.mytargets.base.activities.ChildActivityBase
@@ -46,7 +46,8 @@ import de.dreier.mytargets.utils.toUri
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class StatisticsActivity : ChildActivityBase(),
     LoaderManager.LoaderCallbacks<List<Pair<Training, Round>>> {
@@ -74,8 +75,12 @@ class StatisticsActivity : ChildActivityBase(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_statistics)
         setSupportActionBar(binding.toolbar)
+        ToolbarUtils.applyWindowInsets(binding.toolbar)
+        ToolbarUtils.applyWindowInsetsToBottom(binding.filterView)
 
         binding.reset.setOnClickListener { resetFilter() }
 
@@ -88,15 +93,20 @@ class StatisticsActivity : ChildActivityBase(),
 
     @SuppressLint("StaticFieldLeak")
     override fun onCreateLoader(i: Int, bundle: Bundle): Loader<List<Pair<Training, Round>>> {
-        val roundIds = if (intent.hasExtra(TRAINING_ID)) {
-            roundDAO.loadRounds(intent.getLongExtra(TRAINING_ID, 0)).map { it.id }
-                .toLongArray()
-        } else {
-            intent.getLongArrayExtra(ROUND_IDS)
-        }
         return object : AsyncTaskLoader<List<Pair<Training, Round>>>(this) {
             override fun loadInBackground(): List<Pair<Training, Round>> {
-                val rounds = roundDAO.loadRounds(roundIds!!)
+                // Resolve round IDs here (background thread) to avoid main-thread DB access,
+                // and use loadRoundsBatched to avoid SQLite's 999-variable limit.
+                val roundIds = if (intent.hasExtra(TRAINING_ID)) {
+                    roundDAO.loadRounds(intent.getLongExtra(TRAINING_ID, 0))
+                        .map { it.id }.toLongArray()
+                } else {
+                    intent.getLongArrayExtra(ROUND_IDS) ?: LongArray(0)
+                }
+                if (roundIds.isEmpty()) {
+                    return emptyList()
+                }
+                val rounds = roundDAO.loadRoundsBatched(roundIds)
                 val trainingsMap = rounds.map { (_, trainingId) -> trainingId!! }
                     .distinct()
                     .map { id -> Pair(id, trainingDAO.loadTraining(id)) }
@@ -165,6 +175,7 @@ class StatisticsActivity : ChildActivityBase(),
                 export()
                 true
             }
+
             R.id.action_filter -> {
                 if (!binding.drawerLayout.isDrawerOpen(END)) {
                     binding.drawerLayout.openDrawer(END)
@@ -173,6 +184,7 @@ class StatisticsActivity : ChildActivityBase(),
                 }
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -206,8 +218,10 @@ class StatisticsActivity : ChildActivityBase(),
             .map { value1 -> Pair(value1.value[0].target, value1.value) }
             .sortedByDescending { it.second.size }
         val animate = binding.viewPager.adapter == null
+        val environment =
+            if (trainingDAO.loadTrainings().first().environment.indoor) "Indoor" else "Outdoor"
         val adapter = StatisticsPagerAdapter(
-            supportFragmentManager, filteredRounds!!, animate
+            supportFragmentManager, filteredRounds!!, animate, environment
         )
         binding.viewPager.adapter = adapter
     }
@@ -308,7 +322,8 @@ class StatisticsActivity : ChildActivityBase(),
     inner class StatisticsPagerAdapter internal constructor(
         fm: FragmentManager,
         private val targets: List<Pair<Target, List<Round>>>,
-        private val animate: Boolean
+        private val animate: Boolean,
+        private val environment: String
     ) : FragmentStatePagerAdapter(fm) {
 
         override fun getItem(position: Int): Fragment {
@@ -321,8 +336,8 @@ class StatisticsActivity : ChildActivityBase(),
             return targets.size
         }
 
-        override fun getPageTitle(position: Int): CharSequence? {
-            return targets[position].first.toString()
+        override fun getPageTitle(position: Int): CharSequence {
+            return targets[position].first.toString() + " - " + environment
         }
     }
 

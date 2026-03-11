@@ -53,8 +53,10 @@ object TargetFactory {
 
     private var idIndexLookup = mutableMapOf<Long, Int>()
 
+    private val defaultTarget: TargetModelBase get() = list[0]
+
     val comparator: Comparator<Target>
-        get() = compareBy { idIndexLookup[it.id]!! }
+        get() = compareBy { idIndexLookup[it.id] ?: 0 }
 
     init {
         list = ArrayList()
@@ -111,12 +113,14 @@ object TargetFactory {
             out.add(NFAAIndoor())
             out.add(NFAAIndoor5Spot())
         } else {
-            out.add(list[idIndexLookup[target.id]!!])
+            val index = idIndexLookup[target.id]
+            out.add(if (index != null) list[index] else defaultTarget)
         }
         return out
     }
 
     fun getTarget(id: Long): TargetModelBase {
-        return list[idIndexLookup[id]!!]
+        val index = idIndexLookup[id]
+        return if (index != null) list[index] else defaultTarget
     }
 }

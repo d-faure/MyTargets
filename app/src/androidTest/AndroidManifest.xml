@@ -28,7 +28,7 @@
 
     <uses-sdk
         android:minSdkVersion="18"
-        android:targetSdkVersion="22"
+        android:targetSdkVersion="36"
         tools:overrideLibrary="android_libs.ub_uiautomator" />
 
 </manifest>

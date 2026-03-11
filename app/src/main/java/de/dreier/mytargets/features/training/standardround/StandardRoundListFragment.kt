@@ -83,7 +83,9 @@ class StandardRoundListFragment :
                 .fromFab(binding.fab).forResult(NEW_STANDARD_ROUND)
                 .start()
         }
-        useDoubleClickSelection = true
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.recyclerView)
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
+        useDoubleClickSelection = false
         setHasOptionsMenu(true)
         return binding.root
     }

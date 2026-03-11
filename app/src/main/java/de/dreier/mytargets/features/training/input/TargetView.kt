@@ -29,6 +29,7 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ArrayAdapter
 import android.widget.GridView
+import android.widget.Toast
 import androidx.core.graphics.toRect
 import de.dreier.mytargets.R
 import de.dreier.mytargets.features.settings.SettingsManager
@@ -113,7 +114,10 @@ class TargetView : TargetViewBase {
 
     private val spotEndMatrix: Matrix
         get() {
-            return if (currentShotIndex == EndRenderer.NO_SELECTION || inputMethod === KEYBOARD) {
+            // Only show a specific spot when actively placing/selecting a shot
+            // Otherwise show the full target with all spots (identity matrix)
+            // This ensures the view snaps back to show all spots between arrow placements
+            return if (currentShotIndex == EndRenderer.NO_SELECTION || inputMethod === KEYBOARD || !isCurrentlySelecting) {
                 Matrix()
             } else {
                 spotMatrices!![currentShotIndex % target.model.faceCount]
@@ -215,7 +219,9 @@ class TargetView : TargetViewBase {
         targetDrawable!!.setFocusedArrow(null)
         if (animator == null) {
             targetDrawable!!.setMatrix(fullMatrix!!)
-            if (currentShotIndex == EndRenderer.NO_SELECTION || inputMethod === KEYBOARD) {
+            // Show all spots when not actively selecting a shot position
+            // This ensures the view shows all target zones between arrow placements
+            if (currentShotIndex == EndRenderer.NO_SELECTION || inputMethod === KEYBOARD || !isCurrentlySelecting) {
                 targetDrawable!!.spotMatrix = Matrix()
             } else {
                 targetDrawable!!.spotMatrix =
@@ -227,7 +233,9 @@ class TargetView : TargetViewBase {
 
     override fun notifyTargetShotsChanged() {
         val displayedShots =
-            shots.filter { it.scoringRing != Shot.NOTHING_SELECTED && it.index != currentShotIndex }
+            shots.filterIndexed { index, shot ->
+                shot.scoringRing != Shot.NOTHING_SELECTED && index != currentShotIndex
+            }
         targetDrawable!!.replaceShotsWith(displayedShots)
         super.notifyTargetShotsChanged()
         updateListener?.onEndUpdated(shots)
@@ -403,6 +411,32 @@ class TargetView : TargetViewBase {
         if (!arrowNumbering) {
             super.onShotSelectionFinished()
         } else {
+            val currentArrowNumber = shot.arrowNumber
+            val usedNumbersInEnd = shots
+                .filterIndexed { index, s ->
+                    index != currentShotIndex &&
+                        s.scoringRing != Shot.NOTHING_SELECTED &&
+                        !s.arrowNumber.isNullOrBlank()
+                }
+                .mapNotNull { it.arrowNumber }
+                .toSet()
+
+            val availableNumbers = (1..maxArrowNumber)
+                .map { it.toString() }
+                .filter { number ->
+                    number == currentArrowNumber || number !in usedNumbersInEnd
+                }
+
+            if (availableNumbers.isEmpty()) {
+                setOnTouchListener(this)
+                Toast.makeText(
+                    context,
+                    R.string.all_arrow_numbers_used,
+                    Toast.LENGTH_SHORT
+                ).show()
+                super.onShotSelectionFinished()
+                return
+            }
 
             // Prepare grid view
             val gridView = GridView(context)
@@ -414,12 +448,12 @@ class TargetView : TargetViewBase {
                 .setTitle(R.string.arrow_numbers)
                 .create()
 
-            val numbers = (1..maxArrowNumber).map { it.toString() }
-            gridView.adapter = ArrayAdapter(context, android.R.layout.simple_list_item_1, numbers)
+            gridView.adapter =
+                ArrayAdapter(context, android.R.layout.simple_list_item_1, availableNumbers)
             gridView.numColumns = 4
             gridView.setOnItemClickListener { _, _, pos, _ ->
                 if (currentShotIndex < shots.size) {
-                    shot.arrowNumber = numbers[pos]
+                    shot.arrowNumber = availableNumbers[pos]
                 }
                 dialog.dismiss()
                 setOnTouchListener(this)

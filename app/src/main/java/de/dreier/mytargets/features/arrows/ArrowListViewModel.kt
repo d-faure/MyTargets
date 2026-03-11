@@ -22,8 +22,14 @@ import de.dreier.mytargets.shared.models.db.Arrow
 
 class ArrowListViewModel(app: Application) : AndroidViewModel(app) {
 
-    private val arrowDAO = ApplicationInstance.db.arrowDAO()
-    val arrows = arrowDAO.loadArrowsLive()
+    private val arrowDAO: de.dreier.mytargets.base.db.dao.ArrowDAO
+    val arrows: androidx.lifecycle.LiveData<List<Arrow>>
+
+    init {
+        ApplicationInstance.ensureDbInitialized(app.applicationContext)
+        arrowDAO = ApplicationInstance.db.arrowDAO()
+        arrows = arrowDAO.loadArrowsLive()
+    }
 
     fun deleteArrow(item: Arrow): () -> Arrow {
         val images = arrowDAO.loadArrowImages(item.id)

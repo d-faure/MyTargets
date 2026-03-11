@@ -18,12 +18,18 @@ package de.dreier.mytargets.features.main
 import io.github.dreierf.materialintroscreen.MaterialIntroActivity
 import io.github.dreierf.materialintroscreen.SlideFragmentBuilder
 import android.os.Bundle
+import android.view.View
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import de.dreier.mytargets.R
 
 class IntroActivity : MaterialIntroActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        applyBottomInsetsToNavigation()
         hideBackButton()
 
         enableLastSlideAlphaExitTransition(true)
@@ -47,5 +53,35 @@ class IntroActivity : MaterialIntroActivity() {
                 .description(getString(R.string.intro_description_everything_in_one_place))
                 .build()
         )
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        try {
+            super.onRestoreInstanceState(savedInstanceState)
+        } catch (e: NullPointerException) {
+            // Work around a third-party intro library crash where page indicators
+            // can restore before internal dot arrays are initialized.
+            val isKnownIndicatorCrash = e.stackTrace.any { it.className == "io.github.dreierf.materialintroscreen.widgets.InkPageIndicator" }
+            if (!isKnownIndicatorCrash) {
+                throw e
+            }
+        }
+    }
+
+    private fun applyBottomInsetsToNavigation() {
+        val navView = findViewById<View>(R.id.navigation_view) ?: return
+        val originalPaddingBottom = navView.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(navView) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val extraBottomPx = (8 * v.resources.displayMetrics.density).toInt()
+            v.setPadding(
+                v.paddingLeft,
+                v.paddingTop,
+                v.paddingRight,
+                originalPaddingBottom + insets.bottom + extraBottomPx
+            )
+            windowInsets
+        }
+        ViewCompat.requestApplyInsets(navView)
     }
 }

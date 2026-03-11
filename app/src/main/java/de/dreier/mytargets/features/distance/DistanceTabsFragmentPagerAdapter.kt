@@ -29,8 +29,7 @@ class DistanceTabsFragmentPagerAdapter(
 
     private val fragments = arrayOf(
         DistanceGridFragment.newInstance(distance, UNITS[0]),
-        DistanceGridFragment.newInstance(distance, UNITS[1]),
-        DistanceGridFragment.newInstance(distance, UNITS[2])
+        DistanceGridFragment.newInstance(distance, UNITS[1])
     )
 
     override fun getItem(position: Int): Fragment {
@@ -44,12 +43,13 @@ class DistanceTabsFragmentPagerAdapter(
     override fun getPageTitle(position: Int): CharSequence? {
         return when (position) {
             0 -> context.getString(R.string.metric)
-            1 -> context.getString(R.string.imperial)
-            else -> context.getString(R.string.us)
+            else -> context.getString(R.string.imperial)
         }
     }
 
     companion object {
-        val UNITS = listOf(METER, YARDS, FEET)
+        // Removed FEET as it's not used in standard archery rounds
+        // and was confusing users with an empty list
+        val UNITS = listOf(METER, YARDS)
     }
 }

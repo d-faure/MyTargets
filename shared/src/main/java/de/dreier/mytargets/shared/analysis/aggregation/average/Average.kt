@@ -90,10 +90,10 @@ class Average constructor(
         }
 
         nonUniformStdDev.set(
-            Math.sqrt(negSquaredXError / negCountX.toDouble()).toFloat(),
-            Math.sqrt(posSquaredYError / posCountY.toDouble()).toFloat(),
-            Math.sqrt(posSquaredXError / posCountX.toDouble()).toFloat(),
-            Math.sqrt(negSquaredYError / negCountY.toDouble()).toFloat()
+            if (negCountX > 0) Math.sqrt(negSquaredXError / negCountX.toDouble()).toFloat() else 0f,
+            if (posCountY > 0) Math.sqrt(posSquaredYError / posCountY.toDouble()).toFloat() else 0f,
+            if (posCountX > 0) Math.sqrt(posSquaredXError / posCountX.toDouble()).toFloat() else 0f,
+            if (negCountY > 0) Math.sqrt(negSquaredYError / negCountY.toDouble()).toFloat() else 0f
         )
     }
 

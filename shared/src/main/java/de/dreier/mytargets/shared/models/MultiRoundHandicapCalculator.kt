@@ -50,7 +50,7 @@ class MultiRoundHandicapCalculator{
                 return  handicap
             }
         }
-        return 101
+        return HandicapCalculator.handicapUpperBound()
     }
 
     fun getHandicap(): Int {

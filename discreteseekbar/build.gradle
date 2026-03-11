@@ -1,0 +1,29 @@
+plugins {
+    alias(libs.plugins.android.library)
+}
+
+android {
+    namespace = "org.adw.library.widgets.discreteseekbar"
+    compileSdk 36
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    defaultConfig {
+        minSdkVersion 16
+    }
+    lint {
+        targetSdk 36
+    }
+    testOptions {
+        targetSdk 36
+    }
+}
+
+dependencies {
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.annotation
+    implementation libs.androidx.core
+}

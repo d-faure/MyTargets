@@ -17,7 +17,7 @@ package de.dreier.mytargets.shared.models.db
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.ForeignKey.CASCADE
+
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import android.os.Parcel
@@ -30,7 +30,7 @@ import de.dreier.mytargets.shared.models.Image
             entity = End::class,
             parentColumns = ["id"],
             childColumns = ["endId"],
-            onDelete = CASCADE
+            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [

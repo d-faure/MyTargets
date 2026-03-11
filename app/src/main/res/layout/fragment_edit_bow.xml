@@ -141,7 +141,7 @@
                 style="@style/propertyFrameLayout"
                 app:propertyShouldShow="@{bow.type.showDrawWeight || bow.type.showLetoffWeight}"
                 app:propertyShowAll="@{showAll}"
-                app:propertyValue="@{bow.drawWeight+bow.letoffWeight}">
+                app:propertyValue="@{(bow.type.showDrawWeight ? bow.drawWeight : null) + (bow.type.showLetoffWeight ? bow.letoffWeight : null)}">
 
                 <ImageView
                     style="@style/propertyImageView"

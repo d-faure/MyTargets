@@ -353,6 +353,7 @@ abstract class TargetViewBase : View, View.OnTouchListener {
                     currentShotIndex -= 1
                     val shot = shots[currentShotIndex]
                     shot.scoringRing = Shot.NOTHING_SELECTED
+                    shot.arrowNumber = null
                     notifyTargetShotsChanged()
                     animateToNewState()
                 }
@@ -446,7 +447,15 @@ abstract class TargetViewBase : View, View.OnTouchListener {
         }
 
         override fun onPopulateNodeForVirtualView(virtualViewId: Int, node: AccessibilityNodeInfoCompat) {
-            val vw = findVirtualViewById(virtualViewId) ?: return
+            val vw = findVirtualViewById(virtualViewId)
+            if (vw == null) {
+                // ExploreByTouchHelper requires text/contentDescription for every populated node.
+                node.text = ""
+                node.contentDescription = ""
+                node.className = targetView.javaClass.name
+                node.setBoundsInParent(Rect(0, 0, 1, 1))
+                return
+            }
 
             node.text = vw.description
             node.contentDescription = vw.description

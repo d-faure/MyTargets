@@ -106,7 +106,8 @@ class RoundFragment :
                 .fromFab(binding.fab)
                 .start()
         }
-
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToScrollableContent(binding.recyclerView)
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
         roundId = arguments!!.getLongOrNull(ROUND_ID) ?:
                 throw IllegalStateException("Missing required argument round id!")
 

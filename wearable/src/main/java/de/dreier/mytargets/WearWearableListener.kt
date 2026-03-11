@@ -62,7 +62,10 @@ class WearWearableListener : WearableListenerService() {
         val notificationIntent = Intent(this, RoundActivity::class.java)
         notificationIntent.putExtra(RoundActivity.EXTRA_ROUND, info.round)
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         // Create the ongoing notification

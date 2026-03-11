@@ -252,7 +252,7 @@
     <string name="keyboard">Keyboard</string>
     <string name="backup_drive_desc">Mencadangkan data Anda memungkinkan Anda mengembalikan semua pelatihan jika Anda kehilangan atau mengganti telepon Anda.</string>
     <string name="backup_now">Cadangkan sekarang</string>
-    <string name="last_backup">Cadangan terakhir: % s</string>
+    <string name="last_backup">Cadangan terakhir: %s</string>
     <string name="recent_backups">Cadangan hari ini</string>
     <string name="dialog_restore_title">Kembali ke versi sebelumnya</string>
     <string name="restore_desc">Mengembalikan cadangan akan menimpa semua data yang ada dengan cadangan.</string>

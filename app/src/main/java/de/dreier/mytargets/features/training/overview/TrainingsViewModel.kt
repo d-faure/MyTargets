@@ -28,20 +28,23 @@ class TrainingsViewModel(app: Application) : AndroidViewModel(app) {
 
     val trainings: LiveData<List<Training>>
 
-    private val trainingDAO = ApplicationInstance.db.trainingDAO()
-    private val roundDAO = ApplicationInstance.db.roundDAO()
-    private val roundRepository = RoundRepository(ApplicationInstance.db)
-
-    private val database = ApplicationInstance.db
-    private val trainingRepository = TrainingRepository(
-        ApplicationInstance.db,
-        trainingDAO,
-        roundDAO,
-        roundRepository,
-        database.signatureDAO()
-    )
+    private val trainingDAO: de.dreier.mytargets.base.db.dao.TrainingDAO
+    private val roundDAO: de.dreier.mytargets.base.db.dao.RoundDAO
+    private val trainingRepository: TrainingRepository
 
     init {
+        ApplicationInstance.ensureDbInitialized(app.applicationContext)
+        val database = ApplicationInstance.db
+        trainingDAO = database.trainingDAO()
+        roundDAO = database.roundDAO()
+        val roundRepository = RoundRepository(database)
+        trainingRepository = TrainingRepository(
+            database,
+            trainingDAO,
+            roundDAO,
+            roundRepository,
+            database.signatureDAO()
+        )
         trainings = trainingDAO.loadTrainingsLive()
     }
 

@@ -16,7 +16,7 @@
 package de.dreier.mytargets.shared.models.db
 
 import androidx.room.*
-import androidx.room.ForeignKey.SET_NULL
+
 import android.os.Parcelable
 import de.dreier.mytargets.shared.models.Environment
 import de.dreier.mytargets.shared.models.IIdSettable
@@ -33,31 +33,31 @@ import org.threeten.bp.format.FormatStyle
             entity = Arrow::class,
             parentColumns = ["id"],
             childColumns = ["arrowId"],
-            onDelete = SET_NULL
+            onDelete = ForeignKey.SET_NULL
         ),
         ForeignKey(
             entity = Bow::class,
             parentColumns = ["id"],
             childColumns = ["bowId"],
-            onDelete = SET_NULL
+            onDelete = ForeignKey.SET_NULL
         ),
         ForeignKey(
             entity = StandardRound::class,
             parentColumns = ["id"],
             childColumns = ["standardRoundId"],
-            onDelete = SET_NULL
+            onDelete = ForeignKey.SET_NULL
         ),
         ForeignKey(
             entity = Signature::class,
             parentColumns = ["id"],
             childColumns = ["archerSignatureId"],
-            onDelete = SET_NULL
+            onDelete = ForeignKey.SET_NULL
         ),
         ForeignKey(
             entity = Signature::class,
             parentColumns = ["id"],
             childColumns = ["witnessSignatureId"],
-            onDelete = SET_NULL
+            onDelete = ForeignKey.SET_NULL
         )
     ],
     indices = [

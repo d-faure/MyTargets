@@ -60,6 +60,7 @@
     <string name="share">Share</string>
     <string name="dispersion_pattern">Dispersion pattern</string>
     <string name="sharing_failed">Sharing failed!</string>
+    <string name="dispersion_pattern_load_error">Could not load dispersion pattern</string>
 
     <!-- Export -->
     <string name="send_exported">Send exported data</string>
@@ -113,11 +114,12 @@
     <string name="scoreboard">Scoreboard</string>
     <string name="arrows">Arrows</string>
     <string name="sum">Score</string>
-    <string name="carry">R.Total</string>
+    <string name="carry">Running Total</string>
     <string name="action_print">Print</string>
     <string name="average">Average</string>
-    <string name="avg_symbol">Ø</string>
-    <string name="handicap_symbol">∑</string>
+    <string name="avg_symbol" translatable="false">Ø</string>
+    <string name="handicap_symbol" translatable="false">∑</string>
+    <string name="legend_text">Legend for Ø = Hits and Average ∑ = Handicap in App</string>
 
     <!-- Input mode -->
     <string name="comment">Comment</string>
@@ -179,6 +181,7 @@
     <string name="expand_collapse">Expand/Collapse</string>
     <string name="new_round_template">New template</string>
     <string name="arrow_numbers">Arrow numbers</string>
+    <string name="all_arrow_numbers_used">All arrow numbers are already used in this end</string>
     <string name="round_removed">Round deleted!</string>
     <string name="custom_round">Custom round</string>
     <string name="filter">Filter</string>
@@ -361,6 +364,7 @@
     <string name="warning_backup_experimental">Warning: This feature is still experimental! Please check in regular intervals if the backup was really successful!</string>
     <string name="drawer_open">Open drawer</string>
     <string name="drawer_close">Close drawer</string>
+    <string name="back">Back</string>
     <string name="help">Help</string>
     <string name="home">Home</string>
     <string name="click_to_enter_profile">Click to enter profile information</string>
@@ -394,4 +398,7 @@
     <string name="permission_required">Permission required</string>
     <string name="backup_permission_explanation"><![CDATA[To be able to make a backup of your data, the app needs permission to access the internal storage of your phone. To use the backup feature go to system settings > Apps > MyTargets > Permissions and enable the entry \'Storage\'.]]></string>
     <string name="fix_db">Attempt to fix database</string>
+    <string name="time_range" translatable="false">Time range</string>
+    <string name="remove_all_photos">Remove All Photos</string>
+    <string name="cancel">Cancel</string>
 </resources>

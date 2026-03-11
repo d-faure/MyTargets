@@ -71,6 +71,8 @@ class EditArrowListFragment : EditableListFragmentBase<Arrow, SimpleListAdapterB
         adapter = ArrowAdapter()
         binding.recyclerView.itemAnimator = SlideInItemAnimator()
         binding.recyclerView.adapter = adapter
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToScrollableContent(binding.recyclerView)
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
         return binding.root
     }
 

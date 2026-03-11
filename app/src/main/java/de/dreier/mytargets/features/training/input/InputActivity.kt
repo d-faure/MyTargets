@@ -28,6 +28,7 @@ import androidx.annotation.RequiresApi
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.AsyncTaskLoader
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import androidx.loader.content.Loader
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.text.InputType
@@ -62,8 +63,14 @@ import de.dreier.mytargets.utils.MobileWearableClient.Companion.BROADCAST_UPDATE
 import de.dreier.mytargets.utils.Utils.getCurrentLocale
 import de.dreier.mytargets.utils.transitions.FabTransform
 import de.dreier.mytargets.utils.transitions.TransitionAdapter
+import timber.log.Timber
 import org.threeten.bp.LocalTime
 import java.io.File
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.TimeUnit
 
 class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
     TargetView.OnEndUpdatedListener, LoaderManager.LoaderCallbacks<LoaderResult> {
@@ -75,6 +82,10 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
     private var transitionFinished = true
     private var summaryShowScope = ETrainingScope.END
     private var targetView: TargetView? = null
+    private val persistenceExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private val saveLock = Any()
+    private var pendingSave: PendingEndSave? = null
+    private var saveWorkerRunning = false
 
     private val database = ApplicationInstance.db
     private val trainingDAO = database.trainingDAO()
@@ -111,9 +122,14 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_input)
         setSupportActionBar(binding.toolbar)
+        ToolbarUtils.applyWindowInsets(binding.toolbar)
+        ToolbarUtils.applyWindowInsetsToBottom(binding.butBar)
         ToolbarUtils.showHomeAsUp(this)
+        
         Utils.setupFabTransform(this, binding.root)
 
         if (Utils.isLollipop) {
@@ -165,13 +181,67 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
             currentEnd.end.saveTime = LocalTime.now()
         }
         currentEnd.end.score = data!!.currentRound.round.target.getReachedScore(currentEnd.shots)
-        endDAO.updateEnd(currentEnd.end)
-        endDAO.updateShots(currentEnd.shots)
+        enqueueEndSave(currentEnd.end, currentEnd.shots)
+    }
+
+    private fun enqueueEndSave(end: End, shots: List<Shot>) {
+        val save = PendingEndSave(
+            end = end.copy(score = end.score.copy()),
+            shots = shots.map { it.copy() }
+        )
+        synchronized(saveLock) {
+            pendingSave = save
+            if (!saveWorkerRunning) {
+                saveWorkerRunning = true
+                persistenceExecutor.execute { drainPendingSaves() }
+            }
+        }
+    }
+
+    private fun drainPendingSaves() {
+        while (true) {
+            val save = synchronized(saveLock) {
+                val next = pendingSave
+                pendingSave = null
+                if (next == null) {
+                    saveWorkerRunning = false
+                }
+                next
+            } ?: return
+            try {
+                endDAO.updateEnd(save.end)
+                endDAO.updateShots(save.shots)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to persist end ${save.end.id}")
+            }
+        }
+    }
+
+    private fun flushPendingSaves(timeoutMs: Long = 1200) {
+        val latch = CountDownLatch(1)
+        try {
+            persistenceExecutor.execute { latch.countDown() }
+            if (!latch.await(timeoutMs, TimeUnit.MILLISECONDS)) {
+                Timber.w("Timed out waiting for end persistence flush")
+            }
+        } catch (e: RejectedExecutionException) {
+            Timber.w(e, "Persistence executor rejected flush request")
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            Timber.w(e, "Interrupted while waiting for end persistence flush")
+        }
+    }
+
+    override fun onStop() {
+        flushPendingSaves()
+        super.onStop()
     }
 
     override fun onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(updateReceiver)
         LocalBroadcastManager.getInstance(this).unregisterReceiver(timerReceiver)
+        flushPendingSaves(timeoutMs = 500)
+        persistenceExecutor.shutdown()
         super.onDestroy()
     }
 
@@ -246,7 +316,7 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
                     .inputType(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE)
                     .input("", data!!.currentEnd.end.comment) { _, input ->
                         data!!.currentEnd.end.comment = input.toString()
-                        endDAO.updateEnd(data!!.currentEnd.end)
+                        saveCurrentEnd()
                     }
                     .negativeText(android.R.string.cancel)
                     .show()
@@ -530,4 +600,9 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
             return end.id != currentEndId && end.exact
         }
     }
+
+    private data class PendingEndSave(
+        val end: End,
+        val shots: List<Shot>
+    )
 }

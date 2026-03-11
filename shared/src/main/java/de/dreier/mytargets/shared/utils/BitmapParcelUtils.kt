@@ -21,10 +21,10 @@ import android.os.Parcel
 
 fun Parcel.writeBitmap(bitmap: Bitmap?) {
     if (bitmap == null) {
-        writeInt(0.toByte().toInt())
+        writeInt(0)
     } else {
         val byteArray = bitmap.toByteArray()
-        writeInt(byteArray.size.toByte().toInt())
+        writeInt(byteArray.size)
         writeByteArray(byteArray)
     }
 }

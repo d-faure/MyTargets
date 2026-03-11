@@ -17,18 +17,30 @@ package de.dreier.mytargets.base.fragments
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Toast
 import com.evernote.android.state.State
 import com.google.android.material.appbar.AppBarLayout
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import de.dreier.mytargets.R
 import de.dreier.mytargets.databinding.FragmentEditImageBinding
@@ -37,10 +49,12 @@ import de.dreier.mytargets.shared.models.Thumbnail
 import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.Utils
 import de.dreier.mytargets.utils.moveTo
-import permissions.dispatcher.NeedsPermission
-import permissions.dispatcher.RuntimePermissions
+import de.dreier.mytargets.utils.NeedsPermission
+import de.dreier.mytargets.utils.RuntimePermissions
+import de.dreier.mytargets.utils.PermissionUtils
 import pl.aprilapps.easyphotopicker.DefaultCallback
 import pl.aprilapps.easyphotopicker.EasyImage
+import timber.log.Timber
 import java.io.File
 import java.io.IOException
 
@@ -56,6 +70,18 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
 
     @State
     var oldImageFile: File? = null
+
+    private val pickVisualMediaLauncher = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        handlePickedImageUri(uri)
+    }
+
+    private val getContentLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        handlePickedImageUri(uri)
+    }
 
     protected var imageFiles: List<T>
         get() {
@@ -91,10 +117,44 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
         savedInstanceState: Bundle?
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_edit_image, container, false)
+        
         ToolbarUtils.setSupportActionBar(this, binding.toolbar)
+        // AppBarLayout owns top insets on this collapsing header screen.
+        val originalAppBarPaddingTop = binding.appBarLayout.paddingTop
+        val originalAppBarPaddingLeft = binding.appBarLayout.paddingLeft
+        val originalAppBarPaddingRight = binding.appBarLayout.paddingRight
+        val originalAppBarPaddingBottom = binding.appBarLayout.paddingBottom
+        val toolbarPaddingLeft = binding.toolbar.paddingLeft
+        val toolbarPaddingTop = binding.toolbar.paddingTop
+        val toolbarPaddingRight = binding.toolbar.paddingRight
+        val toolbarPaddingBottom = binding.toolbar.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { view, windowInsets ->
+            val topInsets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            val extraTopPx = (12 * view.resources.displayMetrics.density).toInt()
+            view.setPadding(
+                originalAppBarPaddingLeft,
+                originalAppBarPaddingTop + topInsets.top + extraTopPx,
+                originalAppBarPaddingRight,
+                originalAppBarPaddingBottom
+            )
+            // Keep toolbar touch target stable: no additional inset padding here.
+            binding.toolbar.setPadding(
+                toolbarPaddingLeft,
+                toolbarPaddingTop,
+                toolbarPaddingRight,
+                toolbarPaddingBottom
+            )
+            windowInsets
+        }
+        ViewCompat.requestApplyInsets(binding.appBarLayout)
         ToolbarUtils.showUpAsX(this)
         setHasOptionsMenu(true)
         binding.fab.setOnClickListener { this.onFabClicked(it) }
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.content)
+        ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
+        
         return binding.root
     }
 
@@ -130,11 +190,15 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.action_from_gallery -> {
-                    onSelectImageWithPermissionCheck()
+                    onSelectImage()
                     true
                 }
                 R.id.action_take_picture -> {
-                    onTakePictureWithPermissionCheck()
+                    if (PermissionUtils.hasCameraPermission(requireContext())) {
+                        onTakePicture()
+                    } else {
+                        PermissionUtils.requestCameraPermission(this)
+                    }
                     true
                 }
                 else -> false
@@ -143,14 +207,23 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
         popup.show()
     }
 
-    @NeedsPermission(Manifest.permission.CAMERA)
     internal fun onTakePicture() {
         EasyImage.openCameraForImage(this, 0)
     }
 
-    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
     internal fun onSelectImage() {
-        EasyImage.openGallery(this, 0)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                pickVisualMediaLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            } else {
+                getContentLauncher.launch("image/*")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to launch image picker")
+            Toast.makeText(requireContext(), "No gallery app available", Toast.LENGTH_SHORT).show()
+        }
     }
 
     @SuppressLint("NeedOnRequestPermissionsResult")
@@ -160,11 +233,18 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        onRequestPermissionsResult(requestCode, grantResults)
+        when (requestCode) {
+            PermissionUtils.REQUEST_CAMERA -> {
+                if (PermissionUtils.isPermissionGranted(grantResults)) {
+                    onTakePicture()
+                }
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
         EasyImage.handleActivityResult(requestCode, resultCode, data, activity,
             object : DefaultCallback() {
 
@@ -179,13 +259,37 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
                 }
 
                 override fun onCanceled(source: EasyImage.ImageSource?, type: Int) {
-                    //Cancel handling, you might wanna remove taken photo if it was canceled
                     if (source == EasyImage.ImageSource.CAMERA_IMAGE) {
                         val photoFile = EasyImage.lastlyTakenButCanceledPhoto(context!!)
                         photoFile?.delete()
                     }
                 }
             })
+    }
+
+    private fun handlePickedImageUri(uri: Uri?) {
+        if (uri == null) {
+            return
+        }
+        val file = copyUriToLocalFile(uri)
+        if (file != null) {
+            oldImageFile = imageFile
+            loadImage(file)
+        } else {
+            Toast.makeText(requireContext(), "Failed to load selected image", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun copyUriToLocalFile(uri: Uri): File? {
+        return try {
+            val input = requireContext().contentResolver.openInputStream(uri) ?: return null
+            val file = File.createTempFile("gallery_img", ".jpg", requireContext().filesDir)
+            input.use { it.copyTo(file.outputStream()) }
+            file
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to copy gallery image")
+            null
+        }
     }
 
     protected fun loadImage(imageFile: File?) {
@@ -197,8 +301,39 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
                 .load(imageFile)
                 .fit()
                 .centerCrop()
-                .into(binding.imageView)
+                .into(binding.imageView, object : Callback {
+                    override fun onSuccess() {
+                        // Picasso decoded successfully.
+                    }
+
+                    override fun onError() {
+                        val bitmap = decodeSampledBitmap(imageFile)
+                        if (bitmap != null) {
+                            binding.imageView.setImageBitmap(bitmap)
+                        } else {
+                            binding.imageView.setImageResource(defaultDrawable)
+                            Toast.makeText(
+                                requireContext(),
+                                "Failed to display selected image",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                })
         }
+    }
+
+    private fun decodeSampledBitmap(file: File): Bitmap? {
+        val opts = BitmapFactory.Options()
+        opts.inJustDecodeBounds = true
+        BitmapFactory.decodeFile(file.path, opts)
+        val maxDim = maxOf(
+            binding.imageView.width.takeIf { it > 0 } ?: 1024,
+            binding.imageView.height.takeIf { it > 0 } ?: 1024
+        )
+        opts.inSampleSize = maxOf(opts.outWidth / maxDim, opts.outHeight / maxDim).coerceAtLeast(1)
+        opts.inJustDecodeBounds = false
+        return BitmapFactory.decodeFile(file.path, opts)
     }
 
     @CallSuper

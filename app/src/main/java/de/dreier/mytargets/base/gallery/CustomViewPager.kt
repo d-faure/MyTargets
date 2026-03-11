@@ -44,4 +44,13 @@ class CustomViewPager : ViewPager {
 
         return false
     }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        try {
+            return super.dispatchTouchEvent(ev)
+        } catch (ex: IllegalArgumentException) {
+            ex.printStackTrace()
+        }
+        return false
+    }
 }

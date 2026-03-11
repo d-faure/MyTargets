@@ -29,12 +29,19 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.format.DateUtils
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewGroup
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import com.afollestad.materialdialogs.MaterialDialog
@@ -50,14 +57,20 @@ import de.dreier.mytargets.features.settings.backup.synchronization.GenericAccou
 import de.dreier.mytargets.features.settings.backup.synchronization.SyncUtils
 import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.Utils
-import permissions.dispatcher.NeedsPermission
-import permissions.dispatcher.OnNeverAskAgain
-import permissions.dispatcher.OnPermissionDenied
-import permissions.dispatcher.RuntimePermissions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import de.dreier.mytargets.utils.NeedsPermission
+import de.dreier.mytargets.utils.OnNeverAskAgain
+import de.dreier.mytargets.utils.OnPermissionDenied
+import de.dreier.mytargets.utils.RuntimePermissions
+import de.dreier.mytargets.utils.PermissionUtils
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
+import java.util.Timer
+import java.util.TimerTask
 
 @RuntimePermissions
 class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoadFinishedListener {
@@ -77,6 +90,11 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
      */
     private var syncObserverHandle: Any? = null
     private var isRefreshing = false
+    private var syncTimeoutHandler: Handler? = null
+    private var syncStartTime: Long = 0
+    private var lastBackupCheckHandler: Handler? = null
+    private var backupCountBeforeSync: Int = 0
+    private var ignoreNextSyncStatus = false
 
     /**
      * Create a new anonymous SyncStatusObserver. It's attached to the app's ContentResolver in
@@ -85,18 +103,157 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
      */
     private val syncStatusObserver = SyncStatusObserver {
         activity?.runOnUiThread {
+            // Check if we should ignore this status update (just force-cleared UI)
+            if (ignoreNextSyncStatus) {
+                Timber.d("Ignoring sync status update after force-clear")
+                ignoreNextSyncStatus = false
+                return@runOnUiThread
+            }
+            
             val account = GenericAccountService.account
             val syncActive = ContentResolver.isSyncActive(account, SyncUtils.CONTENT_AUTHORITY)
             val syncPending = ContentResolver.isSyncPending(account, SyncUtils.CONTENT_AUTHORITY)
             val wasRefreshing = isRefreshing
             isRefreshing = syncActive || syncPending
-            binding.backupNowButton.isEnabled = !isRefreshing
+            
+            Timber.d("Sync status changed - Active: $syncActive, Pending: $syncPending, Refreshing: $isRefreshing")
+            
+            // Keep button enabled so user can cancel if needed
             binding.backupProgressBar.isIndeterminate = true
             binding.backupProgressBar.visibility = if (isRefreshing) VISIBLE else GONE
-            if (wasRefreshing && !isRefreshing && backup != null) {
-                backup?.getBackups(this)
+            
+            // Update button text based on state
+            binding.backupNowButton.text = if (isRefreshing) {
+                getString(R.string.cancel)
+            } else {
+                getString(R.string.backup_now)
+            }
+            
+            if (isRefreshing && !wasRefreshing) {
+                // Sync just started - record start time and set timeout
+                syncStartTime = System.currentTimeMillis()
+                backupCountBeforeSync = adapter?.itemCount ?: 0
+                startSyncTimeout()
+                startBackupCompletionCheck()
+            } else if (!isRefreshing && wasRefreshing) {
+                // Sync completed - cancel timeout and refresh backup list
+                cancelSyncTimeout()
+                stopBackupCompletionCheck()
+                if (backup != null) {
+                    backup?.getBackups(this)
+                }
             }
         }
+    }
+    
+    private fun startSyncTimeout() {
+        cancelSyncTimeout()
+        syncTimeoutHandler = Handler(requireContext().mainLooper)
+        // Set a 2-minute timeout for sync operations (reduced from 3 minutes)
+        syncTimeoutHandler?.postDelayed({
+            if (isRefreshing) {
+                val elapsedTime = (System.currentTimeMillis() - syncStartTime) / 1000
+                Timber.w("Sync timeout after $elapsedTime seconds - forcing progress bar to hide")
+                
+                // Force hide the progress bar
+                isRefreshing = false
+                binding.backupProgressBar.visibility = GONE
+                binding.backupNowButton.text = getString(R.string.backup_now)
+                
+                // Try to cancel any pending syncs
+                try {
+                    val account = GenericAccountService.account
+                    ContentResolver.cancelSync(account, SyncUtils.CONTENT_AUTHORITY)
+                    Timber.i("Cancelled sync due to timeout")
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to cancel sync")
+                }
+                
+                // Refresh the backup list
+                backup?.getBackups(this)
+                
+                // Show a toast to the user
+                Toast.makeText(
+                    requireContext(),
+                    "Backup operation timed out. Please check your connection and try again.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }, 120000) // 2 minutes = 120,000 milliseconds
+    }
+    
+    private fun cancelSyncTimeout() {
+        syncTimeoutHandler?.removeCallbacksAndMessages(null)
+        syncTimeoutHandler = null
+    }
+    
+    private fun startBackupCompletionCheck() {
+        stopBackupCompletionCheck()
+        lastBackupCheckHandler = Handler(requireContext().mainLooper)
+        
+        // Check every 5 seconds if a new backup appeared
+        fun scheduleNextCheck() {
+            lastBackupCheckHandler?.postDelayed({
+                if (isRefreshing && backup != null) {
+                    Timber.d("Checking for backup completion...")
+                    backup?.getBackups(object : IAsyncBackupRestore.OnLoadFinishedListener {
+                        override fun onLoadFinished(backupEntries: List<BackupEntry>) {
+                            val currentCount = backupEntries.size
+                            Timber.d("Backup count check - Before: $backupCountBeforeSync, Current: $currentCount")
+                            
+                            if (currentCount > backupCountBeforeSync) {
+                                // New backup detected! Force completion
+                                Timber.i("New backup detected - forcing sync completion")
+                                forceCompleteSyncUI()
+                            } else {
+                                // Keep checking
+                                scheduleNextCheck()
+                            }
+                        }
+                        
+                        override fun onError(message: String) {
+                            Timber.e("Error checking backups: $message")
+                            // Keep checking despite error
+                            scheduleNextCheck()
+                        }
+                    })
+                }
+            }, 5000)
+        }
+        
+        // Start checking after 10 seconds (give backup time to start)
+        lastBackupCheckHandler?.postDelayed({
+            scheduleNextCheck()
+        }, 10000)
+    }
+    
+    private fun stopBackupCompletionCheck() {
+        lastBackupCheckHandler?.removeCallbacksAndMessages(null)
+        lastBackupCheckHandler = null
+    }
+    
+    private fun forceCompleteSyncUI() {
+        Timber.i("Forcing sync UI completion")
+        
+        // Cancel any pending syncs
+        try {
+            val account = GenericAccountService.account
+            ContentResolver.cancelSync(account, SyncUtils.CONTENT_AUTHORITY)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to cancel sync")
+        }
+        
+        // Force clear UI state
+        isRefreshing = false
+        binding.backupProgressBar.visibility = GONE
+        binding.backupNowButton.text = getString(R.string.backup_now)
+        cancelSyncTimeout()
+        stopBackupCompletionCheck()
+        
+        // Refresh the backup list one final time
+        backup?.getBackups(this)
+        
+        Toast.makeText(requireContext(), "Backup completed", Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -125,7 +282,29 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_backup, container, false)
         ToolbarUtils.showHomeAsUp(this)
 
-        binding.backupNowButton.setOnClickListener { SyncUtils.triggerBackup() }
+        binding.backupNowButton.setOnClickListener {
+            if (isRefreshing) {
+                // If backup is in progress, cancel it
+                Timber.i("User requested to cancel backup")
+                try {
+                    val account = GenericAccountService.account
+                    ContentResolver.cancelSync(account, SyncUtils.CONTENT_AUTHORITY)
+                    
+                    // Force clear the UI state
+                    isRefreshing = false
+                    binding.backupProgressBar.visibility = GONE
+                    binding.backupNowButton.text = getString(R.string.backup_now)
+                    cancelSyncTimeout()
+                    
+                    Toast.makeText(requireContext(), "Backup cancelled", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to cancel backup")
+                }
+            } else {
+                // Start backup
+                SyncUtils.triggerBackup()
+            }
+        }
 
         binding.automaticBackupSwitch.setOnClickListener { onAutomaticBackupChanged() }
 
@@ -140,6 +319,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         binding.recentBackupsList.isNestedScrollingEnabled = false
         binding.recentBackupsList
             .addItemDecoration(DividerItemDecoration(context!!, VERTICAL))
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.backupScrollView)
 
         setHasOptionsMenu(true)
         return binding.root
@@ -152,30 +332,85 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_import) {
-            showFilePickerWithPermissionCheck()
+            if (PermissionUtils.hasStoragePermission(requireContext())) {
+                showFilePicker()
+            } else {
+                PermissionUtils.requestStoragePermission(this)
+            }
             return true
         } else if (item.itemId == R.id.action_fix_db) {
+            ApplicationInstance.ensureDbInitialized(requireContext())
             DatabaseFixer.fix(ApplicationInstance.db)
             return true
+        } else if (item.itemId == R.id.action_remove_photos) {
+            deleteAllPhotos()
+
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun deleteAllPhotos() {
+        lifecycleScope.launch(Dispatchers.IO) {  // Launch coroutine on IO dispatcher (background thread)
+            ApplicationInstance.ensureDbInitialized(requireContext())
+            ApplicationInstance.db.imageDAO().removeAllPhotos(requireContext())
+
+            // Back on the main thread for UI updates (Toast)
+            withContext(Dispatchers.Main) {
+                Toast.makeText(requireContext(), "All photos removed", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
         if (!isLeaving) {
-            internalApplyBackupLocationWithPermissionCheck(SettingsManager.backupLocation)
+            internalApplyBackupLocation(SettingsManager.backupLocation)
             updateAutomaticBackupSwitch()
         }
 
-        syncStatusObserver.onStatusChanged(0)
+        // Check if sync appears to be stuck from a previous session
+        val account = GenericAccountService.account
+        val syncActive = ContentResolver.isSyncActive(account, SyncUtils.CONTENT_AUTHORITY)
+        val syncPending = ContentResolver.isSyncPending(account, SyncUtils.CONTENT_AUTHORITY)
+        
+        Timber.d("onResume - Sync state: Active=$syncActive, Pending=$syncPending")
+        
+        if (syncActive || syncPending) {
+            Timber.w("Found sync in active/pending state on resume - cancelling it")
+            // Force cancel it to clear the stuck state
+            try {
+                ContentResolver.cancelSync(account, SyncUtils.CONTENT_AUTHORITY)
+                Timber.i("Cancelled potentially stuck sync")
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to cancel stuck sync")
+            }
+        }
+        
+        // Always force clear UI state on resume to prevent progress bar from reappearing
+        isRefreshing = false
+        binding.backupProgressBar.visibility = GONE
+        binding.backupNowButton.text = getString(R.string.backup_now)
+        
+        // Set flag to ignore the next sync status check
+        ignoreNextSyncStatus = true
+        
+        // Refresh the backup list
+        backup?.getBackups(this)
+
+        // Now register the observer (after clearing UI state)
         syncObserverHandle = ContentResolver.addStatusChangeListener(
             SYNC_OBSERVER_TYPE_PENDING or SYNC_OBSERVER_TYPE_ACTIVE, syncStatusObserver
         )
+        
+        // Trigger observer to check current state (will be ignored due to flag)
+        syncStatusObserver.onStatusChanged(0)
     }
 
     override fun onPause() {
         updateLabelTimer?.cancel()
+        cancelSyncTimeout()
+        stopBackupCompletionCheck()
         if (syncObserverHandle != null) {
             ContentResolver.removeStatusChangeListener(syncObserverHandle)
             syncObserverHandle = null
@@ -232,7 +467,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
                 EBackupLocation.list.indexOf(item)
             ) { _, _, index, _ ->
                 val location = EBackupLocation.list[index]
-                internalApplyBackupLocationWithPermissionCheck(location)
+                internalApplyBackupLocation(location)
                 true
             }
             .show()
@@ -245,12 +480,16 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         binding.backupLocation.summary.text = backupLocation.toString()
     }
 
-    private fun internalApplyBackupLocationWithPermissionCheck(item: EBackupLocation) {
+    private fun internalApplyBackupLocation(item: EBackupLocation) {
         if (item.needsStoragePermissions()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 retrieveBackup(item)
             } else {
-                applyBackupLocationWithPermissionCheck(item)
+                if (PermissionUtils.hasWriteStoragePermission(requireContext())) {
+                    applyBackupLocation(item)
+                } else {
+                    PermissionUtils.requestWriteStoragePermission(this)
+                }
             }
 
         } else {
@@ -282,7 +521,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
             context!!,
             object : IAsyncBackupRestore.ConnectionListener {
                 override fun onLoginCancelled() {
-                    internalApplyBackupLocationWithPermissionCheck(EBackupLocation.INTERNAL_STORAGE)
+                    internalApplyBackupLocation(EBackupLocation.INTERNAL_STORAGE)
                 }
 
                 override fun onStartIntent(intent: Intent, code: Int) {
@@ -295,6 +534,8 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
                 }
 
                 override fun onConnectionSuspended() {
+                    binding.recentBackupsProgress.visibility = GONE
+                    binding.recentBackupsList.visibility = VISIBLE
                     showError(
                         R.string.loading_backups_failed,
                         getString(R.string.connection_failed)
@@ -319,11 +560,13 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
             updateLabelTimer = Timer()
             val timerTask = object : TimerTask() {
                 override fun run() {
-                    activity!!.runOnUiThread {
-                        binding.lastBackupLabel.text = getString(
-                            R.string.last_backup, DateUtils
-                                .getRelativeTimeSpanString(time)
-                        )
+                    activity?.runOnUiThread {
+                        val relativeTime = DateUtils.getRelativeTimeSpanString(time).toString()
+                        binding.lastBackupLabel.text = try {
+                            getString(R.string.last_backup, relativeTime)
+                        } catch (_: IllegalArgumentException) {
+                            "${getString(R.string.last_backup).replace("%s", "").replace("% s", "").trim()}: $relativeTime"
+                        }
                     }
                 }
             }
@@ -405,7 +648,6 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         startActivityForResult(intent, IMPORT_FROM_URI)
     }
 
-    @OnNeverAskAgain(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun neverAskAgainForWritePermission() {
         isLeaving = true
         MaterialDialog.Builder(context!!)
@@ -417,7 +659,6 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
             .show()
     }
 
-    @OnPermissionDenied(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     internal fun showDeniedForWrite() {
         leaveBackupSettings()
     }
@@ -428,6 +669,7 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         h.post { activity!!.supportFragmentManager.popBackStack() }
     }
 
+
     @SuppressLint("NeedOnRequestPermissionsResult")
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -435,7 +677,20 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        onRequestPermissionsResult(requestCode, grantResults)
+        when (requestCode) {
+            PermissionUtils.REQUEST_STORAGE -> {
+                if (PermissionUtils.isPermissionGranted(grantResults)) {
+                    showFilePicker()
+                }
+            }
+            PermissionUtils.REQUEST_WRITE_STORAGE -> {
+                if (PermissionUtils.isPermissionGranted(grantResults)) {
+                    applyBackupLocation(SettingsManager.backupLocation)
+                } else {
+                    showDeniedForWrite()
+                }
+            }
+        }
     }
 
     private fun importFromUri(uri: Uri) {
@@ -472,6 +727,8 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
     }
 
     override fun onError(message: String) {
+        binding.recentBackupsProgress.visibility = GONE
+        binding.recentBackupsList.visibility = VISIBLE
         showError(R.string.loading_backups_failed, message)
     }
 

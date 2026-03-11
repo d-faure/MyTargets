@@ -41,7 +41,7 @@ abstract class BowDAO {
     abstract fun insertBow(bow: Bow): Long
 
     @Update
-    abstract fun updateBow(bow: Bow)
+    abstract fun updateBow(bow: Bow): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun insertBowImages(images: List<BowImage>)
@@ -58,7 +58,11 @@ abstract class BowDAO {
     @Transaction
     open fun saveBow(bow: Bow, images: List<BowImage>, sightMarks: List<SightMark>) {
         if (bow.id > 0) {
-            updateBow(bow)
+            // If update hits 0 rows the bow was deleted (e.g. undo after delete); re-insert it.
+            // insertBow uses REPLACE and bow.id is non-zero, so SQLite preserves the original ID.
+            if (updateBow(bow) == 0) {
+                bow.id = insertBow(bow)
+            }
         } else {
             bow.id = insertBow(bow)
         }

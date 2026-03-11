@@ -17,7 +17,6 @@ package de.dreier.mytargets.features.main
 
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -26,6 +25,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
+import androidx.core.view.WindowCompat
 import androidx.databinding.DataBindingUtil
 import androidx.test.espresso.idling.CountingIdlingResource
 import de.dreier.mytargets.R
@@ -37,6 +37,7 @@ import de.dreier.mytargets.features.settings.ESettingsScreens
 import de.dreier.mytargets.features.settings.ESettingsScreens.MAIN
 import de.dreier.mytargets.features.settings.SettingsManager
 import de.dreier.mytargets.features.training.overview.TrainingsFragment
+import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.Utils
 import de.dreier.mytargets.utils.Utils.getCurrentLocale
 import im.delight.android.languages.Language
@@ -62,6 +63,8 @@ class MainActivity : AppCompatActivity() {
         Language.setFromPreference(this, SettingsManager.KEY_LANGUAGE)
         countryCode = getCountryCode()
         super.onCreate(savedInstanceState)
+        
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         navigationController = NavigationController(this)
         if (SettingsManager.shouldShowIntroActivity) {
             SettingsManager.shouldShowIntroActivity = false
@@ -72,6 +75,8 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbar)
 
+        ToolbarUtils.applyWindowInsets(binding.toolbar)
+        ToolbarUtils.applyWindowInsetsToBottom(binding.bottomNavigation)
         setupBottomNavigation()
         setupNavigationDrawer()
         if (savedInstanceState == null) {
@@ -107,6 +112,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupBottomNavigation() {
         binding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            if (supportFragmentManager.isStateSaved) return@setOnNavigationItemSelectedListener false
             val fragment = when (item.itemId) {
                 R.id.action_arrows -> EditArrowListFragment()
                 R.id.action_bows -> EditBowListFragment()
@@ -117,15 +123,12 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager
                 .beginTransaction()
                 .replace(R.id.content_frame, fragment)
-                .commit()
+                .commitAllowingStateLoss()
             true
         }
     }
 
     private fun setupNavigationDrawer() {
-        if (Utils.isLollipop) {
-            window.statusBarColor = Color.TRANSPARENT
-        }
 
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {

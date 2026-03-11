@@ -42,29 +42,40 @@ class AverageResultRenderer(private val average: Average) : IAggregationResultRe
     override fun onPrepareDraw() {
         val avg = average.average
         val nUniStdDev = average.nonUniformStdDev
+
+        val wa = average.weightedAverage
+        if (!nUniStdDev.left.isFinite() || !nUniStdDev.top.isFinite() ||
+            !nUniStdDev.right.isFinite() || !nUniStdDev.bottom.isFinite() ||
+            !avg.x.isFinite() || !avg.y.isFinite() ||
+            !wa.x.isFinite() || !wa.y.isFinite()) {
+            return
+        }
+
         stdDevPath.rewind()
         stdDevPath.arcTo(RectF(
-                average.weightedAverage.x - nUniStdDev.right,
-                average.weightedAverage.y - nUniStdDev.bottom,
-                average.weightedAverage.x + nUniStdDev.right,
-                average.weightedAverage.y + nUniStdDev.bottom), 270.0f, 90.0f, true)
+                wa.x - nUniStdDev.right,
+                wa.y - nUniStdDev.bottom,
+                wa.x + nUniStdDev.right,
+                wa.y + nUniStdDev.bottom), 270.0f, 90.0f, true)
         stdDevPath.arcTo(RectF(
-                average.weightedAverage.x - nUniStdDev.right,
-                average.weightedAverage.y - nUniStdDev.top,
-                average.weightedAverage.x + nUniStdDev.right,
-                average.weightedAverage.y + nUniStdDev.top), 0.0f, 90.0f)
+                wa.x - nUniStdDev.right,
+                wa.y - nUniStdDev.top,
+                wa.x + nUniStdDev.right,
+                wa.y + nUniStdDev.top), 0.0f, 90.0f)
         stdDevPath.arcTo(RectF(
-                average.weightedAverage.x - nUniStdDev.left,
-                average.weightedAverage.y - nUniStdDev.top,
-                average.weightedAverage.x + nUniStdDev.left,
-                average.weightedAverage.y + nUniStdDev.top), 90.0f, 90.0f)
+                wa.x - nUniStdDev.left,
+                wa.y - nUniStdDev.top,
+                wa.x + nUniStdDev.left,
+                wa.y + nUniStdDev.top), 90.0f, 90.0f)
         stdDevPath.arcTo(RectF(
-                average.weightedAverage.x - nUniStdDev.left,
-                average.weightedAverage.y - nUniStdDev.bottom,
-                average.weightedAverage.x + nUniStdDev.left,
-                average.weightedAverage.y + nUniStdDev.bottom), 180.0f, 90.0f)
+                wa.x - nUniStdDev.left,
+                wa.y - nUniStdDev.bottom,
+                wa.x + nUniStdDev.left,
+                wa.y + nUniStdDev.bottom), 180.0f, 90.0f)
 
-        val smallestNonUniStdDev = listOf(nUniStdDev.top, nUniStdDev.bottom, nUniStdDev.left, nUniStdDev.right).minOrNull()!!
+        val stdDevValues = listOf(nUniStdDev.top, nUniStdDev.bottom, nUniStdDev.left, nUniStdDev.right)
+            .filter { it.isFinite() }
+        val smallestNonUniStdDev = stdDevValues.minOrNull() ?: return
 
         val tmp = smallestNonUniStdDev / 4.0f
         symbolPath.rewind()

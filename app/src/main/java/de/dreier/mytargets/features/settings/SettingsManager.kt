@@ -126,7 +126,7 @@ object SettingsManager {
         set(value) = lastUsed.edit()
             .putInt(KEY_DISTANCE_VALUE, value.value.toInt())
             .putString(KEY_DISTANCE_UNIT, value.unit?.toString())
-            .apply()
+            .commitInBackground()
 
     var shotsPerEnd: Int
         get() = lastUsed[KEY_ARROWS_PER_END, 3]
@@ -139,14 +139,23 @@ object SettingsManager {
             val diameterValue = lastUsed[KEY_TARGET_DIAMETER_VALUE, 60]
             val diameterUnit = lastUsed[KEY_TARGET_DIAMETER_UNIT, CENTIMETER.toString()]
             val diameter = Dimension.from(diameterValue.toFloat(), diameterUnit)
-            return Target(targetId.toLong(), scoringStyle, diameter)
+            val target = Target(targetId.toLong(), scoringStyle, diameter)
+            val normalizedStyle = target.scoringStyleIndex.coerceIn(
+                0,
+                target.model.scoringStyles.lastIndex
+            )
+            if (normalizedStyle != target.scoringStyleIndex) {
+                target.scoringStyleIndex = normalizedStyle
+                lastUsed.edit().putInt(KEY_SCORING_STYLE, normalizedStyle).commitInBackground()
+            }
+            return target
         }
         set(value) = lastUsed.edit()
             .putInt(KEY_TARGET, value.id.toInt())
             .putInt(KEY_SCORING_STYLE, value.scoringStyleIndex)
             .putInt(KEY_TARGET_DIAMETER_VALUE, value.diameter.value.toInt())
             .putString(KEY_TARGET_DIAMETER_UNIT, value.diameter.unit?.toString())
-            .apply()
+            .commitInBackground()
 
     var timerEnabled: Boolean
         get() = lastUsed[KEY_TIMER, false]
@@ -180,7 +189,7 @@ object SettingsManager {
                 .putString(KEY_TIMER_WAIT_TIME, value.waitTime.toString())
                 .putString(KEY_TIMER_SHOOT_TIME, value.shootTime.toString())
                 .putString(KEY_TIMER_WARN_TIME, value.warnTime.toString())
-                .apply()
+                .commitInBackground()
         }
 
     var arrowNumbersEnabled: Boolean
@@ -207,10 +216,14 @@ object SettingsManager {
         set(value) = preferences.set(KEY_SHOW_MODE, value.toString())
 
     var aggregationStrategy: EAggregationStrategy
-        get() = EAggregationStrategy.valueOf(
-            preferences
-                .getString(KEY_AGGREGATION_STRATEGY, EAggregationStrategy.AVERAGE.toString())!!
-        )
+        get() = try {
+            EAggregationStrategy.valueOf(
+                preferences
+                    .getString(KEY_AGGREGATION_STRATEGY, EAggregationStrategy.AVERAGE.toString())!!
+            )
+        } catch (e: IllegalArgumentException) {
+            EAggregationStrategy.AVERAGE
+        }
         set(value) = preferences.set(KEY_AGGREGATION_STRATEGY, value.toString())
 
     var profileFirstName: String
@@ -268,11 +281,19 @@ object SettingsManager {
         set(value) = preferences.set(KEY_SCOREBOARD_SHARE_FILE_TYPE, value.name)
 
     var statisticsDispersionPatternFileType: EFileType
-        get() = EFileType.valueOf(preferences[KEY_STATISTICS_DISPERSION_PATTERN_FILE_TYPE, EFileType.JPG.name])
+        get() = try {
+            EFileType.valueOf(preferences[KEY_STATISTICS_DISPERSION_PATTERN_FILE_TYPE, EFileType.JPG.name])
+        } catch (e: IllegalArgumentException) {
+            EFileType.JPG
+        }
         set(value) = preferences.set(KEY_STATISTICS_DISPERSION_PATTERN_FILE_TYPE, value.name)
 
     var statisticsDispersionPatternAggregationStrategy: EAggregationStrategy
-        get() = EAggregationStrategy.valueOf(preferences[KEY_STATISTICS_DISPERSION_PATTERN_AGGREGATION_STRATEGY, EAggregationStrategy.AVERAGE.toString()])
+        get() = try {
+            EAggregationStrategy.valueOf(preferences[KEY_STATISTICS_DISPERSION_PATTERN_AGGREGATION_STRATEGY, EAggregationStrategy.AVERAGE.toString()])
+        } catch (e: IllegalArgumentException) {
+            EAggregationStrategy.AVERAGE
+        }
         set(value) = preferences.set(
             KEY_STATISTICS_DISPERSION_PATTERN_AGGREGATION_STRATEGY,
             value.toString()
@@ -325,7 +346,7 @@ object SettingsManager {
                 .putBoolean(KEY_INPUT_SUMMARY_SHOW_TRAINING, value.showTraining)
                 .putBoolean(KEY_INPUT_SUMMARY_SHOW_AVERAGE, value.showAverage)
                 .putString(KEY_INPUT_SUMMARY_AVERAGE_OF, value.averageScope.name)
-                .apply()
+                .commitInBackground()
         }
 
     var scoreConfiguration: Score.Configuration
@@ -343,7 +364,7 @@ object SettingsManager {
                 .putBoolean(KEY_OVERVIEW_SHOW_TOTAL_SCORE, value.showTotalScore)
                 .putBoolean(KEY_OVERVIEW_SHOW_PERCENTAGE, value.showPercentage)
                 .putBoolean(KEY_OVERVIEW_SHOW_ARROW_AVERAGE, value.showAverage)
-                .apply()
+                .commitInBackground()
         }
 
     val scoreboardConfiguration: ScoreboardConfiguration
@@ -356,6 +377,7 @@ object SettingsManager {
             config.showComments = preferences["scoreboard_comments", true]
             config.showPointsColored = preferences["scoreboard_points_colored", true]
             config.showSignature = preferences["scoreboard_signature", true]
+            config.showTimeRange = preferences["scoreboard_time_range", true]
             return config
         }
 

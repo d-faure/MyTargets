@@ -1,3 +1,12 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
 /*
  * Copyright (C) 2018 Florian Dreier
  *
@@ -17,3 +26,9 @@ include ':app'
 include ':wearable'
 include ':shared'
 include ':tools'
+include ':discreteseekbar'
+include ':signaturepad'
+// Temporarily disabled for quick SDK 36 release
+// include ':permissionsdispatcher'
+// include ':permissionsdispatcher-annotation'
+// include ':permissionsdispatcher-processor'

@@ -27,6 +27,7 @@ import de.dreier.mytargets.R
 import de.dreier.mytargets.databinding.FragmentListBinding
 import de.dreier.mytargets.utils.DividerItemDecoration
 import de.dreier.mytargets.utils.SlideInItemAnimator
+import de.dreier.mytargets.utils.ToolbarUtils
 import me.oriley.homage.Homage
 import me.oriley.homage.recyclerview.HomageAdapter
 import me.oriley.homage.recyclerview.HomageView
@@ -64,6 +65,7 @@ class LicencesFragment : Fragment() {
         val adapter = createAdapter()
         binding.recyclerView.itemAnimator = SlideInItemAnimator()
         binding.recyclerView.adapter = adapter
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.recyclerView)
         layoutManager = binding.recyclerView.layoutManager
 
         if (savedInstanceState != null) {

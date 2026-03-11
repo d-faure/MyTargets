@@ -60,6 +60,8 @@ class DistanceGridFragment : SelectItemFragmentBase<Dimension, SimpleListAdapter
                 .setOnClickListener(this@DistanceGridFragment)
                 .show()
         }
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToScrollableContent(binding.recyclerView)
+        de.dreier.mytargets.utils.ToolbarUtils.applyWindowInsetsToBottom(binding.fab)
         return binding.root
     }
 

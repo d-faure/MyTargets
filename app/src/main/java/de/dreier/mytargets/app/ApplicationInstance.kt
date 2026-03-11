@@ -35,9 +35,13 @@ import im.delight.android.languages.Language
 import timber.log.Timber
 
 /**
- * Application singleton. Gets instantiated exactly once and is used
- * throughout the app whenever a context is needed e.g. to query app
- * resources.
+ * Application singleton responsible for one-time process-wide setup:
+ * locale configuration, Room database initialization, Wear OS client
+ * bootstrap, and Timber logging.
+ *
+ * The companion object exposes the shared [db] instance and
+ * [wearableClient] so they can be accessed from anywhere in the app
+ * without a DI framework.
  */
 class ApplicationInstance : SharedApplicationInstance() {
 
@@ -49,19 +53,25 @@ class ApplicationInstance : SharedApplicationInstance() {
     }
 
     override fun onCreate() {
+        super.onCreate()
+        // Ensure Application context/resources are fully initialized before locale mutation.
         Language.setFromPreference(this, SettingsManager.KEY_LANGUAGE)
         if (BuildConfig.DEBUG) {
             enableDebugLogging()
         } else {
             Timber.plant(CrashReportingTree())
         }
-        super.onCreate()
         handleDatabaseImport()
         initRoomDb(this)
         wearableClient = MobileWearableClient(this)
         StateSaver.setEnabledForAllActivitiesAndSupportFragments(this, true)
     }
 
+    /**
+     * Replaces the active database file with a previously staged import file
+     * (created during a backup-restore flow). This must run **before**
+     * [initRoomDb] so Room opens the restored data instead of the old copy.
+     */
     private fun handleDatabaseImport() {
         val newDatabasePath = getDatabasePath(AppDatabase.DATABASE_FILE_NAME)
         val oldDatabasePath = getDatabasePath(AppDatabase.DATABASE_IMPORT_FILE_NAME)
@@ -79,7 +89,7 @@ class ApplicationInstance : SharedApplicationInstance() {
     }
 
     override fun onTerminate() {
-        db.close()
+        dbOrNull?.close()
         wearableClient.disconnect()
         super.onTerminate()
     }
@@ -102,13 +112,52 @@ class ApplicationInstance : SharedApplicationInstance() {
     companion object {
 
         lateinit var wearableClient: MobileWearableClient
-        lateinit var db: AppDatabase
+        private val dbLock = Any()
+        private var _db: AppDatabase? = null
+
+        val db: AppDatabase
+            get() {
+                synchronized(dbLock) {
+                    val current = _db
+                    if (current != null && current.isOpen) {
+                        return current
+                    }
+                    initRoomDb(SharedApplicationInstance.context)
+                    return _db!!
+                }
+            }
+
+        private val dbOrNull: AppDatabase?
+            get() = synchronized(dbLock) { _db }
+
+        /**
+         * Guarantees that [db] is usable. Rebuilds the Room instance when
+         * it has either never been created (`lateinit` not yet assigned) or
+         * has been explicitly closed — e.g. after [DatabaseFixer.fix] or
+         * a backup-restore cycle that may invalidate the old connection.
+         */
+        fun ensureDbInitialized(context: Context) {
+            synchronized(dbLock) {
+                val current = _db
+                if (current == null || !current.isOpen) {
+                    initRoomDb(context.applicationContext)
+                }
+            }
+        }
 
         val lastSharedPreferences: SharedPreferences
             get() = SharedApplicationInstance.context.getSharedPreferences(MyBackupAgent.PREFS, 0)
 
+        /**
+         * Creates (or recreates) the process-wide [AppDatabase] singleton.
+         *
+         * Uses [RoomDatabase.JournalMode.TRUNCATE] instead of WAL for
+         * maximum compatibility with backup/restore and [DatabaseFixer].
+         * Main-thread queries are allowed because several legacy UI paths
+         * perform synchronous reads during `onCreateView`.
+         */
         fun initRoomDb(context: Context) {
-            db = Room.databaseBuilder(
+            _db = Room.databaseBuilder(
                 context,
                 AppDatabase::class.java, AppDatabase.DATABASE_FILE_NAME
             )

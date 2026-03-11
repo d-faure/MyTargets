@@ -75,6 +75,7 @@ class TargetListFragment :
         useDoubleClickSelection = true
         ToolbarUtils.setSupportActionBar(this, binding.toolbar)
         ToolbarUtils.showHomeAsUp(this)
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.recyclerView)
         setHasOptionsMenu(true)
         return binding.root
     }
@@ -123,19 +124,24 @@ class TargetListFragment :
         if (item == null) {
             return
         }
-        updateSettings()
+        // When switching target faces, start with that face's own default style/size.
+        // This avoids carrying over a previous face's style index (e.g. compound index 2).
+        updateSettings(item.scoringStyleIndex, item.model.diameters.indexOf(item.diameter))
         saveItem()
     }
 
-    private fun updateSettings() {
+    private fun updateSettings(
+        preferredScoringStyleIndex: Int? = null,
+        preferredSizeIndex: Int? = null
+    ) {
         // Init scoring styles
         val target = adapter.getItemById(selector.getSelectedId()!!)
         val styles = target!!.model.scoringStyles.map { it.toString() }
-        updateAdapter(binding.scoringStyle, scoringStyleAdapter!!, styles)
+        updateAdapter(binding.scoringStyle, scoringStyleAdapter!!, styles, preferredScoringStyleIndex)
 
         // Init target size spinner
         val diameters = diameterToList(target.model.diameters)
-        updateAdapter(binding.targetSize, targetSizeAdapter!!, diameters)
+        updateAdapter(binding.targetSize, targetSizeAdapter!!, diameters, preferredSizeIndex)
         if (diameters.size > 1) {
             binding.targetSize.visibility = View.VISIBLE
         } else {
@@ -146,12 +152,17 @@ class TargetListFragment :
     private fun updateAdapter(
         spinner: Spinner,
         spinnerAdapter: ArrayAdapter<String>,
-        strings: List<String>
+        strings: List<String>,
+        preferredSelection: Int? = null
     ) {
+        if (strings.isEmpty()) {
+            return
+        }
         val lastSelection = spinner.selectedItemPosition
         spinnerAdapter.clear()
         spinnerAdapter.addAll(strings)
-        val position = if (lastSelection < strings.size) lastSelection else strings.size - 1
+        val baseSelection = preferredSelection ?: lastSelection
+        val position = baseSelection.coerceIn(0, strings.size - 1)
         setSelectionWithoutEvent(spinner, position)
     }
 

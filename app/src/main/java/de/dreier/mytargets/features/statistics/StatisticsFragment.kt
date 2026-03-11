@@ -35,6 +35,7 @@ import com.github.mikephil.charting.renderer.LineChartRenderer
 import com.github.mikephil.charting.utils.ColorTemplate
 import de.dreier.mytargets.R
 import de.dreier.mytargets.app.ApplicationInstance
+import timber.log.Timber
 import de.dreier.mytargets.base.fragments.FragmentBase
 import de.dreier.mytargets.base.fragments.LoaderUICallback
 import de.dreier.mytargets.databinding.FragmentStatisticsBinding
@@ -198,13 +199,24 @@ class StatisticsFragment : FragmentBase() {
         adapter = ArrowStatisticAdapter()
         binding.arrows.adapter = adapter
         binding.arrows.isNestedScrollingEnabled = false
-
+        
+        ToolbarUtils.applyWindowInsetsToScrollableContent(binding.root)
         ToolbarUtils.showHomeAsUp(this)
         return binding.root
     }
 
     override fun onLoad(args: Bundle?): LoaderUICallback {
-        rounds = roundDAO.loadRounds(roundIds!!)
+        val ids = roundIds ?: LongArray(0)
+        if (ids.isEmpty()) {
+            rounds = emptyList()
+            return {
+                binding.dispersionPatternLayout.visibility = View.GONE
+                binding.arrowRankingLabel.visibility = View.GONE
+                adapter!!.setData(emptyList())
+            }
+        }
+
+        rounds = roundDAO.loadRoundsBatched(ids)
         val data = ArrowStatistic.getAll(target!!, rounds!!)
             .sortedWith(compareByDescending { it.totalScore.shotAverage })
 
@@ -221,40 +233,51 @@ class StatisticsFragment : FragmentBase() {
     }
 
     private fun showDispersionView() {
-        val exactShots = rounds!!
-            .flatMap { roundDAO.loadEnds(it.id) }
-            .filter { it.exact }
-            .flatMap { endDAO.loadShots(it.id) }
-            .filter { (_, _, _, _, _, scoringRing) -> scoringRing != Shot.NOTHING_SELECTED }
-            .toList()
-        if (exactShots.isEmpty()) {
+        try {
+            val exactShots = rounds!!
+                .flatMap { roundDAO.loadEnds(it.id) }
+                .filter { it.exact }
+                .flatMap { endDAO.loadShots(it.id) }
+                .filter { (_, _, _, _, _, scoringRing) -> scoringRing != Shot.NOTHING_SELECTED }
+                .toList()
+            if (exactShots.isEmpty()) {
+                binding.dispersionPatternLayout.visibility = View.GONE
+                return
+            }
+            val stats = ArrowStatistic(target!!, exactShots)
+            stats.arrowDiameter = Dimension(5f, Dimension.Unit.MILLIMETER)
+
+            val trainingsIds = rounds!!
+                .map { it.trainingId!! }
+                .distinct()
+            if (trainingsIds.size == 1) {
+                val training = trainingDAO.loadTraining(trainingsIds[0])
+                val date = training.date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                val round = if (rounds!!.size == 1) {
+                    val index = rounds!![0].index + 1
+                    "-" + resources.getQuantityString(R.plurals.rounds, index, index)
+                        .replace(' ', '-')
+                } else ""
+                stats.exportFileName = "$date-${training.title}$round"
+            } else {
+                stats.exportFileName = ""
+            }
+
+            val drawable = DispersionPatternUtils.targetFromArrowStatistics(stats)
+            binding.dispersionView.setImageDrawable(drawable)
+
+            binding.dispersionViewOverlay.setOnClickListener {
+                navigationController.navigateToDispersionPattern(
+                    roundIds = roundIds!!,
+                    target = target!!,
+                    arrowName = null,
+                    arrowNumber = null,
+                    exportFileName = stats.exportFileName
+                )
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to render inline dispersion pattern")
             binding.dispersionPatternLayout.visibility = View.GONE
-            return
-        }
-        val stats = ArrowStatistic(target!!, exactShots)
-        stats.arrowDiameter = Dimension(5f, Dimension.Unit.MILLIMETER)
-
-        val trainingsIds = rounds!!
-            .map { it.trainingId!! }
-            .distinct()
-        if (trainingsIds.size == 1) {
-            val training = trainingDAO.loadTraining(trainingsIds[0])
-            val date = training.date.format(DateTimeFormatter.ISO_LOCAL_DATE)
-            val round = if (rounds!!.size == 1) {
-                val index = rounds!![0].index + 1
-                "-" + resources.getQuantityString(R.plurals.rounds, index, index)
-                    .replace(' ', '-')
-            } else ""
-            stats.exportFileName = "$date-${training.title}$round"
-        } else {
-            stats.exportFileName = ""
-        }
-
-        val drawable = DispersionPatternUtils.targetFromArrowStatistics(stats)
-        binding.dispersionView.setImageDrawable(drawable)
-
-        binding.dispersionViewOverlay.setOnClickListener {
-            navigationController.navigateToDispersionPattern(stats)
         }
     }
 
@@ -558,7 +581,14 @@ class StatisticsFragment : FragmentBase() {
         }
 
         private fun onItemClicked() {
-            navigationController.navigateToDispersionPattern(mItem!!)
+            val item = mItem ?: return
+            navigationController.navigateToDispersionPattern(
+                roundIds = roundIds!!,
+                target = target!!,
+                arrowName = item.arrowName,
+                arrowNumber = item.arrowNumber,
+                exportFileName = null
+            )
         }
 
         fun bindItem(item: ArrowStatistic) {

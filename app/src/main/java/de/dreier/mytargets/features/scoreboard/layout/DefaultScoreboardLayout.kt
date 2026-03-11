@@ -35,7 +35,7 @@ import de.dreier.mytargets.shared.models.db.Shot
 import de.dreier.mytargets.shared.models.db.Training
 import de.dreier.mytargets.shared.targets.scoringstyle.ScoringStyle
 import de.dreier.mytargets.utils.ScoreUtils
-import java.util.*
+import java.util.Locale
 
 class DefaultScoreboardLayout(
     private val context: Context,
@@ -100,6 +100,8 @@ class DefaultScoreboardLayout(
         if (configuration.showSignature) {
             appendSignature(training)
         }
+        val legendText = context.getString(R.string.legend_text)
+        builder.title(legendText)
     }
 
     private fun getTrainingInfoTable(
@@ -251,7 +253,7 @@ class DefaultScoreboardLayout(
         var arrowDiameter = Dimension(0.714f, Dimension.Unit.CENTIMETER)
         if (training.arrowId != null) {
             val arrow = arrowDAO.loadArrow(training.arrowId!!)
-            if (arrow.diameter != null){
+            if (arrow.diameter != null) {
                 arrowDiameter = arrow.diameter
             }
         }
@@ -284,10 +286,12 @@ class DefaultScoreboardLayout(
         val table = Table(false)
         appendTableHeader(table, round.shotsPerEnd)
         var carry = 0
-        for (end in roundDAO.loadEnds(round.id)) {
+        val ends = roundDAO.loadEnds(round.id)
+
+        for ((index, end) in ends.withIndex()) {
             val row = table.startRow()
-            row.addCell(end.index + 1)
-            var sum = 0
+            row.addCell(index + 1)  // Display the calculated end number (1-based)
+            var sum = 0 // Reset sum for each end
             val shots = ArrayList(endDAO.loadShots(end.id))
             if (SettingsManager.shouldSortTarget(round.target)) {
                 shots.sort()
@@ -296,10 +300,10 @@ class DefaultScoreboardLayout(
                 appendPointsCell(row, shot, round.target)
                 val points = round.target.getScoreByZone(shot.scoringRing, shot.index)
                 sum += points
-                carry += points
+                carry += points // Update the carry value
             }
-            row.addCell(sum)
-            row.addCell(carry)
+            row.addCell(sum) // End total
+            row.addCell(carry) // Display carry value
         }
         return table
     }

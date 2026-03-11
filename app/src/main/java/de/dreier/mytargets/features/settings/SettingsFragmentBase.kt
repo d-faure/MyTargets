@@ -45,10 +45,12 @@ abstract class SettingsFragmentBase : PreferenceFragmentCompat(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Set the default white background in the view so as to avoid transparency
         view.setBackgroundColor(
             ContextCompat.getColor(context!!, R.color.background_material_light)
         )
+        listView?.let { recyclerView ->
+            ToolbarUtils.applyWindowInsetsToScrollableContent(recyclerView)
+        }
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {

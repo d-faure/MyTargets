@@ -24,6 +24,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceFragmentCompat.ARG_PREFERENCE_ROOT
 import androidx.preference.PreferenceScreen
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import de.dreier.mytargets.R
 import de.dreier.mytargets.base.activities.SimpleFragmentActivityBase
 import de.dreier.mytargets.features.settings.ESettingsScreens.MAIN
 import timber.log.Timber
@@ -44,7 +45,7 @@ class SettingsActivity : SimpleFragmentActivityBase(),
             val manager = supportFragmentManager
             if (manager != null) {
                 val currFrag = manager
-                    .findFragmentById(android.R.id.content) as SettingsFragmentBase
+                    .findFragmentById(R.id.fragment_container) as SettingsFragmentBase
                 currFrag.onFragmentResume()
             }
         }
@@ -60,7 +61,7 @@ class SettingsActivity : SimpleFragmentActivityBase(),
         args.putString(ARG_PREFERENCE_ROOT, preferenceScreen.key)
         fragment.arguments = args
         supportFragmentManager.transaction {
-            add(android.R.id.content, fragment, preferenceScreen.key)
+            replace(R.id.fragment_container, fragment, preferenceScreen.key)
             addToBackStack(preferenceScreen.key)
         }
         return true
@@ -79,7 +80,7 @@ class SettingsActivity : SimpleFragmentActivityBase(),
                     intent.putExtra(ARG_PREFERENCE_ROOT, MAIN.key)
                     val ft = supportFragmentManager.beginTransaction()
                     ft.replace(
-                        android.R.id.content,
+                        R.id.fragment_container,
                         instantiateFragment(),
                         SimpleFragmentActivityBase.FRAGMENT_TAG
                     )
