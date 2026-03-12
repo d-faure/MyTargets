@@ -25,6 +25,9 @@ import de.dreier.mytargets.shared.models.db.Training
 
 object TrainingInfoUtils {
 
+    private val db
+        get() = ApplicationInstance.db
+
     fun getTrainingInfo(
         context: Context,
         training: Training,
@@ -56,17 +59,17 @@ object TrainingInfoUtils {
         }
 
         if (training.bowId != null) {
-            val bow = ApplicationInstance.db.bowDAO().loadBow(training.bowId!!)
+            val bow = db.bowDAO().loadBow(training.bowId!!)
             info.addLine(R.string.bow, bow.name)
         }
 
         if (training.arrowId != null) {
-            val arrow = ApplicationInstance.db.arrowDAO().loadArrow(training.arrowId!!)
+            val arrow = db.arrowDAO().loadArrow(training.arrowId!!)
             info.addLine(R.string.arrow, arrow.name)
         }
 
         if (training.standardRoundId != null) {
-            val standardRound = ApplicationInstance.db.standardRoundDAO()
+            val standardRound = db.standardRoundDAO()
                 .loadStandardRound(training.standardRoundId!!)
             info.addLine(R.string.standard_round, standardRound.name)
         }

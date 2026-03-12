@@ -30,6 +30,8 @@ abstract class SettingsFragmentBase : PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
 
     private var rootKey = "main"
+    private val sharedPreferences
+        get() = SharedApplicationInstance.sharedPreferences
 
     override fun onCreatePreferences(bundle: Bundle?, rootKey: String?) {
         this.rootKey = rootKey ?: "main"
@@ -69,8 +71,7 @@ abstract class SettingsFragmentBase : PreferenceFragmentCompat(),
     override fun onResume() {
         super.onResume()
         onFragmentResume()
-        SharedApplicationInstance.sharedPreferences
-            .registerOnSharedPreferenceChangeListener(this)
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this)
     }
 
     protected open fun setActivityTitle() {
@@ -79,8 +80,7 @@ abstract class SettingsFragmentBase : PreferenceFragmentCompat(),
 
     override fun onPause() {
         super.onPause()
-        SharedApplicationInstance.sharedPreferences
-            .unregisterOnSharedPreferenceChangeListener(this)
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
     }
 
     protected fun setDefaultSummary(key: String) {
