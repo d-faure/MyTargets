@@ -26,6 +26,17 @@ plugins {
     alias(libs.plugins.ben.manes.versions)
 }
 
+def localSecretsFile = file('gradle-local.properties')
+if (localSecretsFile.exists()) {
+    def localSecrets = new Properties()
+    localSecretsFile.withInputStream { stream ->
+        localSecrets.load(stream)
+    }
+    localSecrets.each { key, value ->
+        ext.set(key.toString(), value)
+    }
+}
+
 allprojects {
     repositories {
         mavenCentral()
