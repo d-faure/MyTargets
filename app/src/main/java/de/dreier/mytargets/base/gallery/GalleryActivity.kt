@@ -34,8 +34,6 @@ import de.dreier.mytargets.base.gallery.adapters.ViewPagerAdapter
 import de.dreier.mytargets.base.navigation.NavigationController
 import de.dreier.mytargets.databinding.ActivityGalleryBinding
 import de.dreier.mytargets.utils.*
-import de.dreier.mytargets.utils.NeedsPermission
-import de.dreier.mytargets.utils.RuntimePermissions
 import de.dreier.mytargets.utils.PermissionUtils
 import pl.aprilapps.easyphotopicker.DefaultCallback
 import pl.aprilapps.easyphotopicker.EasyImage
@@ -43,7 +41,6 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 
-@RuntimePermissions
 class GalleryActivity : ChildActivityBase() {
 
     internal var adapter: ViewPagerAdapter? = null
