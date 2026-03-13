@@ -23,12 +23,21 @@ import de.dreier.mytargets.utils.multiselector.SingleSelector
 
 class SingleSelectorBundler : Bundler<SingleSelector> {
     override fun put(key: String, value: SingleSelector, bundle: Bundle) {
+        // Guard against null value from Java-generated StateSaver code
+        @Suppress("SENSELESS_COMPARISON")
+        if (value == null || bundle == null) return
         bundle.putBundle(key, value.saveSelectionStates())
     }
 
     override fun get(key: String, bundle: Bundle): SingleSelector {
         val selector = SingleSelector()
-        selector.restoreSelectionStates(bundle.getBundle(key)!!)
+        // Guard against null bundle from Java-generated StateSaver code.
+        // The Evernote android-state library calls this from generated Java code
+        // which can pass null despite Kotlin's non-null declaration.
+        @Suppress("SENSELESS_COMPARISON")
+        if (bundle == null) return selector
+        val savedState = bundle.getBundle(key) ?: return selector
+        selector.restoreSelectionStates(savedState)
         return selector
     }
 }

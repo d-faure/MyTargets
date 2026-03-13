@@ -41,6 +41,7 @@ import de.dreier.mytargets.shared.models.Target
 import de.dreier.mytargets.shared.models.db.Bow
 import de.dreier.mytargets.shared.models.db.Round
 import de.dreier.mytargets.shared.models.db.Training
+import de.dreier.mytargets.shared.utils.LocalDateUtils
 import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.Utils
 import de.dreier.mytargets.utils.getLongOrNull
@@ -56,7 +57,7 @@ class EditTrainingFragment : EditFragmentBase(), DatePickerDialog.OnDateSetListe
 
     private var trainingId: Long? = null
     private var trainingType = FREE_TRAINING
-    private var date: LocalDate = LocalDate.now()
+    private var date: LocalDate = LocalDateUtils.today()
     private lateinit var binding: FragmentEditTrainingBinding
     private var roundTarget: Target? = null
 
