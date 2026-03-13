@@ -21,6 +21,7 @@ import android.os.Parcelable
 import de.dreier.mytargets.shared.models.Environment
 import de.dreier.mytargets.shared.models.IIdSettable
 import de.dreier.mytargets.shared.models.Score
+import de.dreier.mytargets.shared.utils.LocalDateUtils
 import kotlinx.parcelize.Parcelize
 import org.threeten.bp.LocalDate
 import org.threeten.bp.format.DateTimeFormatter
@@ -73,7 +74,7 @@ data class Training(
     @PrimaryKey(autoGenerate = true)
     override var id: Long = 0L,
     var title: String = "",
-    var date: LocalDate = LocalDate.now(),
+    var date: LocalDate = LocalDateUtils.today(),
     var standardRoundId: Long? = null,
     var bowId: Long? = null,
     var arrowId: Long? = null,

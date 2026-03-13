@@ -50,7 +50,9 @@ abstract class EditableListFragmentBase<T, U : ListAdapterBase<*, T>> : Fragment
 
         // Restore action mode after fragment recreation
         if (savedInstanceState != null) {
-            selector.restoreSelectionStates(savedInstanceState.getBundle(KEY_SELECTOR)!!)
+            savedInstanceState.getBundle(KEY_SELECTOR)?.let {
+                selector.restoreSelectionStates(it)
+            }
             if (selector.selectable) {
                 actionModeCallback?.restartActionMode()
             }

@@ -20,10 +20,11 @@ import android.content.res.TypedArray
 import androidx.preference.DialogPreference
 import android.util.AttributeSet
 
+import de.dreier.mytargets.shared.utils.LocalDateUtils
 import org.threeten.bp.LocalDate
 
 class DatePreference(context: Context, attrs: AttributeSet) : DialogPreference(context, attrs) {
-    var date = LocalDate.now()
+    var date = LocalDateUtils.today()
 
     override fun onGetDefaultValue(a: TypedArray, index: Int): Any? {
         return a.getString(index)
@@ -32,7 +33,7 @@ class DatePreference(context: Context, attrs: AttributeSet) : DialogPreference(c
     override fun onSetInitialValue(restoreValue: Boolean, defaultValue: Any?) {
         val value: String = if (restoreValue) {
             if (defaultValue == null) {
-                getPersistedString(LocalDate.now().toString())
+                getPersistedString(LocalDateUtils.today().toString())
             } else {
                 getPersistedString(defaultValue.toString())
             }
