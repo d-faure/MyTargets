@@ -49,8 +49,6 @@ import de.dreier.mytargets.shared.models.Thumbnail
 import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.Utils
 import de.dreier.mytargets.utils.moveTo
-import de.dreier.mytargets.utils.NeedsPermission
-import de.dreier.mytargets.utils.RuntimePermissions
 import de.dreier.mytargets.utils.PermissionUtils
 import pl.aprilapps.easyphotopicker.DefaultCallback
 import pl.aprilapps.easyphotopicker.EasyImage
@@ -58,7 +56,6 @@ import timber.log.Timber
 import java.io.File
 import java.io.IOException
 
-@RuntimePermissions
 abstract class EditWithImageFragmentBase<T : Image> protected constructor(
     private val defaultDrawable: Int
 ) : EditFragmentBase() {

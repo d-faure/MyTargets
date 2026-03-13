@@ -28,7 +28,3 @@ include ':shared'
 include ':tools'
 include ':discreteseekbar'
 include ':signaturepad'
-// Temporarily disabled for quick SDK 36 release
-// include ':permissionsdispatcher'
-// include ':permissionsdispatcher-annotation'
-// include ':permissionsdispatcher-processor'

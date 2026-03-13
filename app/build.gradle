@@ -72,10 +72,10 @@ android {
 
     signingConfigs {
         debug {
-            storeFile file(System.properties['user.home'] + '/.android/debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            storeFile file(DEBUG_KEYSTORE_NAME)
+            storePassword DEBUG_KEYSTORE_PASSWORD
+            keyAlias DEBUG_KEY_ALIAS
+            keyPassword DEBUG_KEY_PASSWORD
         }
 
         release {
@@ -200,12 +200,6 @@ dependencies {
 
     implementation libs.android.state
     kapt libs.android.state.processor
-
-    // Temporarily disabled PermissionsDispatcher for quick SDK 36 release
-    // implementation project(':permissionsdispatcher')
-    // kapt project(':permissionsdispatcher-processor')
-
-
     implementation libs.mpandroidchart
 
     implementation project(':discreteseekbar')

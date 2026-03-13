@@ -60,10 +60,6 @@ import de.dreier.mytargets.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import de.dreier.mytargets.utils.NeedsPermission
-import de.dreier.mytargets.utils.OnNeverAskAgain
-import de.dreier.mytargets.utils.OnPermissionDenied
-import de.dreier.mytargets.utils.RuntimePermissions
 import de.dreier.mytargets.utils.PermissionUtils
 import timber.log.Timber
 import java.io.FileNotFoundException
@@ -72,7 +68,6 @@ import java.util.Locale
 import java.util.Timer
 import java.util.TimerTask
 
-@RuntimePermissions
 class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoadFinishedListener {
 
     private var backup: IAsyncBackupRestore? = null
@@ -497,7 +492,6 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         }
     }
 
-    @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     internal fun applyBackupLocation(item: EBackupLocation) {
         retrieveBackup(item)
     }
@@ -639,7 +633,6 @@ class BackupSettingsFragment : SettingsFragmentBase(), IAsyncBackupRestore.OnLoa
         })
     }
 
-    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
     internal fun showFilePicker() {
         val getContentIntent = Intent(Intent.ACTION_GET_CONTENT)
         getContentIntent.type = "application/zip"
