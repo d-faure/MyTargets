@@ -131,7 +131,7 @@ class TrainingsFragment : ExpandableListFragment<Header, Training>() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_statistics -> {
-                navigationController.navigateToStatistics(viewModel.getAllRoundIds())
+                navigationController.navigateToStatisticsAll()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -144,7 +144,7 @@ class TrainingsFragment : ExpandableListFragment<Header, Training>() {
     }
 
     private fun onStatistics(ids: List<Long>) {
-        navigationController.navigateToStatistics(viewModel.getRoundIds(ids))
+        navigationController.navigateToStatisticsForTrainings(ids)
     }
 
     private fun onEdit(itemId: Long) {

@@ -50,7 +50,7 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         const val DATABASE_FILE_NAME = "database.db"
         const val DATABASE_IMPORT_FILE_NAME = "database"
-        const val VERSION = 26
+        const val VERSION = 27
     }
 
     abstract fun arrowDAO(): ArrowDAO

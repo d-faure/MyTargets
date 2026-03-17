@@ -66,6 +66,7 @@ import de.dreier.mytargets.utils.transitions.TransitionAdapter
 import timber.log.Timber
 import org.threeten.bp.LocalTime
 import java.io.File
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -83,8 +84,8 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
     private var summaryShowScope = ETrainingScope.END
     private var targetView: TargetView? = null
     private val persistenceExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private val saveQueue = ConcurrentLinkedQueue<PendingEndSave>()
     private val saveLock = Any()
-    private var pendingSave: PendingEndSave? = null
     private var saveWorkerRunning = false
 
     private val database by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db }
@@ -193,8 +194,8 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
             end = end.copy(score = end.score.copy()),
             shots = shots.map { it.copy() }
         )
+        saveQueue.add(save)
         synchronized(saveLock) {
-            pendingSave = save
             if (!saveWorkerRunning) {
                 saveWorkerRunning = true
                 persistenceExecutor.execute { drainPendingSaves() }
@@ -204,20 +205,30 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
 
     private fun drainPendingSaves() {
         while (true) {
-            val save = synchronized(saveLock) {
-                val next = pendingSave
-                pendingSave = null
-                if (next == null) {
-                    saveWorkerRunning = false
+            val save = saveQueue.poll()
+            if (save == null) {
+                synchronized(saveLock) {
+                    // Double-check: another enqueue may have raced between poll and lock
+                    val lateSave = saveQueue.poll()
+                    if (lateSave == null) {
+                        saveWorkerRunning = false
+                        return
+                    }
+                    // Process the late arrival
+                    persistSave(lateSave)
                 }
-                next
-            } ?: return
-            try {
-                endDAO.updateEnd(save.end)
-                endDAO.updateShots(save.shots)
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to persist end ${save.end.id}")
+                continue
             }
+            persistSave(save)
+        }
+    }
+
+    private fun persistSave(save: PendingEndSave) {
+        try {
+            endDAO.updateEnd(save.end)
+            endDAO.updateShots(save.shots)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to persist end ${save.end.id}")
         }
     }
 

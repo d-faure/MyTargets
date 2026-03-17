@@ -179,9 +179,21 @@ class NavigationController(
         wrapper.start()
     }
 
+    fun navigateToStatisticsAll() {
+        IntentWrapper(activity, fragment, StatisticsActivity::class.java)
+            .with(StatisticsActivity.SHOW_ALL, true)
+            .start()
+    }
+
     fun navigateToStatistics(roundIds: List<Long>) {
         IntentWrapper(activity, fragment, StatisticsActivity::class.java)
             .with(StatisticsActivity.ROUND_IDS, roundIds.toLongArray())
+            .start()
+    }
+
+    fun navigateToStatisticsForTrainings(trainingIds: List<Long>) {
+        IntentWrapper(activity, fragment, StatisticsActivity::class.java)
+            .with(StatisticsActivity.TRAINING_IDS, trainingIds.toLongArray())
             .start()
     }
 
