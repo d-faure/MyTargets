@@ -19,6 +19,7 @@ import android.content.Context
 import de.dreier.mytargets.R
 import de.dreier.mytargets.base.db.AppDatabase
 import de.dreier.mytargets.shared.models.db.Round
+import de.dreier.mytargets.shared.models.db.Shot
 import de.dreier.mytargets.shared.models.db.Training
 import org.threeten.bp.format.DateTimeFormatter
 import java.io.File
@@ -90,9 +91,9 @@ class CsvExporter(private val context: Context, database: AppDatabase) {
             )
         )
         // Bow
-        csv.add(if (t.bowId == null) "" else bowDAO.loadBow(t.bowId!!).name)
+        csv.add(t.bowId?.let { bowDAO.loadBow(it).name } ?: "")
         // Arrow
-        csv.add(if (t.arrowId == null) "" else arrowDAO.loadArrow(t.arrowId!!).name)
+        csv.add(t.arrowId?.let { arrowDAO.loadArrow(it).name } ?: "")
         roundDAO.loadRounds(t.id)
             .filter { roundIds.contains(it.id) }
             .forEach { addRound(csv, it) }
@@ -114,8 +115,15 @@ class CsvExporter(private val context: Context, database: AppDatabase) {
             // End
             csv.add((e.index + 1).toString())
             // Timestamp
-            csv.add(e.saveTime!!.format(DateTimeFormatter.ISO_LOCAL_TIME))
-            for ((_, index, _, x, y, scoringRing, arrowNumber) in endDAO.loadShots(e.id)) {
+            csv.add(e.saveTime?.format(DateTimeFormatter.ISO_LOCAL_TIME) ?: "")
+
+            val shots = endDAO.loadShots(e.id).toMutableList()
+            // Pad missing shots so every end has the expected number of arrows
+            while (shots.size < r.shotsPerEnd) {
+                shots.add(Shot(index = shots.size))
+            }
+
+            for ((_, index, _, x, y, scoringRing, arrowNumber) in shots) {
                 csv.enterScope()
                 // Score
                 csv.add(target.zoneToString(scoringRing, index))

@@ -82,19 +82,18 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
 
     protected var imageFiles: List<T>
         get() {
-            return if (imageFile == null) {
-                emptyList()
-            } else {
-                wrapImage(imageFile!!.name)
-            }
+            val name = imageFile?.name ?: return emptyList()
+            return wrapImage(name)
         }
         set(images) {
             if (images.isEmpty()) {
                 imageFile = null
                 binding.imageView.setImageResource(defaultDrawable)
             } else {
-                imageFile = File(context!!.filesDir, images[0].fileName)
-                if (!imageFile!!.exists()) {
+                val file = File(requireContext().filesDir, images[0].fileName)
+                if (file.exists()) {
+                    imageFile = file
+                } else {
                     imageFile = null
                     binding.imageView.setImageResource(defaultDrawable)
                 }
@@ -104,9 +103,14 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
     protected abstract fun wrapImage(imageFile: String): List<T>
 
     protected val thumbnail: Thumbnail
-        get() = if (imageFile == null) {
-            Thumbnail.from(context!!, defaultDrawable)
-        } else Thumbnail.from(imageFile!!)
+        get() {
+            val file = imageFile
+            return if (file != null) {
+                Thumbnail.from(file)
+            } else {
+                Thumbnail.from(requireContext(), defaultDrawable)
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -158,14 +162,13 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         setFocusListenerForAllEditText(view)
-        Utils.setupFabTransform(activity!!, binding.root)
+        Utils.setupFabTransform(requireActivity(), binding.root)
     }
 
     private fun setFocusListenerForAllEditText(view: View?) {
         if (view is ViewGroup) {
-            val viewGroup = view as ViewGroup?
-            for (i in 0 until viewGroup!!.childCount) {
-                setFocusListenerForAllEditText(viewGroup.getChildAt(i))
+            for (i in 0 until view.childCount) {
+                setFocusListenerForAllEditText(view.getChildAt(i))
             }
         } else if (view is EditText) {
             view.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
@@ -257,7 +260,7 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
 
                 override fun onCanceled(source: EasyImage.ImageSource?, type: Int) {
                     if (source == EasyImage.ImageSource.CAMERA_IMAGE) {
-                        val photoFile = EasyImage.lastlyTakenButCanceledPhoto(context!!)
+                        val photoFile = EasyImage.lastlyTakenButCanceledPhoto(requireContext())
                         photoFile?.delete()
                     }
                 }
@@ -337,15 +340,15 @@ abstract class EditWithImageFragmentBase<T : Image> protected constructor(
     override fun onSave() {
         // Delete old file
         oldImageFile?.delete()
-        if (imageFile != null) {
-            try {
-                oldImageFile = imageFile
-                imageFile = File
-                    .createTempFile("img", oldImageFile!!.name, context!!.filesDir)
-                oldImageFile!!.moveTo(imageFile!!)
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
+        val currentFile = imageFile ?: return
+        try {
+            oldImageFile = currentFile
+            val newFile = File
+                .createTempFile("img", currentFile.name, requireContext().filesDir)
+            currentFile.moveTo(newFile)
+            imageFile = newFile
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
     }
 }

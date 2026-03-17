@@ -106,7 +106,7 @@ class TrainingsFragment : ExpandableListFragment<Header, Training>() {
         super.onActivityCreated(savedInstanceState)
         setHasOptionsMenu(true)
 
-        val factory = ViewModelFactory(activity!!.application!!)
+        val factory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProviders.of(this, factory).get(TrainingsViewModel::class.java)
         viewModel.trainings.observe(this, Observer { trainings ->
             if (trainings != null) {
@@ -131,7 +131,7 @@ class TrainingsFragment : ExpandableListFragment<Header, Training>() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_statistics -> {
-                navigationController.navigateToStatistics(viewModel.getAllRoundIds())
+                navigationController.navigateToStatisticsAll()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -144,7 +144,7 @@ class TrainingsFragment : ExpandableListFragment<Header, Training>() {
     }
 
     private fun onStatistics(ids: List<Long>) {
-        navigationController.navigateToStatistics(viewModel.getRoundIds(ids))
+        navigationController.navigateToStatisticsForTrainings(ids)
     }
 
     private fun onEdit(itemId: Long) {
@@ -181,7 +181,7 @@ class TrainingsFragment : ExpandableListFragment<Header, Training>() {
             binding.training.text = item.title
             binding.trainingDate.text = item.formattedDate
             binding.gesTraining.text = item.score.format(
-                Utils.getCurrentLocale(context!!),
+                Utils.getCurrentLocale(requireContext()),
                 SettingsManager.scoreConfiguration
             )
         }

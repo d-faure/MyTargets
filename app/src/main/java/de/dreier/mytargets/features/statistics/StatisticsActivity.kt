@@ -15,13 +15,8 @@
 
 package de.dreier.mytargets.features.statistics
 
-import android.annotation.SuppressLint
-import android.app.LoaderManager
-import android.content.AsyncTaskLoader
 import android.content.Intent
-import android.content.Loader
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -30,6 +25,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.lifecycle.lifecycleScope
 import com.afollestad.materialdialogs.MaterialDialog
 import com.evernote.android.state.State
 import com.google.android.material.snackbar.Snackbar
@@ -43,14 +39,16 @@ import de.dreier.mytargets.shared.models.db.Training
 import de.dreier.mytargets.utils.ToolbarUtils
 import de.dreier.mytargets.utils.toSparseArray
 import de.dreier.mytargets.utils.toUri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class StatisticsActivity : ChildActivityBase(),
-    LoaderManager.LoaderCallbacks<List<Pair<Training, Round>>> {
+class StatisticsActivity : ChildActivityBase() {
 
     private lateinit var binding: ActivityStatisticsBinding
     private var rounds: List<Pair<Training, Round>>? = null
@@ -75,7 +73,7 @@ class StatisticsActivity : ChildActivityBase(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_statistics)
         setSupportActionBar(binding.toolbar)
@@ -88,38 +86,51 @@ class StatisticsActivity : ChildActivityBase(),
 
         ToolbarUtils.showHomeAsUp(this)
 
-        loaderManager.initLoader(0, intent.extras, this).forceLoad()
+        loadData()
     }
 
-    @SuppressLint("StaticFieldLeak")
-    override fun onCreateLoader(i: Int, bundle: Bundle): Loader<List<Pair<Training, Round>>> {
-        return object : AsyncTaskLoader<List<Pair<Training, Round>>>(this) {
-            override fun loadInBackground(): List<Pair<Training, Round>> {
-                // Resolve round IDs here (background thread) to avoid main-thread DB access,
-                // and use loadRoundsBatched to avoid SQLite's 999-variable limit.
-                val roundIds = if (intent.hasExtra(TRAINING_ID)) {
-                    roundDAO.loadRounds(intent.getLongExtra(TRAINING_ID, 0))
-                        .map { it.id }.toLongArray()
-                } else {
-                    intent.getLongArrayExtra(ROUND_IDS) ?: LongArray(0)
+    private fun loadData() {
+        lifecycleScope.launch {
+            val data = withContext(Dispatchers.IO) {
+                val roundIds = when {
+                    intent.getBooleanExtra(SHOW_ALL, false) -> {
+                        trainingDAO.loadTrainings()
+                            .flatMap { t -> roundDAO.loadRounds(t.id) }
+                            .map { it.id }
+                            .toLongArray()
+                    }
+                    intent.hasExtra(TRAINING_IDS) -> {
+                        val tIds = intent.getLongArrayExtra(TRAINING_IDS) ?: LongArray(0)
+                        tIds.flatMap { tId -> roundDAO.loadRounds(tId).map { it.id } }
+                            .toLongArray()
+                    }
+                    intent.hasExtra(TRAINING_ID) -> {
+                        roundDAO.loadRounds(intent.getLongExtra(TRAINING_ID, 0))
+                            .map { it.id }.toLongArray()
+                    }
+                    else -> {
+                        intent.getLongArrayExtra(ROUND_IDS) ?: LongArray(0)
+                    }
                 }
                 if (roundIds.isEmpty()) {
-                    return emptyList()
+                    return@withContext emptyList()
                 }
                 val rounds = roundDAO.loadRoundsBatched(roundIds)
-                val trainingsMap = rounds.map { (_, trainingId) -> trainingId!! }
+                val trainingsMap = rounds.mapNotNull { (_, trainingId) -> trainingId }
                     .distinct()
                     .map { id -> Pair(id, trainingDAO.loadTraining(id)) }
                     .toSparseArray()
-                return rounds.map { round -> Pair(trainingsMap.get(round.trainingId!!)!!, round) }
+                rounds.mapNotNull { round ->
+                    val trainingId = round.trainingId ?: return@mapNotNull null
+                    val training = trainingsMap.get(trainingId) ?: return@mapNotNull null
+                    Pair(training, round)
+                }
             }
+            onDataLoaded(data)
         }
     }
 
-    override fun onLoadFinished(
-        loader: Loader<List<Pair<Training, Round>>>,
-        data: List<Pair<Training, Round>>
-    ) {
+    private fun onDataLoaded(data: List<Pair<Training, Round>>) {
         rounds = data
         binding.progressBar.hide()
         binding.distanceTags.tags = getDistanceTags()
@@ -140,10 +151,14 @@ class StatisticsActivity : ChildActivityBase(),
     }
 
     private fun restoreCheckedStates() {
-        binding.distanceTags.tags.forEach { it.isChecked = distanceTags!!.contains(it.text) }
-        binding.diameterTags.tags.forEach { it.isChecked = diameterTags!!.contains(it.text) }
-        binding.arrowTags.tags.forEach { it.isChecked = arrowTags!!.contains(it.id) }
-        binding.bowTags.tags.forEach { it.isChecked = bowTags!!.contains(it.id) }
+        val dt = distanceTags ?: return
+        val dmt = diameterTags ?: return
+        val at = arrowTags ?: return
+        val bt = bowTags ?: return
+        binding.distanceTags.tags.forEach { it.isChecked = dt.contains(it.text) }
+        binding.diameterTags.tags.forEach { it.isChecked = dmt.contains(it.text) }
+        binding.arrowTags.tags.forEach { it.isChecked = at.contains(it.id) }
+        binding.bowTags.tags.forEach { it.isChecked = bt.contains(it.id) }
         binding.distanceTags.notifyTagsListChanged()
         binding.diameterTags.notifyTagsListChanged()
         binding.arrowTags.notifyTagsListChanged()
@@ -206,12 +221,17 @@ class StatisticsActivity : ChildActivityBase(),
         diameterTags = binding.diameterTags.checkedTags.map { it.text }.toHashSet()
         arrowTags = binding.arrowTags.checkedTags.map { it.id }.toHashSet()
         bowTags = binding.bowTags.checkedTags.map { it.id }.toHashSet()
-        filteredRounds = rounds!!
+        val currentRounds = rounds ?: return
+        val currentDistanceTags = distanceTags ?: return
+        val currentDiameterTags = diameterTags ?: return
+        val currentArrowTags = arrowTags ?: return
+        val currentBowTags = bowTags ?: return
+        filteredRounds = currentRounds
             .filter { (training, round) ->
-                distanceTags!!.contains(round.distance.toString())
-                        && diameterTags!!.contains(round.target.diameter.toString())
-                        && arrowTags!!.contains(training.arrowId)
-                        && bowTags!!.contains(training.bowId)
+                currentDistanceTags.contains(round.distance.toString())
+                        && currentDiameterTags.contains(round.target.diameter.toString())
+                        && currentArrowTags.contains(training.arrowId)
+                        && currentBowTags.contains(training.bowId)
             }
             .map { it.second }
             .groupBy { value -> Pair(value.target.id, value.target.getScoringStyle()) }
@@ -220,14 +240,16 @@ class StatisticsActivity : ChildActivityBase(),
         val animate = binding.viewPager.adapter == null
         val environment =
             if (trainingDAO.loadTrainings().first().environment.indoor) "Indoor" else "Outdoor"
+        val currentFilteredRounds = filteredRounds ?: return
         val adapter = StatisticsPagerAdapter(
-            supportFragmentManager, filteredRounds!!, animate, environment
+            supportFragmentManager, currentFilteredRounds, animate, environment
         )
         binding.viewPager.adapter = adapter
     }
 
     private fun getBowTags(): List<Tag> {
-        return rounds!!
+        val currentRounds = rounds ?: return emptyList()
+        return currentRounds
             .map { it.first.bowId }
             .distinct()
             .map { bid ->
@@ -241,7 +263,8 @@ class StatisticsActivity : ChildActivityBase(),
     }
 
     private fun getArrowTags(): List<Tag> {
-        return rounds!!
+        val currentRounds = rounds ?: return emptyList()
+        return currentRounds
             .map { it.first.arrowId }
             .distinct()
             .map { aid ->
@@ -256,7 +279,8 @@ class StatisticsActivity : ChildActivityBase(),
     }
 
     private fun getDistanceTags(): List<Tag> {
-        return rounds!!
+        val currentRounds = rounds ?: return emptyList()
+        return currentRounds
             .map { it.second.distance }
             .distinct()
             .sorted()
@@ -264,53 +288,44 @@ class StatisticsActivity : ChildActivityBase(),
     }
 
     private fun getDiameterTags(): List<Tag> {
-        return rounds!!
+        val currentRounds = rounds ?: return emptyList()
+        return currentRounds
             .map { it.second.target.diameter }
             .distinct()
             .sorted()
             .map { Tag(it.id, it.toString()) }
     }
 
-    override fun onLoaderReset(loader: Loader<List<Pair<Training, Round>>>) {
-
-    }
-
-    @SuppressLint("StaticFieldLeak")
     internal fun export() {
         val progress = MaterialDialog.Builder(this)
             .content(R.string.exporting)
             .progress(true, 0)
             .show()
-        object : AsyncTask<Void, Void, Uri>() {
-
-            override fun doInBackground(vararg params: Void): Uri? {
-                return try {
+        lifecycleScope.launch {
+            val uri = withContext(Dispatchers.IO) {
+                try {
                     val f = File(cacheDir, exportFileName)
                     CsvExporter(applicationContext, ApplicationInstance.db)
-                        .exportAll(f, filteredRounds!!.flatMap { it.second }.map { it.id })
+                        .exportAll(f, (filteredRounds ?: return@withContext null).flatMap { it.second }.map { it.id })
                     f.toUri(this@StatisticsActivity)
                 } catch (e: IOException) {
                     e.printStackTrace()
                     null
                 }
             }
-
-            override fun onPostExecute(uri: Uri?) {
-                super.onPostExecute(uri)
-                progress.dismiss()
-                if (uri != null) {
-                    val email = Intent(Intent.ACTION_SEND)
-                    email.putExtra(Intent.EXTRA_STREAM, uri)
-                    email.type = "text/csv"
-                    startActivity(Intent.createChooser(email, getString(R.string.send_exported)))
-                } else {
-                    Snackbar.make(
-                        binding.root, R.string.exporting_failed,
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                }
+            progress.dismiss()
+            if (uri != null) {
+                val email = Intent(Intent.ACTION_SEND)
+                email.putExtra(Intent.EXTRA_STREAM, uri)
+                email.type = "text/csv"
+                startActivity(Intent.createChooser(email, getString(R.string.send_exported)))
+            } else {
+                Snackbar.make(
+                    binding.root, R.string.exporting_failed,
+                    Snackbar.LENGTH_LONG
+                ).show()
             }
-        }.execute()
+        }
     }
 
     private val exportFileName: String
@@ -344,5 +359,7 @@ class StatisticsActivity : ChildActivityBase(),
     companion object {
         const val ROUND_IDS = "round_ids"
         const val TRAINING_ID = "training_id"
+        const val TRAINING_IDS = "training_ids"
+        const val SHOW_ALL = "show_all"
     }
 }

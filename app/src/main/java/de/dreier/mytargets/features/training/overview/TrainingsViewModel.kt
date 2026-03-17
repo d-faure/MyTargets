@@ -57,13 +57,4 @@ class TrainingsViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun getRoundIds(ids: List<Long>) = ids
-        .map { trainingDAO.loadTraining(it) }
-        .flatMap { t -> roundDAO.loadRounds(t.id) }
-        .map { it.id }
-
-    fun getAllRoundIds() = trainingDAO.loadTrainings()
-        .flatMap { training -> roundDAO.loadRounds(training.id) }
-        .map { it.id }
-
 }
