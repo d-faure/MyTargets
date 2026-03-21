@@ -41,12 +41,12 @@ import org.threeten.bp.LocalDate
 class MobileWearableListener : WearableListenerService() {
 
     private val database by lazy { ApplicationInstance.db }
-    private val trainingDAO by lazy(LazyThreadSafetyMode.NONE) { database.trainingDAO() }
-    private val roundDAO by lazy(LazyThreadSafetyMode.NONE) { database.roundDAO() }
-    private val endDAO by lazy(LazyThreadSafetyMode.NONE) { database.endDAO() }
-    private val standardRoundDAO by lazy(LazyThreadSafetyMode.NONE) { database.standardRoundDAO() }
-    private val roundRepository by lazy(LazyThreadSafetyMode.NONE) { RoundRepository(database) }
-    private val trainingRepository by lazy(LazyThreadSafetyMode.NONE) {
+    private val trainingDAO by lazy { database.trainingDAO() }
+    private val roundDAO by lazy { database.roundDAO() }
+    private val endDAO by lazy { database.endDAO() }
+    private val standardRoundDAO by lazy { database.standardRoundDAO() }
+    private val roundRepository by lazy { RoundRepository(database) }
+    private val trainingRepository by lazy {
         TrainingRepository(
             database,
             trainingDAO,

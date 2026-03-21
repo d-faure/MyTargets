@@ -88,15 +88,15 @@ class InputActivity : ChildActivityBase(), TargetViewBase.OnEndFinishedListener,
     private val saveLock = Any()
     private var saveWorkerRunning = false
 
-    private val database by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db }
-    private val trainingDAO by lazy(LazyThreadSafetyMode.NONE) { database.trainingDAO() }
-    private val roundDAO by lazy(LazyThreadSafetyMode.NONE) { database.roundDAO() }
-    private val endDAO by lazy(LazyThreadSafetyMode.NONE) { database.endDAO() }
-    private val bowDAO by lazy(LazyThreadSafetyMode.NONE) { database.bowDAO() }
-    private val arrowDAO by lazy(LazyThreadSafetyMode.NONE) { database.arrowDAO() }
-    private val standardRoundDAO by lazy(LazyThreadSafetyMode.NONE) { database.standardRoundDAO() }
-    private val roundRepository by lazy(LazyThreadSafetyMode.NONE) { RoundRepository(database) }
-    private val trainingRepository by lazy(LazyThreadSafetyMode.NONE) {
+    private val database by lazy { ApplicationInstance.db }
+    private val trainingDAO by lazy { database.trainingDAO() }
+    private val roundDAO by lazy { database.roundDAO() }
+    private val endDAO by lazy { database.endDAO() }
+    private val bowDAO by lazy { database.bowDAO() }
+    private val arrowDAO by lazy { database.arrowDAO() }
+    private val standardRoundDAO by lazy { database.standardRoundDAO() }
+    private val roundRepository by lazy { RoundRepository(database) }
+    private val trainingRepository by lazy {
         TrainingRepository(
             database,
             trainingDAO,

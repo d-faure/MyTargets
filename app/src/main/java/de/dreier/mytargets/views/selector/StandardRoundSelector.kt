@@ -33,7 +33,7 @@ class StandardRoundSelector @JvmOverloads constructor(
     STANDARD_ROUND_REQUEST_CODE
 ) {
 
-    private val standardRoundDAO by lazy(LazyThreadSafetyMode.NONE) {
+    private val standardRoundDAO by lazy {
         ApplicationInstance.db.standardRoundDAO()
     }
 

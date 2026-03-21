@@ -55,7 +55,7 @@ class EditBowFragment : EditWithImageFragmentBase<BowImage>(R.drawable.recurve_b
     private lateinit var contentBinding: FragmentEditBowBinding
     private lateinit var adapter: SightMarksAdapter
 
-    private val bowDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.bowDAO() }
+    private val bowDAO by lazy { ApplicationInstance.db.bowDAO() }
 
     override fun onCreateView(
         inflater: LayoutInflater,

@@ -48,7 +48,7 @@ import timber.log.Timber
 
 class EditStandardRoundFragment : EditFragmentBase() {
 
-    private val standardRoundDAO by lazy(LazyThreadSafetyMode.NONE) {
+    private val standardRoundDAO by lazy {
         ApplicationInstance.db.standardRoundDAO()
     }
 

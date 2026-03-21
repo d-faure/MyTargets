@@ -61,8 +61,8 @@ class EditTrainingFragment : EditFragmentBase(), DatePickerDialog.OnDateSetListe
     private lateinit var binding: FragmentEditTrainingBinding
     private var roundTarget: Target? = null
 
-    private val database by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db }
-    private val trainingDAO by lazy(LazyThreadSafetyMode.NONE) { database.trainingDAO() }
+    private val database by lazy { ApplicationInstance.db }
+    private val trainingDAO by lazy { database.trainingDAO() }
 
     private val training: Training?
         get() {

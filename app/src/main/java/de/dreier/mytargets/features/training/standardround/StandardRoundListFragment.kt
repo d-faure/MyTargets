@@ -55,7 +55,7 @@ class StandardRoundListFragment :
 
     private lateinit var binding: FragmentListBinding
 
-    private val standardRoundDAO by lazy(LazyThreadSafetyMode.NONE) {
+    private val standardRoundDAO by lazy {
         ApplicationInstance.db.standardRoundDAO()
     }
 

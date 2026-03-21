@@ -24,7 +24,7 @@ import de.dreier.mytargets.shared.models.db.Bow
 
 class BowListFragment : SelectPureListItemFragmentBase<Bow>(compareBy(Bow::name, Bow::id)) {
 
-    private val bowDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.bowDAO() }
+    private val bowDAO by lazy { ApplicationInstance.db.bowDAO() }
 
     override fun onLoad(args: Bundle?): LoaderUICallback {
         val bows = bowDAO.loadBows().toMutableList()

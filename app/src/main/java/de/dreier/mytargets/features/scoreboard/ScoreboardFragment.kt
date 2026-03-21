@@ -72,11 +72,11 @@ class ScoreboardFragment : FragmentBase() {
     private var training: Training? = null
     private var rounds: List<Round> = emptyList()
 
-    private val database by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db }
-    private val trainingDAO by lazy(LazyThreadSafetyMode.NONE) { database.trainingDAO() }
-    private val roundDAO by lazy(LazyThreadSafetyMode.NONE) { database.roundDAO() }
-    private val roundRepository by lazy(LazyThreadSafetyMode.NONE) { RoundRepository(database) }
-    private val trainingRepository by lazy(LazyThreadSafetyMode.NONE) {
+    private val database by lazy { ApplicationInstance.db }
+    private val trainingDAO by lazy { database.trainingDAO() }
+    private val roundDAO by lazy { database.roundDAO() }
+    private val roundRepository by lazy { RoundRepository(database) }
+    private val trainingRepository by lazy {
         TrainingRepository(
             database,
             trainingDAO,

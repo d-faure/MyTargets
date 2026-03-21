@@ -39,7 +39,7 @@ class EditBowListFragment : EditableListFragmentBase<Bow, SimpleListAdapterBase<
 
     private lateinit var binding: FragmentBowsBinding
 
-    private val bowDAO by lazy(LazyThreadSafetyMode.NONE) { ApplicationInstance.db.bowDAO() }
+    private val bowDAO by lazy { ApplicationInstance.db.bowDAO() }
 
     init {
         itemTypeDelRes = R.plurals.bow_deleted
