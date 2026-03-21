@@ -19,10 +19,13 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import android.view.MenuItem
+import androidx.lifecycle.lifecycleScope
 import com.google.firebase.analytics.FirebaseAnalytics
 import de.dreier.mytargets.base.navigation.NavigationController
 import de.dreier.mytargets.features.settings.SettingsManager
 import im.delight.android.languages.Language
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 abstract class ChildActivityBase : AppCompatActivity() {
 
@@ -36,11 +39,10 @@ abstract class ChildActivityBase : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        logEvent(javaClass.simpleName)
-    }
-
-    private fun logEvent(event: String) {
-        FirebaseAnalytics.getInstance(this).logEvent(event, null)
+        val eventName = javaClass.simpleName
+        lifecycleScope.launch(Dispatchers.IO) {
+            FirebaseAnalytics.getInstance(this@ChildActivityBase.applicationContext).logEvent(eventName, null)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

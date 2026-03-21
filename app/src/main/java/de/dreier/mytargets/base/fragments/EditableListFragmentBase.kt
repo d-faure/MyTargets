@@ -16,10 +16,13 @@ package de.dreier.mytargets.base.fragments
 
 import android.os.Bundle
 import androidx.annotation.PluralsRes
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import android.view.View
 import com.google.firebase.analytics.FirebaseAnalytics
 import de.dreier.mytargets.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import de.dreier.mytargets.base.adapters.ListAdapterBase
 import de.dreier.mytargets.shared.models.IIdSettable
 import de.dreier.mytargets.utils.multiselector.MultiSelector
@@ -74,7 +77,10 @@ abstract class EditableListFragmentBase<T, U : ListAdapterBase<*, T>> : Fragment
     }
 
     fun onDelete(deletedIds: List<Long>) {
-        FirebaseAnalytics.getInstance(requireContext()).logEvent("delete", null)
+        val appContext = context?.applicationContext ?: return
+        lifecycleScope.launch(Dispatchers.IO) {
+            FirebaseAnalytics.getInstance(appContext).logEvent("delete", null)
+        }
         val undoDeletions = deleteItems(deletedIds)
         val message = resources.getQuantityString(itemTypeDelRes, deletedIds.size, deletedIds.size)
         val coordinatorLayout = requireView().findViewById<View>(R.id.coordinatorLayout)
